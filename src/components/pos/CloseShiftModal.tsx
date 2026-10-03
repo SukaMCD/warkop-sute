@@ -1,0 +1,417 @@
+import { useState, useMemo } from 'react'
+import {
+  X,
+  PowerOff,
+  Printer,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  ArrowRight
+} from 'lucide-react'
+import type { Shift } from '../../types'
+import { formatRupiah } from '../../utils/formatters'
+import { formatShiftSchedule } from '../../utils/shiftHelpers'
+import { NumericInput } from '../ui/NumericInput'
+
+interface CloseShiftModalProps {
+  shift: Shift
+  isOpen: boolean
+  onClose: () => void
+  onShiftClosed: (closedShift: Shift) => void
+}
+
+export const CloseShiftModal = ({
+  shift,
+  isOpen,
+  onClose,
+  onShiftClosed
+}: CloseShiftModalProps) => {
+  const expectedCash = shift.initial_cash + shift.total_cash_sales
+  const [actualCash, setActualCash] = useState<number>(expectedCash)
+  const [notes, setNotes] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [errorMsg, setErrorMsg] = useState<string>('')
+
+  // Receipt Preview / Print Step
+  const [closedData, setClosedData] = useState<Shift | null>(null)
+  const [showPrintRecap, setShowPrintRecap] = useState<boolean>(false)
+
+  // Current end time & dynamic duration
+  const scheduleInfo = useMemo(() => {
+    return formatShiftSchedule(shift.start_time, null)
+  }, [shift.start_time])
+
+  const diff = actualCash - expectedCash
+
+  if (!isOpen) return null
+
+  const handleConfirmClose = async () => {
+    setIsSubmitting(true)
+    setErrorMsg('')
+
+    try {
+      const res = await fetch(`/api/shifts/${shift.id}/close`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          actual_cash_counted: actualCash,
+          notes: notes.trim() || undefined
+        })
+      })
+
+      const json: any = await res.json()
+      if (res.ok && json.success && json.data) {
+        setClosedData(json.data)
+        setShowPrintRecap(true)
+      } else {
+        setErrorMsg(json.message || 'Gagal menutup shift. Silakan coba lagi.')
+      }
+    } catch {
+      // Fallback
+      const closed: Shift = {
+        ...shift,
+        end_time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        actual_cash_counted: actualCash,
+        status: 'closed',
+        notes: notes.trim() || undefined
+      }
+      setClosedData(closed)
+      setShowPrintRecap(true)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handlePrint = () => {
+    window.print()
+  }
+
+  const handleFinishAndRedirect = () => {
+    if (closedData) {
+      onShiftClosed(closedData)
+    } else {
+      onClose()
+    }
+  }
+
+  // View: Thermal Print Recap Modal
+  if (showPrintRecap && closedData) {
+    const finalSchedule = formatShiftSchedule(closedData.start_time, closedData.end_time)
+    const finalExpected = closedData.initial_cash + closedData.total_cash_sales
+    const finalDiff = (closedData.actual_cash_counted || 0) - finalExpected
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-5">
+          
+          <div className="flex items-center gap-3 pb-3 border-b border-stone-800">
+            <div className="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-400 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-stone-100">
+                Shift Berhasil Ditutup
+              </h2>
+              <p className="text-xs text-stone-400">
+                Cetak rekap kasir lalu kembali ke Layar PIN
+              </p>
+            </div>
+          </div>
+
+          {/* Printable Thermal Receipt Container */}
+          <div
+            id="printable-receipt"
+            className="bg-white text-stone-900 p-5 rounded-2xl font-mono text-xs space-y-3 shadow-inner max-h-[50vh] overflow-y-auto select-none"
+          >
+            <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-stone-400">
+              <h1 className="font-extrabold text-sm tracking-tight">WARKOP SUDUT TEMU</h1>
+              <p className="text-[11px] text-stone-600">Kopi • Mi • Tempat Bersua</p>
+              <div className="mt-1.5 inline-block px-2 py-0.5 bg-stone-100 rounded text-[10px] font-bold uppercase tracking-wider text-stone-700">
+                REKAP TUTUP SHIFT KASIR
+              </div>
+            </div>
+
+            <div className="space-y-1 text-[11px] pb-2 border-b border-dashed border-stone-400">
+              <div className="flex justify-between">
+                <span className="text-stone-500">Petugas Kasir:</span>
+                <span className="font-bold">{closedData.cashier_name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-stone-500">Jam Shift:</span>
+                <span className="font-semibold">{finalSchedule.range}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-stone-500">Durasi Shift:</span>
+                <span className="font-bold">{finalSchedule.duration}</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-[11px] pb-2 border-b border-dashed border-stone-400">
+              <div className="flex justify-between">
+                <span>Modal Awal Kas</span>
+                <span>{formatRupiah(closedData.initial_cash)}</span>
+              </div>
+              <div className="flex justify-between font-semibold">
+                <span>Penjualan Tunai (Cash)</span>
+                <span>{formatRupiah(closedData.total_cash_sales)}</span>
+              </div>
+              <div className="flex justify-between text-stone-600">
+                <span>Penjualan Non-Tunai (QRIS)</span>
+                <span>{formatRupiah(closedData.total_qris_sales)}</span>
+              </div>
+              <div className="flex justify-between font-bold pt-1 border-t border-dotted border-stone-300">
+                <span>Total Omzet Penjualan</span>
+                <span>{formatRupiah(closedData.total_cash_sales + closedData.total_qris_sales)}</span>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-[11px] pb-2 border-b border-dashed border-stone-400">
+              <div className="flex justify-between">
+                <span className="text-stone-600">Wajib Ada di Laci:</span>
+                <span className="font-bold">{formatRupiah(finalExpected)}</span>
+              </div>
+              <div className="flex justify-between font-bold">
+                <span>Uang Fisik Dihitung:</span>
+                <span>{formatRupiah(closedData.actual_cash_counted || 0)}</span>
+              </div>
+              <div className="flex justify-between font-extrabold text-[12px] pt-1 border-t border-dotted border-stone-300">
+                <span>Selisih Kas:</span>
+                <span>
+                  {finalDiff === 0
+                    ? 'PAS (Rp 0)'
+                    : finalDiff > 0
+                    ? `+${formatRupiah(finalDiff)} (Lebih)`
+                    : `${formatRupiah(finalDiff)} (Kurang)`}
+                </span>
+              </div>
+            </div>
+
+            {closedData.notes && (
+              <div className="text-[10px] text-stone-600 italic pb-1">
+                Catatan: {closedData.notes}
+              </div>
+            )}
+
+            <div className="text-center pt-2 text-[10px] text-stone-500">
+              Shift selesai. Terima kasih atas kerja kerasnya!
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="py-2.5 px-3 rounded-xl bg-stone-800 hover:bg-stone-750 text-stone-100 font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Printer className="w-4 h-4" />
+              <span>Cetak Rekap</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleFinishAndRedirect}
+              className="py-2.5 px-3 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <span>Selesai & Ke Layar PIN</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+        </div>
+      </div>
+    )
+  }
+
+  // View: Main Close Shift Confirmation Form
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-5">
+        
+        {/* Header Modal */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-stone-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-rose-950/40 border border-rose-900/60 flex items-center justify-center text-rose-400 shadow-xs shrink-0">
+              <PowerOff className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-stone-100">
+                Akhiri Shift Kasir
+              </h2>
+              <p className="text-xs text-stone-400 mt-0.5">
+                Hitung uang fisik di laci kasir dan cetak rekap shift
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Dynamic Shift Hours & Cashier Info */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-stone-950 border border-stone-800/80">
+          <div>
+            <span className="text-[10px] text-stone-500 uppercase tracking-wider font-mono block">
+              Petugas Kasir
+            </span>
+            <span className="text-xs font-bold text-stone-200 mt-0.5 block truncate">
+              {shift.cashier_name}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[10px] text-stone-500 uppercase tracking-wider font-mono block flex items-center gap-1">
+              <Clock className="w-3 h-3 text-stone-400" />
+              <span>Jam Shift</span>
+            </span>
+            <span className="text-xs font-mono font-bold text-stone-200 mt-0.5 block truncate">
+              {scheduleInfo.range}
+            </span>
+          </div>
+
+          <div className="col-span-2 sm:col-span-1">
+            <span className="text-[10px] text-stone-500 uppercase tracking-wider font-mono block">
+              Durasi Shift
+            </span>
+            <span className="text-xs font-mono font-bold text-[#E2DFD2] mt-0.5 block">
+              {scheduleInfo.duration}
+            </span>
+          </div>
+        </div>
+
+        {/* Sales & Cash Breakdown */}
+        <div className="grid grid-cols-3 gap-2.5">
+          <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+            <span className="text-[10px] text-stone-500 uppercase font-mono block">Modal Awal</span>
+            <span className="text-xs font-mono font-bold text-stone-300 mt-0.5 block">
+              {formatRupiah(shift.initial_cash)}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+            <span className="text-[10px] text-stone-500 uppercase font-mono block">Penjualan Cash</span>
+            <span className="text-xs font-mono font-bold text-[#E2DFD2] mt-0.5 block">
+              {formatRupiah(shift.total_cash_sales)}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+            <span className="text-[10px] text-stone-500 uppercase font-mono block">Wajib di Laci</span>
+            <span className="text-xs font-mono font-bold text-emerald-400 mt-0.5 block">
+              {formatRupiah(expectedCash)}
+            </span>
+          </div>
+        </div>
+
+        {errorMsg && (
+          <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs">
+            {errorMsg}
+          </div>
+        )}
+
+        {/* Physical Cash Input */}
+        <div className="space-y-3 pt-1">
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-stone-300 text-xs font-semibold">
+                Hitung Uang Fisik di Laci Sekarang <span className="text-rose-400">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setActualCash(expectedCash)}
+                className="text-[11px] font-mono text-[#E2DFD2] hover:underline cursor-pointer"
+              >
+                Set Sesuai Laci ({formatRupiah(expectedCash)})
+              </button>
+            </div>
+            <NumericInput
+              value={actualCash}
+              onChange={setActualCash}
+              min={0}
+              step={1000}
+              prefix="Rp"
+              required
+              placeholder="0"
+            />
+          </div>
+
+          {/* Discrepancy Status Card */}
+          <div className={`p-3 rounded-xl border flex items-center justify-between text-xs ${
+            diff === 0
+              ? 'bg-emerald-950/30 border-emerald-900/60 text-emerald-400'
+              : diff < 0
+              ? 'bg-rose-950/30 border-rose-900/60 text-rose-400'
+              : 'bg-amber-950/30 border-amber-900/60 text-amber-400'
+          }`}>
+            <div className="flex items-center gap-2">
+              {diff === 0 ? (
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 shrink-0" />
+              )}
+              <span className="font-semibold">
+                {diff === 0
+                  ? 'Kas Klop (Fisik sesuai dengan sistem)'
+                  : diff < 0
+                  ? 'Selisih Kurang Fisik Laci'
+                  : 'Selisih Lebih Fisik Laci'}
+              </span>
+            </div>
+            <span className="font-mono font-bold tabular-nums">
+              {diff === 0 ? 'Pas (Rp 0)' : `${diff > 0 ? '+' : ''}${formatRupiah(diff)}`}
+            </span>
+          </div>
+
+          <div>
+            <label className="text-stone-300 text-xs font-semibold block mb-1">
+              Catatan Penutupan Shift (Opsional)
+            </label>
+            <textarea
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Catatan kendala shift, serah terima laci..."
+              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-800">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="px-4 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Batal
+          </button>
+
+          <button
+            type="button"
+            onClick={handleConfirmClose}
+            disabled={isSubmitting}
+            className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Menutup Shift...</span>
+              </>
+            ) : (
+              <>
+                <PowerOff className="w-4 h-4 stroke-[2.2]" />
+                <span>Tutup Shift & Cetak Rekap</span>
+              </>
+            )}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  )
+}

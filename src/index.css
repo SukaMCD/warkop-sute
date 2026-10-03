@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --color-amber-50: #fdfaf3;
+  --color-amber-100: #f7eed8;
+  --color-amber-200: #eedab2;
+  --color-amber-300: #e2c283;
+  --color-amber-400: #d6a853;
+  --color-amber-500: #c69438;
+  --color-amber-600: #ab7927;
+  --color-amber-700: #8c5e1c;
+  --color-amber-800: #734c1b;
+  --color-amber-900: #5f3e19;
+  --color-amber-950: #382109;
+
+  --color-caramel-50: #fdfaf3;
+  --color-caramel-100: #f7eed8;
+  --color-caramel-200: #eedab2;
+  --color-caramel-300: #e2c283;
+  --color-caramel-400: #d6a853;
+  --color-caramel-500: #c69438;
+  --color-caramel-600: #ab7927;
+  --color-caramel-700: #8c5e1c;
+  --color-caramel-800: #734c1b;
+  --color-caramel-900: #5f3e19;
+  --color-caramel-950: #382109;
+}
+
+@layer base {
+  body {
+    @apply bg-stone-950 text-stone-100 antialiased selection:bg-[#E2DFD2] selection:text-stone-950 min-h-screen font-sans;
+  }
+
+  /* Hilangkan spinner default browser */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+}
+
+/* Struk thermal printer styling */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm;
+    margin: 0;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1.2;
+    color: #000 !important;
+    background: #fff !important;
+  }
+}
