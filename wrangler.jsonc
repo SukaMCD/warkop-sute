@@ -1,12 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "warkop-sudut-temu",
+  "name": "warkop-sute",
+  "account_id": "cea2cd02060a70151f8c3690f1163cd9",
   "main": "src/server/index.ts",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./dist",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "html_handling": "auto-trailing-slash"
   },
   "d1_databases": [
     {
@@ -14,5 +17,9 @@
       "database_name": "sute",
       "database_id": "26a26f63-216a-4bb5-94d0-1797fd882524"
     }
-  ]
+  ],
+  "vars": {
+    "ENVIRONMENT": "production",
+    "JWT_SECRET": "rahasia-warkop-sudut-temu-2026"
+  }
 }
