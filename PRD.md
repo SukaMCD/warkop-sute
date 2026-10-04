@@ -5,7 +5,7 @@
 
 ### 1. INFORMASI PROYEK
 * **Nama Proyek:** Sistem Kasir (POS) & Monitoring Warkop Sudut Temu
-* **Klien:** Pak Eman (Owner Warkop Sudut Temu)
+* **Klien:** Owner Warkop Sudut Temu
 * **Pengembang:** Bian (Fullstack Developer)
 * **Estimasi Waktu:** 1 – 2 Minggu
 * **Infrastruktur Target:** Cloudflare Workers + Cloudflare D1 (Edge Serverless SQLite)
@@ -18,7 +18,7 @@ Warkop Sudut Temu sebelumnya menggunakan aplikasi kasir pihak ketiga (**Majoo**)
 **Tujuan Utama:**
 1. **0% Potongan Transaksi:** Menggantikan Majoo dengan sistem kasir mandiri tanpa biaya komisi/potongan transaksi sepeser pun.
 2. **Efisiensi Kasir:** Antarmuka layar sentuh (*touch-friendly*) yang responsif dan cepat untuk tablet kasir di meja bar warkop.
-3. **Monitoring Owner Real-time:** Memudahkan Pak Eman memantau omzet harian, performa shift kasir, dan menu terlaris langsung dari HP/laptop tanpa harus datang fisik ke warkop setiap saat.
+3. **Monitoring Owner Real-time:** Memudahkan Owner memantau omzet harian, performa shift kasir, dan menu terlaris langsung dari HP/laptop tanpa harus datang fisik ke warkop setiap saat.
 4. **Cetak Struk Thermal:** Kompatibel dengan printer struk thermal bluetooth/USB standar (58mm / 80mm).
 
 ---
@@ -28,8 +28,8 @@ Sistem dirancang secara khusus untuk **2 jenis pengguna**:
 
 | Peran (Role) | Perangkat Utama | Kebutuhan Utama | Metode Akses |
 |---|---|---|---|
-| **Kasir** | Tablet di meja bar | Input pesanan kilat, hitung kembalian tunai, tampilkan QRIS di layar, cetak struk, buka/tutup shift kas. | PIN Cepat 4-digit (misal: `1234`) |
-| **Owner (Pak Eman)** | Smartphone / Laptop | Pantau grafik omzet, audit selisih kas kasir, cek stok & menu terlaris, ubah harga makanan/minuman. | Password Akun Owner |
+| **Kasir** | Tablet di meja bar | Input pesanan kilat, hitung kembalian tunai, tampilkan QRIS di layar, cetak struk, buka/tutup shift kas. | PIN Cepat 6-digit (misal: `123456`) |
+| **Owner** | Smartphone / Laptop | Pantau grafik omzet, audit selisih kas kasir, cek stok & menu terlaris, ubah harga makanan/minuman. | Password Akun Owner |
 
 ---
 
@@ -100,7 +100,7 @@ graph TD
 | **Fase 1: Setup & Data Foundation** | Hari 1 - 3 | Inisialisasi Vite + Hono + D1, migrasi skema tabel, input menu warkop awal. |
 | **Fase 2: Layar Kasir & Transaksi** | Hari 4 - 7 | UI Tablet Kasir, keranjang, hitung kembalian, popup QRIS statis warkop, cetak struk. |
 | **Fase 3: Shift Kasir & Dashboard Owner**| Hari 8 - 10 | Fitur buka/tutup shift kasir, dashboard monitoring omzet & grafik, manajemen harga menu. |
-| **Fase 4: Testing & Demo Klien** | Hari 11 - 12 | Uji coba di browser tablet kasir, simulasi cetak struk printer, demo perdana ke Pak Eman. |
+| **Fase 4: Testing & Demo Klien** | Hari 11 - 12 | Uji coba di browser tablet kasir, simulasi cetak struk printer, demo perdana ke Owner. |
 | **Fase 5: Deployment & Handover** | Hari 13 - 14 | Deploy ke Cloudflare Workers produksi, panduan penggunaan singkat untuk kasir & owner. |
 
 ---
@@ -109,4 +109,4 @@ graph TD
 1. **0% Transaction Cost:** Tidak ada potongan biaya 2% lagi bagi warkop.
 2. **Speed:** Proses input 1 transaksi kasir selesai dalam waktu < 15 detik.
 3. **Akurasi Kas:** Tidak ada lagi selisih uang kas harian berkat fitur buka/tutup shift.
-4. **Mobilitas:** Pak Eman bisa melihat omzet warkop kapan pun dari HP secara real-time.
+4. **Mobilitas:** Owner bisa melihat omzet warkop kapan pun dari HP secara real-time.

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import type { Product } from '../../types'
 import { formatRupiah } from '../../utils/formatters'
 import { NumericInput } from '../ui/NumericInput'
+import { SearchableSelect } from '../ui/SearchableSelect'
 import {
   Search,
   Coffee,
@@ -45,6 +46,7 @@ export const ProductsCatalogView = ({
   const [formCostPrice, setFormCostPrice] = useState<number>(5000)
   const [formIsAvailable, setFormIsAvailable] = useState(true)
   const [formIsFavorite, setFormIsFavorite] = useState(false)
+  const [formStock, setFormStock] = useState<number | ''>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const dropdownRef = useRef<HTMLDivElement | null>(null)
@@ -93,6 +95,7 @@ export const ProductsCatalogView = ({
     setFormCostPrice(5000)
     setFormIsAvailable(true)
     setFormIsFavorite(false)
+    setFormStock('')
     setIsFormModalOpen(true)
     setActiveDropdownId(null)
   }
@@ -106,6 +109,7 @@ export const ProductsCatalogView = ({
     setFormCostPrice(product.cost_price || 0)
     setFormIsAvailable(Boolean(product.is_available))
     setFormIsFavorite(Boolean(product.is_favorite))
+    setFormStock(product.stock !== undefined && product.stock !== null ? product.stock : '')
     setIsFormModalOpen(true)
     setActiveDropdownId(null)
   }
@@ -133,6 +137,8 @@ export const ProductsCatalogView = ({
     if (!formName.trim() || formPrice < 0) return
 
     setIsSubmitting(true)
+    const parsedStock = formStock === '' ? null : Math.max(0, parseInt(String(formStock), 10) || 0)
+
     try {
       if (editingProduct) {
         // UPDATE Existing
@@ -144,7 +150,8 @@ export const ProductsCatalogView = ({
           price: formPrice,
           cost_price: formCostPrice,
           is_available: formIsAvailable,
-          is_favorite: formIsFavorite
+          is_favorite: formIsFavorite,
+          stock: parsedStock
         }
 
         const nextList = products.map(p => (p.id === editingProduct.id ? updatedItem : p))
@@ -160,7 +167,8 @@ export const ProductsCatalogView = ({
             price: updatedItem.price,
             cost_price: updatedItem.cost_price,
             is_available: updatedItem.is_available,
-            is_favorite: updatedItem.is_favorite
+            is_favorite: updatedItem.is_favorite,
+            stock: parsedStock
           })
         })
       } else {
@@ -175,6 +183,7 @@ export const ProductsCatalogView = ({
           cost_price: formCostPrice,
           is_available: formIsAvailable,
           is_favorite: formIsFavorite,
+          stock: parsedStock,
           sales_count: 0
         }
 
@@ -191,7 +200,8 @@ export const ProductsCatalogView = ({
             price: newItem.price,
             cost_price: newItem.cost_price,
             is_available: newItem.is_available,
-            is_favorite: newItem.is_favorite
+            is_favorite: newItem.is_favorite,
+            stock: parsedStock
           })
         })
       }
@@ -299,7 +309,7 @@ export const ProductsCatalogView = ({
       {/* Product List Table */}
       <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-sm overflow-visible">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-xs table-auto">
+          <table className="w-full min-w-190 text-left text-xs table-auto">
             <thead>
               <tr className="border-b border-stone-800 text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-950/40">
                 <th className="py-3 px-3.5 font-semibold rounded-l-lg">Nama Menu</th>
@@ -307,6 +317,7 @@ export const ProductsCatalogView = ({
                 <th className="py-3 px-3.5 font-semibold text-right">Harga Jual</th>
                 <th className="py-3 px-3.5 font-semibold text-right">Modal (HPP)</th>
                 <th className="py-3 px-3.5 font-semibold text-right">Margin Laba</th>
+                <th className="py-3 px-3.5 font-semibold text-center">Stok</th>
                 <th className="py-3 px-3.5 font-semibold text-center">Ketersediaan</th>
                 <th className="py-3 px-3.5 font-semibold text-center rounded-r-lg w-16">Aksi</th>
               </tr>
@@ -349,6 +360,21 @@ export const ProductsCatalogView = ({
                       </td>
                       <td className="py-3.5 px-3.5 text-right font-mono tabular-nums text-emerald-400 font-bold">
                         +{margin}% ({formatRupiah(profit)})
+                      </td>
+                      <td className="py-3.5 px-3.5 text-center font-mono">
+                        {p.stock === undefined || p.stock === null ? (
+                          <span className="text-stone-500 text-[10px]">Unlimited</span>
+                        ) : p.stock <= 0 ? (
+                          <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold border border-rose-900/60 bg-rose-950/40 text-rose-400">
+                            Habis (0)
+                          </span>
+                        ) : p.stock <= 5 ? (
+                          <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold border border-amber-900/60 bg-amber-950/40 text-amber-400">
+                            Sisa {p.stock}
+                          </span>
+                        ) : (
+                          <span className="text-stone-300 font-semibold text-xs">{p.stock} porsi</span>
+                        )}
                       </td>
                       <td className="py-3.5 px-3.5 text-center">
                         {p.is_available ? (
@@ -473,17 +499,16 @@ export const ProductsCatalogView = ({
                 <label className="text-stone-300 font-medium block mb-1">
                   Kategori Menu <span className="text-rose-400">*</span>
                 </label>
-                <select
+                <SearchableSelect
                   value={formCategory}
-                  onChange={(e) => setFormCategory(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-stone-100 focus:outline-none focus:border-[#E2DFD2] cursor-pointer"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id} className="bg-stone-900 text-stone-100">
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setFormCategory(val)}
+                  options={categories.map((c) => ({
+                    value: c.id,
+                    label: c.label
+                  }))}
+                  placeholder="Pilih kategori menu..."
+                  searchPlaceholder="Cari kategori..."
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -515,6 +540,24 @@ export const ProductsCatalogView = ({
                     placeholder="0"
                   />
                 </div>
+              </div>
+
+              {/* Stok Bahan / Porsi */}
+              <div>
+                <label className="text-stone-300 font-medium block mb-1">
+                  Stok Porsi / Bahan (Opsional)
+                </label>
+                <NumericInput
+                  value={formStock}
+                  onChange={(val) => setFormStock(val === 0 ? '' : val)}
+                  min={0}
+                  step={1}
+                  suffix="porsi"
+                  placeholder="Kosongkan jika stok unlimited"
+                />
+                <span className="text-[10px] text-stone-500 font-mono block mt-1">
+                  Sistem otomatis memberi peringatan &quot;Menipis&quot; pada kasir jika sisa &le; 5 porsi.
+                </span>
               </div>
 
               {/* Toggles */}
@@ -571,7 +614,7 @@ export const ProductsCatalogView = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center">
             <div className="w-11 h-11 rounded-2xl bg-rose-950/60 border border-rose-900/60 text-rose-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
-              <AlertTriangle className="w-6 h-6 stroke-[2]" />
+              <AlertTriangle className="w-6 h-6 stroke-2" />
             </div>
 
             <h3 className="text-base font-bold text-stone-100">

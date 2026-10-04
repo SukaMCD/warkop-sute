@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { X, Loader2, Save, Plus } from 'lucide-react'
 import type { Shift } from '../../types'
 import { NumericInput } from '../ui/NumericInput'
+import { SearchableSelect } from '../ui/SearchableSelect'
 
 interface ShiftFormModalProps {
   editShift?: Shift | null
@@ -145,16 +146,17 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
               Petugas Kasir <span className="text-rose-400">*</span>
             </label>
             {cashiers.length > 0 ? (
-              <select
+              <SearchableSelect
                 value={cashierId}
-                onChange={e => handleCashierSelect(e.target.value)}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors cursor-pointer"
-                required
-              >
-                {cashiers.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                onChange={handleCashierSelect}
+                options={cashiers.map(c => ({
+                  value: c.id,
+                  label: c.name,
+                  badge: 'Kasir'
+                }))}
+                placeholder="Pilih petugas kasir..."
+                searchPlaceholder="Cari kasir..."
+              />
             ) : (
               <input
                 type="text"
@@ -177,7 +179,7 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
                 type="datetime-local"
                 value={startTime}
                 onChange={e => setStartTime(e.target.value)}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors [color-scheme:dark]"
+                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors scheme-dark"
                 required
               />
             </div>
@@ -190,7 +192,7 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
                 type="datetime-local"
                 value={endTime}
                 onChange={e => setEndTime(e.target.value)}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors [color-scheme:dark]"
+                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors scheme-dark"
               />
             </div>
           </div>
@@ -233,14 +235,15 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
           {/* Status */}
           <div>
             <label className="text-xs font-semibold text-stone-300 block mb-1.5">Status Shift</label>
-            <select
+            <SearchableSelect
               value={status}
-              onChange={e => setStatus(e.target.value as 'open' | 'closed')}
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors cursor-pointer"
-            >
-              <option value="open">Buka (Open)</option>
-              <option value="closed">Ditutup (Closed)</option>
-            </select>
+              onChange={val => setStatus(val as 'open' | 'closed')}
+              options={[
+                { value: 'open', label: 'Buka (Open)', badge: 'Aktif' },
+                { value: 'closed', label: 'Ditutup (Closed)', badge: 'Selesai' }
+              ]}
+              placeholder="Pilih status shift..."
+            />
           </div>
 
           {/* Notes */}

@@ -10,7 +10,7 @@ interface ShiftOverviewProps {
 }
 
 export const ShiftOverview = ({ shift, onEndShift }: ShiftOverviewProps) => {
-  const expectedCashInDrawer = shift.initial_cash + shift.total_cash_sales
+  const expectedCashInDrawer = shift.initial_cash + shift.total_cash_sales + (shift.total_incomes || 0) - (shift.total_expenses || 0)
 
   // Dynamic ticking for duration
   const [, setTick] = useState(0)
@@ -29,7 +29,7 @@ export const ShiftOverview = ({ shift, onEndShift }: ShiftOverviewProps) => {
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-stone-800/80">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
-            <Clock className="w-4 h-4 stroke-[2]" />
+            <Clock className="w-4 h-4 stroke-2" />
           </div>
           <div>
             <h2 className="text-sm font-bold tracking-tight text-stone-100">
@@ -111,6 +111,28 @@ export const ShiftOverview = ({ shift, onEndShift }: ShiftOverviewProps) => {
               {formatRupiah(shift.total_qris_sales)}
             </span>
           </div>
+
+          {(shift.total_incomes || 0) > 0 && (
+            <div className="flex items-center justify-between text-emerald-400">
+              <span className="flex items-center gap-1.5">
+                <span>Kas Masuk (Tambahan):</span>
+              </span>
+              <span className="font-mono tabular-nums font-bold">
+                +{formatRupiah(shift.total_incomes || 0)}
+              </span>
+            </div>
+          )}
+
+          {(shift.total_expenses || 0) > 0 && (
+            <div className="flex items-center justify-between text-amber-400">
+              <span className="flex items-center gap-1.5">
+                <span>Kas Keluar (Operasional):</span>
+              </span>
+              <span className="font-mono tabular-nums font-bold">
+                -{formatRupiah(shift.total_expenses || 0)}
+              </span>
+            </div>
+          )}
 
           <div className="pt-2.5 border-t border-stone-800 flex items-center justify-between">
             <span className="text-stone-200 font-medium">Wajib Ada di Laci:</span>

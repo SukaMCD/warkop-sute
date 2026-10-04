@@ -21,7 +21,7 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
-              <BarChart3 className="w-4 h-4 stroke-[2]" />
+              <BarChart3 className="w-4 h-4 stroke-2" />
             </div>
             <h2 className="text-sm font-bold tracking-tight text-stone-100">
               Tren Penjualan Mingguan
@@ -83,7 +83,7 @@ export const RevenueChart = ({ data }: RevenueChartProps) => {
               onMouseEnter={() => setHoveredIndex(idx)}
             >
               {/* Bar Container */}
-              <div className="w-full max-w-[42px] flex flex-col justify-end h-full">
+              <div className="w-full max-w-10.5 flex flex-col justify-end h-full">
                 <div
                   className={`w-full rounded-t-md flex flex-col overflow-hidden transition-all duration-200 ${
                     isHovered ? 'ring-1.5 ring-[#E2DFD2] ring-offset-2 ring-offset-stone-900 brightness-110 shadow-lg' : 'opacity-85 group-hover:opacity-100'

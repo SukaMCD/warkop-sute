@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Header } from './components/layout/Header'
+import { Sidebar } from './components/layout/Sidebar'
 import { LoginPage } from './components/auth/LoginPage'
 import { POSView } from './components/pos/POSView'
 import { StatCards } from './components/dashboard/StatCards'
@@ -9,16 +10,22 @@ import { RecentOrders } from './components/dashboard/RecentOrders'
 import { ShiftOverview } from './components/dashboard/ShiftOverview'
 import { ProductsCatalogView } from './components/dashboard/ProductsCatalogView'
 import { ShiftAuditView } from './components/dashboard/ShiftAuditView'
+import { UserManagementView } from './components/dashboard/UserManagementView'
+import { ReceiptSettingsView } from './components/dashboard/ReceiptSettingsView'
+import { MonthlyReportView } from './components/dashboard/MonthlyReportView'
+import { InventoryView } from './components/inventory/InventoryView'
 import { StartShiftModal } from './components/pos/StartShiftModal'
 import { CloseShiftModal } from './components/pos/CloseShiftModal'
-import type { Product, Order, Shift, User } from './types'
+import { ShiftHandoverModal } from './components/pos/ShiftHandoverModal'
+import type { Product, Order, Shift, User, ShiftExpense, DailySalesMetric, ReceiptConfig } from './types'
+import { DEFAULT_RECEIPT_CONFIG, loadReceiptConfig } from './utils/receiptConfig'
+import { type TabType, TAB_TO_PATH, getTabFromPath } from './utils/navigation'
 import {
   mockProducts,
   mockWeeklySales,
   mockCurrentShift,
   mockRecentOrders
 } from './data/mockData'
-import { RefreshCw } from 'lucide-react'
 
 export function App() {
   // Authentication & Lockscreen state
@@ -30,30 +37,90 @@ export function App() {
       return null
     }
   })
-  const [isLocked, setIsLocked] = useState<boolean>(false)
+  const [isLocked, setIsLocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('sute_is_locked') === 'true'
+    } catch {
+      return false
+    }
+  })
 
-  const [activeTab, setActiveTab] = useState<'pos' | 'dashboard' | 'orders' | 'shift' | 'products'>(() => {
+  // Synchronize activeTab with URL pathname so refresh stays on current page
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    let savedRole: string | undefined
     try {
       const saved = localStorage.getItem('sute_session_user')
       if (saved) {
         const u = JSON.parse(saved)
-        return u.role === 'cashier' ? 'pos' : 'dashboard'
+        savedRole = u.role
       }
-    } catch {
-      // fallback
-    }
-    return 'dashboard'
+    } catch {}
+    return getTabFromPath(window.location.pathname, savedRole)
   })
+
+  const handleSelectTab = (tab: TabType) => {
+    setActiveTab(tab)
+    const targetPath = TAB_TO_PATH[tab] || '/'
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(null, '', targetPath)
+    }
+  }
+
+  // Handle browser Back / Forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const tab = getTabFromPath(window.location.pathname, currentUser?.role)
+      setActiveTab(tab)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [currentUser?.role])
+
+  // Sync initial URL pathname with active tab
+  useEffect(() => {
+    if (!currentUser || isLocked) return
+    const currentTab = getTabFromPath(window.location.pathname, currentUser.role)
+    const expectedPath = TAB_TO_PATH[currentTab]
+    if (window.location.pathname !== expectedPath) {
+      window.history.replaceState(null, '', expectedPath)
+    }
+  }, [currentUser, isLocked])
+  
+  // Custom Receipt Configuration
+  const [receiptConfig, setReceiptConfig] = useState<ReceiptConfig>(DEFAULT_RECEIPT_CONFIG)
   
   // Live state from backend
   const [products, setProducts] = useState<Product[]>(mockProducts)
   const [orders, setOrders] = useState<Order[]>(mockRecentOrders)
   const [currentShift, setCurrentShift] = useState<Shift>(mockCurrentShift)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [weeklySales, setWeeklySales] = useState<DailySalesMetric[]>(mockWeeklySales)
+  const [bestSellers, setBestSellers] = useState<Product[]>([])
+
+  // Sidebar Layout State
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('sute_sidebar_collapsed') === 'true'
+    } catch {
+      return false
+    }
+  })
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false)
+
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev
+      try {
+        localStorage.setItem('sute_sidebar_collapsed', String(next))
+      } catch {}
+      return next
+    })
+  }
 
   // Shift Modals
   const [isStartShiftModalOpen, setIsStartShiftModalOpen] = useState<boolean>(false)
   const [isCloseShiftModalOpen, setIsCloseShiftModalOpen] = useState<boolean>(false)
+  const [isHandoverModalOpen, setIsHandoverModalOpen] = useState<boolean>(false)
+  const [isHandoverTransition, setIsHandoverTransition] = useState<boolean>(false)
 
   // High-level metrics
   const [revenueToday, setRevenueToday] = useState<number>(mockWeeklySales[mockWeeklySales.length - 1].revenue)
@@ -63,18 +130,73 @@ export function App() {
   const [estimatedProfit, setEstimatedProfit] = useState<number>(Math.round(revenueToday * 0.51))
 
   // Handle Login / Unlock
-  const handleLoginSuccess = (user: User) => {
+  const handleLoginSuccess = async (user: User) => {
+    try {
+      localStorage.removeItem('sute_is_locked')
+    } catch {
+      // ignore
+    }
     setCurrentUser(user)
     setIsLocked(false)
-    if (user.role === 'cashier') {
-      setActiveTab('pos')
-      // Mulai Shift Baru: jika tidak ada shift yang open, wajib munculkan modal input saldo awal
-      if (!currentShift || currentShift.status !== 'open') {
-        setIsStartShiftModalOpen(true)
-      }
-    } else {
-      setActiveTab('dashboard')
+
+    const targetTab = getTabFromPath(window.location.pathname, user.role)
+    setActiveTab(targetTab)
+    const expectedPath = TAB_TO_PATH[targetTab]
+    if (window.location.pathname !== expectedPath) {
+      window.history.replaceState(null, '', expectedPath)
     }
+
+    if (user.role === 'cashier') {
+      // Ambil data shift aktif terkini langsung dari server
+      let activeShift: Shift | null = currentShift
+      try {
+        const res = await fetch('/api/shifts/current')
+        if (res.ok) {
+          const json: any = await res.json()
+          if (json.success) {
+            activeShift = json.data
+            if (json.data) {
+              setCurrentShift(json.data)
+            } else {
+              setCurrentShift(prev => ({ ...prev, status: 'closed' }))
+            }
+          }
+        }
+      } catch {
+        // Gunakan state lokal jika offline
+      }
+
+      // Evaluasi status shift:
+      if (!activeShift || activeShift.status !== 'open') {
+        // 1. Belum ada shift berjalan: wajib input saldo awal (Buka Shift Baru)
+        setIsStartShiftModalOpen(true)
+      } else if (activeShift.cashier_id && activeShift.cashier_id !== user.id) {
+        // 2. Ada shift berjalan milik kasir lain (misal Rian login saat shift Budi masih berjalan):
+        // Munculkan dialog pergantian shift (Handover Modal)
+        setIsHandoverModalOpen(true)
+      } else {
+        // 3. Kasir yang sama (misal Budi login kembali setelah ke toilet / layar terkunci):
+        // Langsung masuk ke kasir tanpa perlu input modal awal lagi!
+      }
+    }
+  }
+
+  // Handover action: Tutup shift kasir lama lalu buka shift baru kasir saat ini
+  const handleHandoverCloseAndStartNew = () => {
+    setIsHandoverModalOpen(false)
+    setIsHandoverTransition(true)
+    setIsCloseShiftModalOpen(true)
+  }
+
+  // Handover action: Lanjutkan shift berjalan (hanya gantian sementara)
+  const handleHandoverContinueShift = () => {
+    setIsHandoverModalOpen(false)
+  }
+
+  // Handover action: Batal & kunci kembali layar
+  const handleHandoverCancel = () => {
+    setIsHandoverModalOpen(false)
+    handleLockScreen()
   }
 
   const handleShiftStarted = (newShift: Shift) => {
@@ -85,15 +207,27 @@ export function App() {
   const handleShiftClosed = (closedShift: Shift) => {
     setCurrentShift(closedShift)
     setIsCloseShiftModalOpen(false)
-    // Sesuai spesifikasi: setelah ditutup, sistem otomatis mengarahkan ke Layar PIN
-    localStorage.removeItem('sute_session_user')
-    setCurrentUser(null)
-    setIsLocked(true)
+
+    if (isHandoverTransition) {
+      // Alur serah terima: setelah shift kasir lama ditutup, langsung buka modal shift baru untuk kasir baru
+      setIsHandoverTransition(false)
+      setIsStartShiftModalOpen(true)
+    } else {
+      // Tutup shift reguler: sistem otomatis mengarahkan ke Layar PIN
+      try {
+        localStorage.removeItem('sute_session_user')
+        localStorage.setItem('sute_is_locked', 'true')
+      } catch {
+        // ignore
+      }
+      setCurrentUser(null)
+      setIsLocked(true)
+    }
   }
 
   // Guard: Determine effective tab based on role
   const isCashier = currentUser?.role === 'cashier'
-  const effectiveTab = (isCashier && (activeTab === 'dashboard' || activeTab === 'products')) ? 'pos' : activeTab
+  const effectiveTab = (isCashier && (activeTab === 'dashboard' || activeTab === 'products' || activeTab === 'users')) ? 'pos' : activeTab
 
   // Realtime order creation hook
   const handleOrderCompleted = (newOrder: Order) => {
@@ -115,8 +249,30 @@ export function App() {
     }
   }
 
+  // Handle cancelled order
+  const handleOrderCancelled = (orderId: string) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o))
+    void fetchD1Data()
+  }
+
+  // Handle new petty cash expense or cash-in recorded
+  const handleExpenseAdded = (expense: ShiftExpense) => {
+    const isIncome = expense.type === 'income' || expense.description.startsWith('[Kas Masuk]')
+    setCurrentShift(prev => ({
+      ...prev,
+      total_expenses: isIncome ? (prev.total_expenses || 0) : ((prev.total_expenses || 0) + expense.amount),
+      total_incomes: isIncome ? ((prev.total_incomes || 0) + expense.amount) : (prev.total_incomes || 0),
+      expenses: [expense, ...(prev.expenses || [])]
+    }))
+  }
+
   // Manual Lock Screen
   const handleLockScreen = () => {
+    try {
+      localStorage.setItem('sute_is_locked', 'true')
+    } catch {
+      // ignore
+    }
     setIsLocked(true)
   }
 
@@ -129,6 +285,11 @@ export function App() {
       window.clearTimeout(timeoutId)
       // 15 minutes = 15 * 60 * 1000 = 900,000 ms
       timeoutId = window.setTimeout(() => {
+        try {
+          localStorage.setItem('sute_is_locked', 'true')
+        } catch {
+          // ignore
+        }
         setIsLocked(true)
       }, 15 * 60 * 1000)
     }
@@ -145,14 +306,30 @@ export function App() {
 
   // Fetch from D1 API
   const fetchD1Data = async () => {
-    setIsLoading(true)
     try {
-      // 1. Fetch dashboard stats
+      // 1. Fetch current active shift from D1
+      try {
+        const shiftRes = await fetch('/api/shifts/current')
+        if (shiftRes.ok) {
+          const shiftJson: any = await shiftRes.json()
+          if (shiftJson.success) {
+            if (shiftJson.data) {
+              setCurrentShift(shiftJson.data)
+            } else {
+              setCurrentShift(prev => ({ ...prev, status: 'closed' }))
+            }
+          }
+        }
+      } catch {
+        // use local fallback
+      }
+
+      // 2. Fetch dashboard stats
       const statsRes = await fetch('/api/dashboard/stats')
       if (statsRes.ok) {
         const statsJson: any = await statsRes.json()
         if (statsJson.success && statsJson.data) {
-          if (statsJson.data.revenueToday > 0) {
+          if (statsJson.data.revenueToday !== undefined) {
             setRevenueToday(statsJson.data.revenueToday)
             setTransactionsToday(statsJson.data.transactionsToday)
             setCashAmount(statsJson.data.cashAmount)
@@ -161,8 +338,12 @@ export function App() {
           }
           if (statsJson.data.currentShift) {
             setCurrentShift(statsJson.data.currentShift)
-          } else {
-            setCurrentShift(prev => ({ ...prev, status: 'closed' }))
+          }
+          if (Array.isArray(statsJson.data.weeklySales) && statsJson.data.weeklySales.length > 0) {
+            setWeeklySales(statsJson.data.weeklySales)
+          }
+          if (Array.isArray(statsJson.data.bestSellers)) {
+            setBestSellers(statsJson.data.bestSellers)
           }
         }
       }
@@ -184,17 +365,41 @@ export function App() {
           setOrders(ordersJson.data)
         }
       }
+
+      // 4. Fetch receipt configuration
+      try {
+        const cfg = await loadReceiptConfig()
+        if (cfg) {
+          setReceiptConfig(cfg)
+        }
+      } catch {}
     } catch {
       // Fallback seamlessly to mock data
-    } finally {
-      setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    void Promise.resolve().then(() => {
-      fetchD1Data()
-    })
+    void fetchD1Data()
+
+    // Sync otomatis saat tablet kasir disentuh/aktif kembali (window focus)
+    const handleFocus = () => {
+      loadReceiptConfig().then(cfg => {
+        if (cfg) setReceiptConfig(cfg)
+      })
+    }
+    window.addEventListener('focus', handleFocus)
+
+    // Sync berkala setiap 60 detik di latar belakang
+    const pollInterval = window.setInterval(() => {
+      loadReceiptConfig().then(cfg => {
+        if (cfg) setReceiptConfig(cfg)
+      })
+    }, 60000)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.clearInterval(pollInterval)
+    }
   }, [])
 
   // If not logged in or screen is locked, display PIN Lockscreen / Login Page
@@ -203,117 +408,154 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100 flex flex-col font-sans selection:bg-[#E2DFD2] selection:text-stone-950">
+    <div className="min-h-screen bg-stone-950 text-stone-100 flex font-sans selection:bg-[#E2DFD2] selection:text-stone-950 overflow-hidden">
       
-      {/* Top Navigation with User Identity & Role Actions */}
-      <Header
+      {/* Sidebar Navigation */}
+      <Sidebar
         activeTab={effectiveTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleSelectTab}
         currentUser={currentUser}
         onLogout={handleLockScreen}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+        isMobileOpen={isMobileSidebarOpen}
+        setIsMobileOpen={setIsMobileSidebarOpen}
       />
 
-      {/* POS View (Full Height Tablet Interface) */}
-      {effectiveTab === 'pos' ? (
-        <POSView
-          products={products}
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        
+        {/* Top Header Bar */}
+        <Header
+          activeTab={effectiveTab}
           currentUser={currentUser}
-          currentShift={currentShift}
-          onOrderCompleted={handleOrderCompleted}
-          onEndShift={() => setIsCloseShiftModalOpen(true)}
+          onLogout={handleLockScreen}
+          onToggleSidebar={handleToggleSidebar}
+          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          isSidebarCollapsed={isSidebarCollapsed}
         />
-      ) : (
-        /* Owner Dashboard & Other Views */
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 space-y-6">
-          
-          {/* Welcome & Overview Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stone-900">
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-stone-100">
-                  {currentUser.role === 'owner' ? 'Ringkasan Operasional Warkop' : 'Riwayat & Operasional Kasir'}
-                </h1>
-                <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded border border-emerald-900/60 bg-emerald-950/40 text-emerald-400 font-semibold">
-                  Warkop Buka
-                </span>
-              </div>
-              <p className="text-xs text-stone-400 mt-0.5">
-                {currentUser.role === 'owner' 
-                  ? `Selamat datang kembali, ${currentUser.name}. Pantau performa harian dan audit laci kasir real-time.`
-                  : `Petugas Kasir: ${currentUser.name}. Kelola pesanan dan pantau shift kasir.`}
-              </p>
-            </div>
 
-            <div className="flex items-center gap-2 text-xs">
-              <button
-                type="button"
-                onClick={fetchD1Data}
-                disabled={isLoading}
-                className="px-3 py-1.5 rounded-lg bg-stone-900 border border-stone-800 hover:bg-stone-800 text-stone-300 hover:text-white flex items-center gap-2 transition-colors cursor-pointer"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                <span>Perbarui Data</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Tab 1: Dashboard Utama (Khusus Owner) */}
-          {effectiveTab === 'dashboard' && currentUser.role === 'owner' && (
-            <div className="space-y-6">
-              {/* KPI Stat Cards */}
-              <StatCards
-                revenueToday={revenueToday}
-                transactionsToday={transactionsToday}
-                cashAmount={cashAmount}
-                qrisAmount={qrisAmount}
-                estimatedProfit={estimatedProfit}
-                initialCash={currentShift.initial_cash}
-              />
-
-              {/* Middle Grid: Revenue Trend & Shift / Best Sellers */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                {/* Left Column (8 cols): Revenue Trend & Recent Orders */}
-                <div className="lg:col-span-8 space-y-6">
-                  <RevenueChart data={mockWeeklySales} />
-                  <RecentOrders orders={orders} />
-                </div>
-
-                {/* Right Column (4 cols): Shift Status & Best Sellers */}
-                <div className="lg:col-span-4 space-y-6">
-                  <ShiftOverview
-                    shift={currentShift}
-                    onEndShift={() => setIsCloseShiftModalOpen(true)}
-                  />
-                  <BestSellers products={products} />
-                </div>
-
-              </div>
-            </div>
-          )}
-
-          {/* Tab 2: Riwayat Transaksi Lengkap */}
-          {effectiveTab === 'orders' && (
-            <div className="space-y-4">
-              <RecentOrders orders={orders} />
-            </div>
-          )}
-
-          {/* Tab 3: Shift Kasir & Rekonsiliasi Kas */}
-          {effectiveTab === 'shift' && (
-            <ShiftAuditView
+        {/* Content Body */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {effectiveTab === 'pos' ? (
+            <POSView
+              products={products}
+              currentUser={currentUser}
               currentShift={currentShift}
+              receiptConfig={receiptConfig}
+              onOrderCompleted={handleOrderCompleted}
               onEndShift={() => setIsCloseShiftModalOpen(true)}
-              onShiftUpdated={setCurrentShift}
+              onExpenseAdded={handleExpenseAdded}
             />
+          ) : (
+            /* Owner Dashboard & Other Views */
+            <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12 space-y-6">
+
+              {/* Tab 1: Dashboard Utama (Khusus Owner) */}
+              {effectiveTab === 'dashboard' && currentUser.role === 'owner' && (
+                <div className="space-y-6">
+                  {/* KPI Stat Cards */}
+                  <StatCards
+                    revenueToday={revenueToday}
+                    transactionsToday={transactionsToday}
+                    cashAmount={cashAmount}
+                    qrisAmount={qrisAmount}
+                    estimatedProfit={estimatedProfit}
+                    initialCash={currentShift.initial_cash}
+                  />
+
+                  {/* Middle Grid: Revenue Trend & Shift / Best Sellers */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    {/* Left Column (8 cols): Revenue Trend & Recent Orders */}
+                    <div className="lg:col-span-8 space-y-6">
+                      <RevenueChart data={weeklySales} />
+                      <RecentOrders
+                        orders={orders}
+                        receiptConfig={receiptConfig}
+                        onOrderCancelled={handleOrderCancelled}
+                      />
+                    </div>
+
+                    {/* Right Column (4 cols): Shift Status & Best Sellers */}
+                    <div className="lg:col-span-4 space-y-6">
+                      <ShiftOverview
+                        shift={currentShift}
+                        onEndShift={() => setIsCloseShiftModalOpen(true)}
+                      />
+                      <BestSellers products={bestSellers.length > 0 ? bestSellers : products} />
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
+              {/* Tab: Rekapan & Laporan Keuangan Bulanan (Khusus Owner) */}
+              {effectiveTab === 'monthly' && currentUser.role === 'owner' && (
+                <MonthlyReportView currentUser={currentUser} />
+              )}
+
+              {/* Tab 2: Riwayat Transaksi Lengkap */}
+              {effectiveTab === 'orders' && (
+                <div className="space-y-4">
+                  <RecentOrders
+                    orders={orders}
+                    receiptConfig={receiptConfig}
+                    onOrderCancelled={handleOrderCancelled}
+                  />
+                </div>
+              )}
+
+              {/* Tab 3: Shift Kasir & Rekonsiliasi Kas */}
+              {effectiveTab === 'shift' && (
+                <ShiftAuditView
+                  currentShift={currentShift}
+                  onEndShift={() => setIsCloseShiftModalOpen(true)}
+                  onShiftUpdated={setCurrentShift}
+                />
+              )}
+
+              {/* Tab: Kelola Bahan Baku & Stok Inventory (Owner & Kasir) */}
+              {effectiveTab === 'inventory' && (
+                <InventoryView currentUser={currentUser} />
+              )}
+
+              {/* Tab 4: Katalog Menu & Ketersediaan (Khusus Owner) */}
+              {effectiveTab === 'products' && currentUser.role === 'owner' && (
+                <ProductsCatalogView products={products} onProductsChange={setProducts} />
+              )}
+
+              {/* Tab 5: Kelola Petugas & Keamanan PIN (Khusus Owner) */}
+              {effectiveTab === 'users' && currentUser.role === 'owner' && (
+                <UserManagementView currentUser={currentUser} />
+              )}
+
+              {/* Tab 6: Kustomisasi Format Struk (Khusus Owner) */}
+              {effectiveTab === 'receipt' && currentUser.role === 'owner' && (
+                <ReceiptSettingsView
+                  currentUser={currentUser}
+                  config={receiptConfig}
+                  onConfigChange={setReceiptConfig}
+                />
+              )}
+
+            </main>
           )}
 
-          {/* Tab 4: Katalog Menu & Ketersediaan (Khusus Owner) */}
-          {effectiveTab === 'products' && currentUser.role === 'owner' && (
-            <ProductsCatalogView products={products} onProductsChange={setProducts} />
-          )}
+        </div>
 
-        </main>
+      </div>
+
+      {/* Modal Pergantian Kasir (Jika kasir baru login saat shift kasir lama masih berjalan) */}
+      {isHandoverModalOpen && currentUser && currentShift && (
+        <ShiftHandoverModal
+          isOpen={isHandoverModalOpen}
+          activeShift={currentShift}
+          incomingUser={currentUser}
+          onCloseShiftAndStartNew={handleHandoverCloseAndStartNew}
+          onContinueShift={handleHandoverContinueShift}
+          onCancel={handleHandoverCancel}
+        />
       )}
 
       {/* Modal Mulai Shift Baru (Wajib jika kasir masuk dan shift belum open) */}
@@ -329,8 +571,14 @@ export function App() {
         <CloseShiftModal
           shift={currentShift}
           isOpen={isCloseShiftModalOpen}
-          onClose={() => setIsCloseShiftModalOpen(false)}
+          onClose={() => {
+            setIsCloseShiftModalOpen(false)
+            if (isHandoverTransition) {
+              setIsHandoverTransition(false)
+            }
+          }}
           onShiftClosed={handleShiftClosed}
+          isHandover={isHandoverTransition}
         />
       )}
 

@@ -78,14 +78,15 @@ export const mockWeeklySales: DailySalesMetric[] = [
 ]
 
 export const mockCurrentShift: Shift = {
-  id: 'shift_sore_02',
-  cashier_name: 'Kasir Shift Sore',
-  start_time: '15:00',
+  id: 'shift_pagi_01',
+  cashier_id: 'usr_kasir1',
+  cashier_name: 'Kasir Shift Pagi',
+  start_time: '2026-10-04 08:00:00',
   initial_cash: 100000,
-  total_cash_sales: 490000,
-  total_qris_sales: 355000,
+  total_cash_sales: 355000,
+  total_qris_sales: 285000,
   status: 'open',
-  notes: 'Shift sore/malam akhir pekan ramai lancar.'
+  notes: 'Shift pagi ramai lancar.'
 }
 
 export const mockRecentOrders: Order[] = [

@@ -19,15 +19,19 @@ interface CloseShiftModalProps {
   isOpen: boolean
   onClose: () => void
   onShiftClosed: (closedShift: Shift) => void
+  isHandover?: boolean
 }
 
 export const CloseShiftModal = ({
   shift,
   isOpen,
   onClose,
-  onShiftClosed
+  onShiftClosed,
+  isHandover = false
 }: CloseShiftModalProps) => {
-  const expectedCash = shift.initial_cash + shift.total_cash_sales
+  const totalExpenses = shift.total_expenses || 0
+  const totalIncomes = shift.total_incomes || 0
+  const expectedCash = shift.initial_cash + shift.total_cash_sales + totalIncomes - totalExpenses
   const [actualCash, setActualCash] = useState<number>(expectedCash)
   const [notes, setNotes] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -73,6 +77,8 @@ export const CloseShiftModal = ({
         ...shift,
         end_time: new Date().toISOString().replace('T', ' ').substring(0, 19),
         actual_cash_counted: actualCash,
+        total_expenses: totalExpenses,
+        total_incomes: totalIncomes,
         status: 'closed',
         notes: notes.trim() || undefined
       }
@@ -98,8 +104,11 @@ export const CloseShiftModal = ({
   // View: Thermal Print Recap Modal
   if (showPrintRecap && closedData) {
     const finalSchedule = formatShiftSchedule(closedData.start_time, closedData.end_time)
-    const finalExpected = closedData.initial_cash + closedData.total_cash_sales
+    const finalExpenses = closedData.total_expenses !== undefined ? closedData.total_expenses : (shift.total_expenses || 0)
+    const finalIncomes = closedData.total_incomes !== undefined ? closedData.total_incomes : (shift.total_incomes || 0)
+    const finalExpected = closedData.initial_cash + closedData.total_cash_sales + finalIncomes - finalExpenses
     const finalDiff = (closedData.actual_cash_counted || 0) - finalExpected
+    const shiftExpenseItems = closedData.expenses || shift.expenses || []
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
@@ -114,7 +123,7 @@ export const CloseShiftModal = ({
                 Shift Berhasil Ditutup
               </h2>
               <p className="text-xs text-stone-400">
-                Cetak rekap kasir lalu kembali ke Layar PIN
+                {isHandover ? 'Cetak rekap kasir lalu lanjut ke pembukaan shift baru' : 'Cetak rekap kasir lalu kembali ke Layar PIN'}
               </p>
             </div>
           </div>
@@ -160,11 +169,43 @@ export const CloseShiftModal = ({
                 <span>Penjualan Non-Tunai (QRIS)</span>
                 <span>{formatRupiah(closedData.total_qris_sales)}</span>
               </div>
+              {finalIncomes > 0 && (
+                <div className="flex justify-between text-emerald-700 font-semibold">
+                  <span>Kas Masuk (Tambahan Modal)</span>
+                  <span>+{formatRupiah(finalIncomes)}</span>
+                </div>
+              )}
+              {finalExpenses > 0 && (
+                <div className="flex justify-between text-rose-600 font-semibold">
+                  <span>Kas Keluar (Operasional/Gas)</span>
+                  <span>-{formatRupiah(finalExpenses)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold pt-1 border-t border-dotted border-stone-300">
                 <span>Total Omzet Penjualan</span>
                 <span>{formatRupiah(closedData.total_cash_sales + closedData.total_qris_sales)}</span>
               </div>
             </div>
+
+            {shiftExpenseItems.length > 0 && (
+              <div className="space-y-1 text-[10px] pb-2 border-b border-dashed border-stone-400">
+                <div className="font-bold text-stone-700 uppercase tracking-wider">
+                  Rincian Penyesuaian Kas Shift:
+                </div>
+                {shiftExpenseItems.map((item, idx) => {
+                  const isInc = item.type === 'income' || item.description.startsWith('[Kas Masuk]')
+                  const cleanDesc = item.description.replace(/^\[(Kas Masuk|Kas Keluar)\]\s*/, '')
+                  return (
+                    <div key={idx} className="flex justify-between text-stone-600">
+                      <span className="truncate pr-2">• {cleanDesc}</span>
+                      <span className="font-mono shrink-0">
+                        {isInc ? '+' : '-'}{formatRupiah(item.amount)}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
             <div className="space-y-1.5 text-[11px] pb-2 border-b border-dashed border-stone-400">
               <div className="flex justify-between">
@@ -213,7 +254,7 @@ export const CloseShiftModal = ({
               onClick={handleFinishAndRedirect}
               className="py-2.5 px-3 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
-              <span>Selesai & Ke Layar PIN</span>
+              <span>{isHandover ? 'Lanjut Buka Shift Baru' : 'Selesai & Ke Layar PIN'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -264,7 +305,7 @@ export const CloseShiftModal = ({
           </div>
 
           <div>
-            <span className="text-[10px] text-stone-500 uppercase tracking-wider font-mono block flex items-center gap-1">
+            <span className="text-[10px] text-stone-500 uppercase tracking-wider font-mono flex items-center gap-1">
               <Clock className="w-3 h-3 text-stone-400" />
               <span>Jam Shift</span>
             </span>
@@ -284,7 +325,7 @@ export const CloseShiftModal = ({
         </div>
 
         {/* Sales & Cash Breakdown */}
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
             <span className="text-[10px] text-stone-500 uppercase font-mono block">Modal Awal</span>
             <span className="text-xs font-mono font-bold text-stone-300 mt-0.5 block">
@@ -299,6 +340,24 @@ export const CloseShiftModal = ({
             </span>
           </div>
 
+          {totalIncomes > 0 && (
+            <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+              <span className="text-[10px] text-stone-500 uppercase font-mono block">Kas Masuk</span>
+              <span className="text-xs font-mono font-bold text-emerald-400 mt-0.5 block">
+                +{formatRupiah(totalIncomes)}
+              </span>
+            </div>
+          )}
+
+          {totalExpenses > 0 && (
+            <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+              <span className="text-[10px] text-stone-500 uppercase font-mono block">Kas Keluar</span>
+              <span className="text-xs font-mono font-bold text-amber-400 mt-0.5 block">
+                -{formatRupiah(totalExpenses)}
+              </span>
+            </div>
+          )}
+
           <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
             <span className="text-[10px] text-stone-500 uppercase font-mono block">Wajib di Laci</span>
             <span className="text-xs font-mono font-bold text-emerald-400 mt-0.5 block">
@@ -306,6 +365,36 @@ export const CloseShiftModal = ({
             </span>
           </div>
         </div>
+
+        {/* Mini Itemized Shift Adjustments Preview */}
+        {Array.isArray(shift.expenses) && shift.expenses.length > 0 && (
+          <div className="p-2.5 rounded-xl bg-stone-950 border border-stone-800 space-y-1">
+            <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block font-semibold">
+              Rincian Kas Shift Ini:
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {shift.expenses.map((exp, i) => {
+                const isInc = exp.type === 'income' || exp.description.startsWith('[Kas Masuk]')
+                const cleanDesc = exp.description.replace(/^\[(Kas Masuk|Kas Keluar)\]\s*/, '')
+                return (
+                  <span
+                    key={i}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono border ${
+                      isInc
+                        ? 'bg-emerald-950/40 border-emerald-900/60 text-emerald-300'
+                        : 'bg-amber-950/40 border-amber-900/60 text-amber-300'
+                    }`}
+                  >
+                    <span>{cleanDesc}</span>
+                    <span className="font-bold font-mono">
+                      ({isInc ? '+' : '-'}{formatRupiah(exp.amount)})
+                    </span>
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {errorMsg && (
           <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs">

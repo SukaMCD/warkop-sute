@@ -41,6 +41,15 @@
     -moz-appearance: textfield;
     appearance: textfield;
   }
+
+  input[type="checkbox"] {
+    accent-color: #E2DFD2;
+  }
+}
+
+@page {
+  margin: 0;
+  size: auto;
 }
 
 /* Struk thermal printer styling */
@@ -57,10 +66,15 @@
     top: 0;
     width: 58mm;
     margin: 0;
-    padding: 0;
+    padding: 3mm 2mm;
     font-size: 11px;
-    line-height: 1.2;
+    line-height: 1.25;
     color: #000 !important;
     background: #fff !important;
+  }
+  #printable-receipt.paper-80mm {
+    width: 80mm;
+    font-size: 12px;
+    padding: 4mm 4mm;
   }
 }

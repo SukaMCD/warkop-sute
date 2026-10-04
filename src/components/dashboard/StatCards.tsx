@@ -30,7 +30,7 @@ export const StatCards = ({
         <div className="flex items-center justify-between text-stone-400 mb-2">
           <span className="text-xs font-medium tracking-wide uppercase">Omzet Hari Ini</span>
           <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
-            <Coins className="w-4 h-4 stroke-[2]" />
+            <Coins className="w-4 h-4 stroke-2" />
           </div>
         </div>
         <div className="flex items-baseline gap-2">
@@ -52,7 +52,7 @@ export const StatCards = ({
         <div className="flex items-center justify-between text-stone-400 mb-2">
           <span className="text-xs font-medium tracking-wide uppercase">Total Transaksi</span>
           <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-stone-300 shadow-xs">
-            <ShoppingBag className="w-4 h-4 stroke-[2]" />
+            <ShoppingBag className="w-4 h-4 stroke-2" />
           </div>
         </div>
         <div className="flex items-baseline gap-2">
@@ -74,7 +74,7 @@ export const StatCards = ({
         <div className="flex items-center justify-between text-stone-400 mb-2">
           <span className="text-xs font-medium tracking-wide uppercase">Metode Bayar</span>
           <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
-            <QrCode className="w-4 h-4 stroke-[2]" />
+            <QrCode className="w-4 h-4 stroke-2" />
           </div>
         </div>
         
@@ -109,7 +109,7 @@ export const StatCards = ({
         <div className="flex items-center justify-between text-stone-400 mb-2">
           <span className="text-xs font-medium tracking-wide uppercase">Uang Kas di Laci</span>
           <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-emerald-400 shadow-xs">
-            <Wallet className="w-4 h-4 stroke-[2]" />
+            <Wallet className="w-4 h-4 stroke-2" />
           </div>
         </div>
         <div className="flex items-baseline gap-2">

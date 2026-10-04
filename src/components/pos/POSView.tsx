@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import type { Product, Order, User, Shift } from '../../types'
+import type { Product, Order, User, Shift, ReceiptConfig, ShiftExpense } from '../../types'
 import {
   Search,
   Plus,
@@ -21,9 +21,15 @@ import {
   Sparkles,
   FileText,
   RotateCcw,
-  PowerOff
+  PowerOff,
+  ArrowUpDown,
+  Tag,
+  Split
 } from 'lucide-react'
 import { calculateShiftDuration } from '../../utils/shiftHelpers'
+import { RecordExpenseModal } from './RecordExpenseModal'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { NumericInput } from '../ui/NumericInput'
 
 export interface CartItem {
   product: Product
@@ -35,16 +41,20 @@ interface POSViewProps {
   products: Product[]
   currentUser: User
   currentShift: Shift
+  receiptConfig?: ReceiptConfig
   onOrderCompleted?: (order: Order) => void
   onEndShift?: () => void
+  onExpenseAdded?: (expense: ShiftExpense) => void
 }
 
 export const POSView = ({
   products,
   currentUser,
   currentShift,
+  receiptConfig,
   onOrderCompleted,
-  onEndShift
+  onEndShift,
+  onExpenseAdded
 }: POSViewProps) => {
   // Search & Category Filter (Default to first category: Perkopian)
   const [searchQuery, setSearchQuery] = useState('')
@@ -58,13 +68,29 @@ export const POSView = ({
 
   // Checkout & Payment Modal
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris'>('cash')
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris' | 'split'>('cash')
   const [cashTendered, setCashTendered] = useState<number>(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [cashWarningOpen, setCashWarningOpen] = useState(false)
+
+  // Discount & Promo State
+  const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false)
+  const [discountType, setDiscountType] = useState<'nominal' | 'percent'>('nominal')
+  const [discountValue, setDiscountValue] = useState<number>(0)
+  const [discountReason, setDiscountReason] = useState<string>('')
+  const [tempDiscountType, setTempDiscountType] = useState<'nominal' | 'percent'>('nominal')
+  const [tempDiscountValue, setTempDiscountValue] = useState<number>(0)
+  const [tempDiscountReason, setTempDiscountReason] = useState<string>('')
+
+  // Print mode for success modal: 'receipt' | 'kitchen'
+  const [printMode, setPrintMode] = useState<'receipt' | 'kitchen'>('receipt')
 
   // Success Receipt State
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null)
   const [showReceiptModal, setShowReceiptModal] = useState(false)
+
+  // Shift Expense Modal
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false)
 
   // Note Modal for Item
   const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(null)
@@ -104,9 +130,21 @@ export const POSView = ({
     return cart.reduce((sum, item) => sum + item.quantity, 0)
   }, [cart])
 
-  const totalAmount = useMemo(() => {
+  const subtotalAmount = useMemo(() => {
     return cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
   }, [cart])
+
+  const discountAmount = useMemo(() => {
+    if (discountValue <= 0) return 0
+    if (discountType === 'percent') {
+      return Math.min(subtotalAmount, Math.round((subtotalAmount * discountValue) / 100))
+    }
+    return Math.min(subtotalAmount, discountValue)
+  }, [subtotalAmount, discountType, discountValue])
+
+  const totalAmount = useMemo(() => {
+    return Math.max(0, subtotalAmount - discountAmount)
+  }, [subtotalAmount, discountAmount])
 
   // Change amount calculation
   const changeAmount = useMemo(() => {
@@ -116,15 +154,22 @@ export const POSView = ({
     return 0
   }, [paymentMethod, cashTendered, totalAmount])
 
-  // Add product to cart
+  // Add product to cart with stock validation
   const handleAddToCart = (product: Product) => {
+    if (product.is_available === false) return
+    if (product.stock !== undefined && product.stock !== null && product.stock <= 0) return
+
     setCart((prev) => {
       const existingIndex = prev.findIndex((item) => item.product.id === product.id)
       if (existingIndex > -1) {
+        const curQty = prev[existingIndex].quantity
+        if (product.stock !== undefined && product.stock !== null && curQty >= product.stock) {
+          return prev
+        }
         const next = [...prev]
         next[existingIndex] = {
           ...next[existingIndex],
-          quantity: next[existingIndex].quantity + 1
+          quantity: curQty + 1
         }
         return next
       }
@@ -132,15 +177,19 @@ export const POSView = ({
     })
   }
 
-  // Update quantity
+  // Update quantity with stock limit check
   const handleUpdateQuantity = (index: number, delta: number) => {
     setCart((prev) => {
       const next = [...prev]
-      const newQty = next[index].quantity + delta
+      const curItem = next[index]
+      const newQty = curItem.quantity + delta
       if (newQty <= 0) {
         return next.filter((_, i) => i !== index)
       }
-      next[index] = { ...next[index], quantity: newQty }
+      if (delta > 0 && curItem.product.stock !== undefined && curItem.product.stock !== null && newQty > curItem.product.stock) {
+        return prev
+      }
+      next[index] = { ...curItem, quantity: newQty }
       return next
     })
   }
@@ -155,6 +204,9 @@ export const POSView = ({
     setCart([])
     setTableNumber('')
     setCustomerName('')
+    setCashTendered(0)
+    setDiscountValue(0)
+    setDiscountReason('')
   }
 
   // Open note modal
@@ -224,9 +276,9 @@ export const POSView = ({
     setIsPaymentModalOpen(true)
   }
 
-  // Listen to physical keyboard when cash payment is open
+  // Listen to physical keyboard when cash / split payment is open
   useEffect(() => {
-    if (!isPaymentModalOpen || paymentMethod !== 'cash') return
+    if (!isPaymentModalOpen || (paymentMethod !== 'cash' && paymentMethod !== 'split')) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key >= '0' && e.key <= '9') {
@@ -252,7 +304,11 @@ export const POSView = ({
   const handleProcessTransaction = async () => {
     if (cart.length === 0 || isSubmitting) return
     if (paymentMethod === 'cash' && cashTendered < totalAmount) {
-      alert('Uang tunai yang diterima kurang dari total belanja!')
+      setCashWarningOpen(true)
+      return
+    }
+    if (paymentMethod === 'split' && (cashTendered <= 0 || cashTendered >= totalAmount)) {
+      setCashWarningOpen(true)
       return
     }
 
@@ -271,8 +327,10 @@ export const POSView = ({
       payment_method: paymentMethod,
       total_amount: totalAmount,
       total_cost: orderTotalCost,
-      cash_tendered: paymentMethod === 'cash' ? cashTendered : totalAmount,
+      cash_tendered: paymentMethod === 'cash' || paymentMethod === 'split' ? cashTendered : totalAmount,
       change_amount: paymentMethod === 'cash' ? changeAmount : 0,
+      discount_amount: discountAmount > 0 ? discountAmount : undefined,
+      discount_reason: discountAmount > 0 && discountReason ? discountReason : undefined,
       status: 'completed' as const,
       items: cart.map((item) => ({
         product_id: item.product.id,
@@ -380,7 +438,14 @@ export const POSView = ({
 
   // Print thermal receipt handler
   const handlePrintReceipt = () => {
-    window.print()
+    setPrintMode('receipt')
+    setTimeout(() => window.print(), 50)
+  }
+
+  // Print thermal kitchen order ticket
+  const handlePrintKitchen = () => {
+    setPrintMode('kitchen')
+    setTimeout(() => window.print(), 50)
   }
 
   // Formatter
@@ -389,7 +454,7 @@ export const POSView = ({
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] overflow-hidden bg-stone-950">
+    <div className="flex flex-col md:flex-row h-full overflow-hidden bg-stone-950">
       
       {/* LEFT SECTION: Menu Catalog */}
       <div className="flex-1 flex flex-col min-w-0 border-r border-stone-800 h-full">
@@ -419,25 +484,59 @@ export const POSView = ({
               )}
             </div>
 
-            {/* Quick Shift Status Tag & Akhiri Shift Button */}
-            <div className="hidden sm:flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-[11px] font-mono text-stone-300">
+            {/* Quick Shift Status Tag, Kas Masuk / Keluar & Akhiri Shift Button */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-[11px] font-mono text-stone-300">
                 <span className="text-[#E2DFD2] font-semibold">{currentUser.name}</span>
                 <span className="text-stone-600">•</span>
                 <span className="text-stone-400">
                   {calculateShiftDuration(currentShift.start_time, currentShift.end_time || null)}
                 </span>
+                {(currentShift.total_expenses || 0) > 0 && (
+                  <>
+                    <span className="text-stone-600">•</span>
+                    <span className="text-amber-400 font-semibold" title="Total Kas Keluar">
+                      -{formatIDR(currentShift.total_expenses || 0)}
+                    </span>
+                  </>
+                )}
+                {(currentShift.total_incomes || 0) > 0 && (
+                  <>
+                    <span className="text-stone-600">•</span>
+                    <span className="text-emerald-400 font-semibold" title="Total Kas Masuk">
+                      +{formatIDR(currentShift.total_incomes || 0)}
+                    </span>
+                  </>
+                )}
               </div>
+
+              {currentShift.status === 'open' && (
+                <button
+                  type="button"
+                  onClick={() => setIsExpenseModalOpen(true)}
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-stone-300 hover:text-[#E2DFD2] text-[11px] font-mono font-semibold transition-colors cursor-pointer"
+                  title="Catat Pengeluaran (Beli Gas, Es, dll) atau Pemasukan Kas Kasir"
+                >
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#E2DFD2]" />
+                  <span className="hidden sm:inline">Kas Masuk / Keluar</span>
+                  <span className="sm:hidden">Kas +/-</span>
+                  {((currentShift.total_expenses || 0) > 0 || (currentShift.total_incomes || 0) > 0) && (
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-stone-900 border border-stone-700 text-[#E2DFD2] font-mono font-bold">
+                      {(currentShift.expenses?.length || 0) > 0 ? currentShift.expenses?.length : '!'}
+                    </span>
+                  )}
+                </button>
+              )}
 
               {onEndShift && currentShift.status === 'open' && (
                 <button
                   type="button"
                   onClick={onEndShift}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-rose-900/60 hover:bg-rose-950/30 text-stone-300 hover:text-rose-400 text-[11px] font-mono font-semibold transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-rose-900/60 hover:bg-rose-950/30 text-stone-300 hover:text-rose-400 text-[11px] font-mono font-semibold transition-colors cursor-pointer"
                   title="Akhiri Shift Kasir & Cetak Rekap"
                 >
                   <PowerOff className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Akhiri Shift</span>
+                  <span className="hidden sm:inline">Akhiri Shift</span>
                 </button>
               )}
             </div>
@@ -486,23 +585,41 @@ export const POSView = ({
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredProducts.map((product) => {
                 const cartQuantity = cart.find(item => item.product.id === product.id)?.quantity || 0
+                const isOutOfStock = !product.is_available || (product.stock !== undefined && product.stock !== null && product.stock <= 0)
+                const isLowStock = !isOutOfStock && product.stock !== undefined && product.stock !== null && product.stock <= 5
 
                 return (
                   <button
                     key={product.id}
                     type="button"
+                    disabled={isOutOfStock}
                     onClick={() => handleAddToCart(product)}
-                    className={`group relative text-left p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between min-h-[105px] select-none ${
-                      cartQuantity > 0
-                        ? 'bg-stone-900/90 border-[#E2DFD2]/70 shadow-md ring-1 ring-[#E2DFD2]/25'
-                        : 'bg-stone-900/40 border-stone-800/80 hover:bg-stone-900 hover:border-stone-700'
+                    className={`group relative text-left p-3.5 rounded-xl border transition-all flex flex-col justify-between min-h-26.25 select-none ${
+                      isOutOfStock
+                        ? 'opacity-40 bg-stone-950 border-stone-850 cursor-not-allowed'
+                        : cartQuantity > 0
+                        ? 'bg-stone-900/90 border-[#E2DFD2]/70 shadow-md ring-1 ring-[#E2DFD2]/25 cursor-pointer'
+                        : 'bg-stone-900/40 border-stone-800/80 hover:bg-stone-900 hover:border-stone-700 cursor-pointer'
                     }`}
                   >
                     <div>
-                      {/* Category tag */}
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-[#E2DFD2]/80 block mb-1">
-                        {categoryNameMap[product.category_id] || product.category_id}
-                      </span>
+                      {/* Top Badges */}
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#E2DFD2]/80 truncate">
+                          {categoryNameMap[product.category_id] || product.category_id}
+                        </span>
+
+                        {isOutOfStock ? (
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase bg-rose-950 border border-rose-900 text-rose-400">
+                            Habis
+                          </span>
+                        ) : isLowStock ? (
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase bg-amber-950 border border-amber-900 text-amber-400">
+                            Sisa {product.stock}
+                          </span>
+                        ) : null}
+                      </div>
+
                       {/* Product Name */}
                       <h4 className="text-xs font-semibold text-stone-100 leading-snug line-clamp-2">
                         {product.name}
@@ -534,7 +651,7 @@ export const POSView = ({
       </div>
 
       {/* RIGHT SECTION: Cart & Billing */}
-      <div className="w-full md:w-[350px] lg:w-[390px] xl:w-[420px] bg-stone-900/95 border-t md:border-t-0 md:border-l border-stone-800 flex flex-col h-[400px] md:h-full shrink-0 shadow-2xl">
+      <div className="w-full md:w-87.5 lg:w-97.5 xl:w-105 bg-stone-900/95 border-t md:border-t-0 md:border-l border-stone-800 flex flex-col h-100 md:h-full shrink-0 shadow-2xl">
         
         {/* Cart Header */}
         <div className="p-4 border-b border-stone-800 bg-stone-900/80 space-y-3 shrink-0">
@@ -608,7 +725,7 @@ export const POSView = ({
             <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
               <Receipt className="w-10 h-10 stroke-[1.25] text-stone-700 mb-2" />
               <p className="text-xs font-semibold text-stone-400">Keranjang masih kosong</p>
-              <p className="text-[11px] text-stone-400 mt-1 max-w-[200px]">
+              <p className="text-[11px] text-stone-400 mt-1 max-w-50">
                 Ketuk menu di sebelah kiri untuk menambahkan pesanan pelanggan.
               </p>
             </div>
@@ -700,6 +817,47 @@ export const POSView = ({
               <span>Total Item</span>
               <span className="font-mono text-stone-200">{totalItemsCount} item</span>
             </div>
+            <div className="flex items-center justify-between text-stone-400">
+              <span>Subtotal</span>
+              <span className="font-mono text-stone-200">{formatIDR(subtotalAmount)}</span>
+            </div>
+
+            {/* Discount Row */}
+            {discountAmount > 0 ? (
+              <div className="flex items-center justify-between text-rose-400 font-medium">
+                <div className="flex items-center gap-1.5">
+                  <span>Diskon {discountReason ? `(${discountReason})` : ''}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDiscountValue(0)
+                      setDiscountReason('')
+                    }}
+                    className="text-stone-500 hover:text-rose-400 cursor-pointer"
+                    title="Hapus diskon"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+                <span className="font-mono">-{formatIDR(discountAmount)}</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setTempDiscountType(discountType)
+                  setTempDiscountValue(discountValue)
+                  setTempDiscountReason(discountReason)
+                  setIsDiscountModalOpen(true)
+                }}
+                disabled={cart.length === 0}
+                className="text-[11px] font-mono text-stone-400 hover:text-[#E2DFD2] flex items-center gap-1 pt-0.5 cursor-pointer disabled:opacity-40"
+              >
+                <Tag className="w-3 h-3" />
+                <span>+ Tambah Diskon / Promo</span>
+              </button>
+            )}
+
             <div className="flex items-center justify-between text-sm font-semibold text-stone-100 pt-1 border-t border-stone-800">
               <span>Total Tagihan</span>
               <span className="font-mono text-base font-bold text-[#E2DFD2]">
@@ -791,35 +949,53 @@ export const POSView = ({
                       Pilih Metode Bayar
                     </span>
                     <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-stone-950 border border-stone-800 text-[#E2DFD2]">
-                      {paymentMethod === 'qris' ? 'Metode Aktif: QRIS' : 'Metode Aktif: Tunai'}
+                      {paymentMethod === 'qris' ? 'Metode: QRIS' : paymentMethod === 'split' ? 'Metode: Split Pay' : 'Metode: Tunai'}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 p-1.5 bg-stone-950 border border-stone-800 rounded-2xl">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('qris')}
-                      className={`h-13 rounded-xl text-sm font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
-                        paymentMethod === 'qris'
-                          ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-md'
-                          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
-                      }`}
-                    >
-                      <QrCode className="w-5 h-5" />
-                      <span>QRIS Statis</span>
-                    </button>
-
+                  <div className="grid grid-cols-3 gap-2 p-1.5 bg-stone-950 border border-stone-800 rounded-2xl">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('cash')}
-                      className={`h-13 rounded-xl text-sm font-semibold flex items-center justify-center gap-2.5 transition-all cursor-pointer ${
+                      className={`h-12 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         paymentMethod === 'cash'
                           ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-md'
                           : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
                       }`}
                     >
-                      <Banknote className="w-5 h-5" />
+                      <Banknote className="w-4 h-4" />
                       <span>Tunai</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('qris')}
+                      className={`h-12 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        paymentMethod === 'qris'
+                          ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-md'
+                          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
+                      }`}
+                    >
+                      <QrCode className="w-4 h-4" />
+                      <span>QRIS</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaymentMethod('split')
+                        if (cashTendered === 0 || cashTendered >= totalAmount) {
+                          setCashTendered(Math.floor(totalAmount / 2 / 1000) * 1000)
+                        }
+                      }}
+                      className={`h-12 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        paymentMethod === 'split'
+                          ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-md'
+                          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
+                      }`}
+                    >
+                      <Split className="w-4 h-4" />
+                      <span>Split Pay</span>
                     </button>
                   </div>
                 </div>
@@ -848,8 +1024,8 @@ export const POSView = ({
                   </div>
                 )}
 
-                {/* VIEW 2: CASH (TUNAI) */}
-                {paymentMethod === 'cash' && (
+                {/* VIEW 2: CASH (TUNAI) OR SPLIT (TUNAI + QRIS) */}
+                {(paymentMethod === 'cash' || paymentMethod === 'split') && (
                   <div className="space-y-2.5 sm:space-y-3 animate-in fade-in zoom-in-95 duration-150">
                     
                     {/* Nominal Display Box (Virtual Input without OS Keyboard) */}
@@ -1054,22 +1230,45 @@ export const POSView = ({
                       </div>
                     </div>
 
-                    {/* Kembalian Calculation Box */}
-                    <div className="py-2.5 px-4 rounded-2xl bg-stone-950 border border-stone-800 flex items-center justify-between shadow-inner">
-                      <div>
-                        <span className="text-xs text-stone-400 block font-mono">Status Kembalian</span>
-                        <span className="text-[11px] text-stone-400">
-                          {cashTendered >= totalAmount ? 'Kembalikan ke pelanggan:' : 'Uang tunai kurang:'}
+                    {/* Status Box for Cash or Split */}
+                    {paymentMethod === 'split' ? (
+                      <div className="py-2.5 px-4 rounded-2xl bg-stone-950 border border-stone-800 space-y-1.5 shadow-inner">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-stone-400 font-mono">1. Porsi Uang Tunai:</span>
+                          <span className="font-mono font-bold text-stone-100">{formatIDR(cashTendered)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-850">
+                          <span className="text-stone-400 font-mono">2. Sisa Bayar via QRIS:</span>
+                          <span className={`font-mono font-bold text-sm ${cashTendered < totalAmount && cashTendered > 0 ? 'text-amber-400' : 'text-stone-400'}`}>
+                            {cashTendered >= totalAmount
+                              ? 'Lunas Tunai (Gunakan Tab Tunai)'
+                              : formatIDR(totalAmount - cashTendered)}
+                          </span>
+                        </div>
+                        {cashTendered > 0 && cashTendered < totalAmount && (
+                          <div className="pt-1 flex items-center gap-2 text-[10px] text-stone-400 font-mono">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                            <span>Pelanggan scan QRIS sisa {formatIDR(totalAmount - cashTendered)}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="py-2.5 px-4 rounded-2xl bg-stone-950 border border-stone-800 flex items-center justify-between shadow-inner">
+                        <div>
+                          <span className="text-xs text-stone-400 block font-mono">Status Kembalian</span>
+                          <span className="text-[11px] text-stone-400">
+                            {cashTendered >= totalAmount ? 'Kembalikan ke pelanggan:' : 'Uang tunai kurang:'}
+                          </span>
+                        </div>
+                        <span className={`font-mono text-xl sm:text-2xl font-bold tabular-nums ${
+                          cashTendered >= totalAmount ? 'text-emerald-400' : 'text-rose-400'
+                        }`}>
+                          {cashTendered >= totalAmount
+                            ? formatIDR(changeAmount)
+                            : `Kurang ${formatIDR(totalAmount - cashTendered)}`}
                         </span>
                       </div>
-                      <span className={`font-mono text-xl sm:text-2xl font-bold tabular-nums ${
-                        cashTendered >= totalAmount ? 'text-emerald-400' : 'text-rose-400'
-                      }`}>
-                        {cashTendered >= totalAmount
-                          ? formatIDR(changeAmount)
-                          : `Kurang ${formatIDR(totalAmount - cashTendered)}`}
-                      </span>
-                    </div>
+                    )}
 
                   </div>
                 )}
@@ -1148,13 +1347,19 @@ export const POSView = ({
                   <button
                     type="button"
                     onClick={handleProcessTransaction}
-                    disabled={isSubmitting || (paymentMethod === 'cash' && cashTendered < totalAmount)}
+                    disabled={
+                      isSubmitting ||
+                      (paymentMethod === 'cash' && cashTendered < totalAmount) ||
+                      (paymentMethod === 'split' && (cashTendered <= 0 || cashTendered >= totalAmount))
+                    }
                     className="w-full h-14 rounded-2xl bg-[#E2DFD2] hover:bg-[#edebe2] disabled:bg-stone-800 disabled:text-stone-600 disabled:cursor-not-allowed text-stone-950 text-base font-bold transition-all cursor-pointer shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
                   >
                     <CheckCircle2 className="w-5 h-5 stroke-[2.25]" />
                     <span>
                       {isSubmitting
                         ? 'Memproses Transaksi...'
+                        : paymentMethod === 'split'
+                        ? `Selesaikan Split (${formatIDR(cashTendered)} Tunai + ${formatIDR(totalAmount - cashTendered)} QRIS)`
                         : `Selesaikan Transaksi (${formatIDR(totalAmount)})`}
                     </span>
                   </button>
@@ -1233,76 +1438,242 @@ export const POSView = ({
               </button>
             </div>
 
-            {/* Thermal Receipt Paper Layout */}
-            <div className="flex-1 overflow-y-auto bg-stone-100 text-stone-950 p-4 rounded-xl font-mono text-[11px] shadow-inner select-all border border-stone-300">
-              
-              {/* Receipt Header */}
-              <div className="text-center pb-3 border-b border-dashed border-stone-400">
-                <p className="font-bold text-sm tracking-wider uppercase">WARKOP SUDUT TEMU</p>
-                <p className="text-[10px] text-stone-700 mt-0.5 leading-tight">
-                  Jln. Raya Ciawi Gebang No 2, Kuningan
-                </p>
-                <p className="text-[10px] text-stone-700">Telp: 0812-3456-7890</p>
-              </div>
-
-              {/* Order Meta */}
-              <div className="py-2 border-b border-dashed border-stone-400 space-y-0.5 text-[10px]">
-                <div className="flex justify-between">
-                  <span>No: {completedOrder.order_number}</span>
-                  <span>{new Date(completedOrder.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Kasir: {currentUser.name}</span>
-                  <span>{completedOrder.order_type === 'dine_in' ? 'Di Tempat' : 'Bungkus'}</span>
-                </div>
-                {completedOrder.table_number && (
-                  <div className="flex justify-between">
-                    <span>Meja: {completedOrder.table_number}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Items List */}
-              <div className="py-2 border-b border-dashed border-stone-400 space-y-1.5">
-                {completedOrder.items?.map((it, idx) => (
-                  <div key={idx} className="space-y-0.5">
-                    <div className="flex justify-between font-semibold">
-                      <span className="truncate pr-2">{it.product_name}</span>
-                      <span>Rp {it.subtotal.toLocaleString('id-ID')}</span>
-                    </div>
-                    <div className="flex justify-between text-[10px] text-stone-600">
-                      <span>{it.quantity}x Rp {it.price.toLocaleString('id-ID')}</span>
-                      {it.notes && <span className="italic">({it.notes})</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Totals */}
-              <div className="py-2 border-b border-dashed border-stone-400 space-y-1">
-                <div className="flex justify-between font-bold text-xs">
-                  <span>TOTAL</span>
-                  <span>Rp {completedOrder.total_amount.toLocaleString('id-ID')}</span>
-                </div>
-                <div className="flex justify-between text-[10px]">
-                  <span>Bayar ({completedOrder.payment_method.toUpperCase()})</span>
-                  <span>Rp {(completedOrder.cash_tendered ?? 0).toLocaleString('id-ID')}</span>
-                </div>
-                {completedOrder.payment_method === 'cash' && (
-                  <div className="flex justify-between text-[10px]">
-                    <span>Kembalian</span>
-                    <span>Rp {(completedOrder.change_amount ?? 0).toLocaleString('id-ID')}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="pt-3 text-center text-[10px] text-stone-600 space-y-0.5">
-                <p>Terima Kasih Atas Kunjungannya!</p>
-                <p>Follow IG @warkopsuduttemu</p>
-              </div>
-
+            {/* View Mode Switcher in Success Modal */}
+            <div className="flex items-center gap-1.5 p-1 bg-stone-950 rounded-xl border border-stone-800 shrink-0">
+              <button
+                type="button"
+                onClick={() => setPrintMode('receipt')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  printMode === 'receipt'
+                    ? 'bg-stone-850 text-stone-100 border border-stone-700 shadow-xs'
+                    : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                <Receipt className="w-3.5 h-3.5" />
+                <span>Struk Kasir</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintMode('kitchen')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  printMode === 'kitchen'
+                    ? 'bg-[#E2DFD2]/10 text-[#E2DFD2] border border-[#E2DFD2]/50 shadow-xs'
+                    : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                <UtensilsCrossed className="w-3.5 h-3.5" />
+                <span>Tiket Dapur</span>
+              </button>
             </div>
+
+            {/* Thermal Print Paper Layout */}
+            {printMode === 'kitchen' ? (
+              /* Thermal Kitchen Ticket */
+              <div
+                id="kitchen-ticket"
+                className={`flex-1 overflow-y-auto bg-white text-stone-950 p-4 rounded-xl font-mono text-[11px] shadow-inner select-all border border-stone-300 ${
+                  receiptConfig?.paperWidth === '80mm' ? 'paper-80mm' : 'paper-58mm'
+                }`}
+              >
+                <div className="text-center pb-2 border-b-2 border-black">
+                  <p className="font-black text-sm tracking-wider uppercase">TIKET DAPUR & BARISTA</p>
+                  <p className="text-[10px] font-bold text-stone-700">WARKOP SUDUT TEMU</p>
+                </div>
+
+                <div className="py-2 border-b border-dashed border-stone-500 text-[10px] space-y-0.5">
+                  <div className="flex justify-between">
+                    <span>No Order:</span>
+                    <span className="font-bold">{completedOrder.order_number}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Waktu:</span>
+                    <span>{new Date(completedOrder.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Kasir:</span>
+                    <span>{currentUser.name}</span>
+                  </div>
+                </div>
+
+                {/* Highlight Meja & Pelanggan */}
+                <div className="py-2.5 my-2 border-2 border-black bg-stone-100 rounded-lg text-center space-y-0.5">
+                  <p className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                    PELANGGAN: {completedOrder.customer_name || 'Pelanggan'}
+                  </p>
+                  <p className="text-base font-black tracking-wide text-black">
+                    {completedOrder.table_number ? `MEJA ${completedOrder.table_number.replace(/\D/g, '') || completedOrder.table_number}` : 'TANPA MEJA'}
+                    {' '}<span className="text-xs font-bold text-stone-700">({completedOrder.order_type === 'dine_in' ? 'DINE IN' : 'BUNGKUS'})</span>
+                  </p>
+                </div>
+
+                {/* Items to prepare */}
+                <div className="py-2 border-b border-dashed border-black space-y-2">
+                  <p className="font-bold text-[10px] tracking-wider uppercase text-stone-800">Daftar Menu Masak & Seduh:</p>
+                  {completedOrder.items?.map((it, idx) => (
+                    <div key={idx} className="border-b border-dotted border-stone-300 pb-1.5 last:border-b-0">
+                      <div className="flex items-center gap-2 text-xs font-bold">
+                        <span className="bg-black text-white px-1.5 py-0.5 rounded text-[11px] font-mono leading-none">
+                          {it.quantity}x
+                        </span>
+                        <span className="leading-tight">{it.product_name}</span>
+                      </div>
+                      {it.notes && (
+                        <p className="text-[10px] font-bold text-rose-700 pl-7 mt-0.5">
+                          * Catatan: {it.notes}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 text-center text-[9px] text-stone-600 font-bold uppercase tracking-wider">
+                  *** SELESAIKAN & SAJIKAN DENGAN RAMAH ***
+                </div>
+              </div>
+            ) : (
+              /* Thermal Customer Receipt */
+              <div
+                id="printable-receipt"
+                className={`flex-1 overflow-y-auto bg-white text-stone-950 p-4 rounded-xl font-mono text-[11px] shadow-inner select-all border border-stone-300 ${
+                  receiptConfig?.paperWidth === '80mm' ? 'paper-80mm' : 'paper-58mm'
+                }`}
+              >
+                
+                {/* Receipt Header */}
+                <div className="text-center pb-3 border-b border-dashed border-stone-400">
+                  {receiptConfig?.showStoreName !== false && (
+                    <p className="font-bold text-sm tracking-wider uppercase">
+                      {receiptConfig?.storeName || 'WARKOP SUDUT TEMU'}
+                    </p>
+                  )}
+                  {receiptConfig?.showTagline && receiptConfig?.tagline && (
+                    <p className="text-[10px] text-stone-700 italic">
+                      {receiptConfig.tagline}
+                    </p>
+                  )}
+                  {receiptConfig?.showAddress !== false && receiptConfig?.address && (
+                    <p className="text-[10px] text-stone-700 mt-0.5 leading-tight">
+                      {receiptConfig.address}
+                    </p>
+                  )}
+                  <div className="flex justify-center gap-2 text-[10px] text-stone-700 flex-wrap">
+                    {receiptConfig?.showPhone !== false && receiptConfig?.phone && (
+                      <span>Telp: {receiptConfig.phone}</span>
+                    )}
+                    {receiptConfig?.showSocialMedia && receiptConfig?.socialMedia && (
+                      <span>IG: {receiptConfig.socialMedia}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Order Meta */}
+                <div className="py-2 border-b border-dashed border-stone-400 space-y-0.5 text-[10px]">
+                  <div className="flex justify-between">
+                    <span>No: {completedOrder.order_number}</span>
+                    <span>{new Date(completedOrder.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</span>
+                  </div>
+                  <div className="flex justify-between">
+                    {receiptConfig?.showCashierName !== false && <span>Kasir: {currentUser.name}</span>}
+                    {receiptConfig?.showOrderType !== false && (
+                      <span>{completedOrder.order_type === 'dine_in' ? 'Di Tempat' : 'Bungkus'}</span>
+                    )}
+                  </div>
+                  {receiptConfig?.showCustomerName && completedOrder.customer_name && completedOrder.customer_name !== 'Pelanggan' && (
+                    <div className="flex justify-between">
+                      <span>Pelanggan: {completedOrder.customer_name}</span>
+                    </div>
+                  )}
+                  {receiptConfig?.showTableNumber !== false && completedOrder.table_number && (
+                    <div className="flex justify-between">
+                      <span>Meja: {completedOrder.table_number}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Items List */}
+                <div className="py-2 border-b border-dashed border-stone-400 space-y-1.5">
+                  {completedOrder.items?.map((it, idx) => (
+                    <div key={idx} className="space-y-0.5">
+                      <div className="flex justify-between font-semibold">
+                        <span className="truncate pr-2">{it.product_name}</span>
+                        <span>Rp {it.subtotal.toLocaleString('id-ID')}</span>
+                      </div>
+                      <div className="flex justify-between text-[10px] text-stone-600">
+                        <span>{it.quantity}x Rp {it.price.toLocaleString('id-ID')}</span>
+                        {receiptConfig?.showItemNotes !== false && it.notes && (
+                          <span className="italic">({it.notes})</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Totals */}
+                <div className="py-2 border-b border-dashed border-stone-400 space-y-1">
+                  {completedOrder.discount_amount && completedOrder.discount_amount > 0 && (
+                    <>
+                      <div className="flex justify-between text-stone-600 text-[10px]">
+                        <span>Subtotal</span>
+                        <span>Rp {(completedOrder.total_amount + completedOrder.discount_amount).toLocaleString('id-ID')}</span>
+                      </div>
+                      <div className="flex justify-between text-rose-600 font-semibold text-[10px]">
+                        <span>Diskon {completedOrder.discount_reason ? `(${completedOrder.discount_reason})` : ''}</span>
+                        <span>-Rp {completedOrder.discount_amount.toLocaleString('id-ID')}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between font-bold text-xs">
+                    <span>TOTAL</span>
+                    <span>Rp {completedOrder.total_amount.toLocaleString('id-ID')}</span>
+                  </div>
+                  {completedOrder.payment_method === 'split' ? (
+                    <>
+                      <div className="flex justify-between text-[10px]">
+                        <span>Bayar Tunai</span>
+                        <span>Rp {(completedOrder.cash_tendered || 0).toLocaleString('id-ID')}</span>
+                      </div>
+                      <div className="flex justify-between text-[10px]">
+                        <span>Bayar QRIS</span>
+                        <span>Rp {Math.max(0, completedOrder.total_amount - (completedOrder.cash_tendered || 0)).toLocaleString('id-ID')}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex justify-between text-[10px]">
+                      <span>Bayar ({completedOrder.payment_method.toUpperCase()})</span>
+                      <span>Rp {(completedOrder.cash_tendered ?? completedOrder.total_amount).toLocaleString('id-ID')}</span>
+                    </div>
+                  )}
+                  {completedOrder.payment_method === 'cash' && (
+                    <div className="flex justify-between text-[10px]">
+                      <span>Kembalian</span>
+                      <span>Rp {(completedOrder.change_amount ?? 0).toLocaleString('id-ID')}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer with WiFi Info & Custom Messages */}
+                <div className="pt-3 text-center text-[10px] text-stone-600 space-y-0.5">
+                  {receiptConfig?.showWifiInfo !== false && (receiptConfig?.wifiName || receiptConfig?.wifiPassword) && (
+                    <>
+                      <p className="font-semibold text-stone-800">WiFi: {receiptConfig?.wifiName || 'Warkop Sudut Temu'}</p>
+                      <p className="font-mono text-[9px] text-stone-700">Pass: {receiptConfig?.wifiPassword || 'kopienak2026'}</p>
+                    </>
+                  )}
+                  {receiptConfig?.showFooterMessage !== false && (
+                    <div className="pt-1.5 border-t border-dashed border-stone-300 mt-1">
+                      <p>{receiptConfig?.footerMessage || 'Terima Kasih Atas Kunjungannya!'}</p>
+                      {receiptConfig?.footerSubmessage && (
+                        <p className="text-[9px]">{receiptConfig.footerSubmessage}</p>
+                      )}
+                      {receiptConfig?.showCustomNotice && receiptConfig?.customNotice && (
+                        <p className="text-[8px] text-stone-500 pt-1">* {receiptConfig.customNotice}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 pt-1 shrink-0">
@@ -1312,12 +1683,20 @@ export const POSView = ({
                 className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 hover:border-[#E2DFD2] text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Printer className="w-4 h-4 text-[#E2DFD2]" />
-                <span>Cetak Struk</span>
+                <span>Cetak Struk Kasir</span>
+              </button>
+              <button
+                type="button"
+                onClick={handlePrintKitchen}
+                className="flex-1 py-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <UtensilsCrossed className="w-4 h-4 text-[#E2DFD2]" />
+                <span>Cetak Tiket Dapur</span>
               </button>
               <button
                 type="button"
                 onClick={() => setShowReceiptModal(false)}
-                className="flex-1 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                className="px-4 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
               >
                 <span>Pesanan Baru</span>
               </button>
@@ -1326,6 +1705,190 @@ export const POSView = ({
           </div>
         </div>
       )}
+
+      {/* MODAL 4: Record Shift Expense (Petty Cash) */}
+      <RecordExpenseModal
+        isOpen={isExpenseModalOpen}
+        onClose={() => setIsExpenseModalOpen(false)}
+        shiftId={currentShift.id}
+        cashierId={currentUser.id}
+        onExpenseRecorded={(expense) => {
+          if (onExpenseAdded) onExpenseAdded(expense)
+        }}
+      />
+
+      {/* MODAL: Tambah Diskon / Promo */}
+      {isDiscountModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-sm bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-800">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2]">
+                  <Tag className="w-3.5 h-3.5" />
+                </div>
+                <h4 className="text-sm font-bold text-stone-100">Diskon & Promo Pesanan</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDiscountModalOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-200 hover:bg-stone-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Tipe Diskon (Nominal vs Persen) */}
+            <div className="grid grid-cols-2 gap-2 p-1 bg-stone-950 border border-stone-800 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setTempDiscountType('nominal')}
+                className={`py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  tempDiscountType === 'nominal'
+                    ? 'bg-[#E2DFD2] text-stone-950 font-bold'
+                    : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                Nominal (Rp)
+              </button>
+              <button
+                type="button"
+                onClick={() => setTempDiscountType('percent')}
+                className={`py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  tempDiscountType === 'percent'
+                    ? 'bg-[#E2DFD2] text-stone-950 font-bold'
+                    : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                Persentase (%)
+              </button>
+            </div>
+
+            {/* Quick Presets */}
+            {tempDiscountType === 'percent' ? (
+              <div className="grid grid-cols-4 gap-2">
+                {[5, 10, 15, 20].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    onClick={() => setTempDiscountValue(pct)}
+                    className={`py-2 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
+                      tempDiscountValue === pct
+                        ? 'bg-stone-800 border-[#E2DFD2] text-[#E2DFD2]'
+                        : 'bg-stone-950 border-stone-800 text-stone-300 hover:border-stone-700'
+                    }`}
+                  >
+                    {pct}%
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {[2000, 5000, 10000].map((nom) => (
+                  <button
+                    key={nom}
+                    type="button"
+                    onClick={() => setTempDiscountValue(nom)}
+                    className={`py-2 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
+                      tempDiscountValue === nom
+                        ? 'bg-stone-800 border-[#E2DFD2] text-[#E2DFD2]'
+                        : 'bg-stone-950 border-stone-800 text-stone-300 hover:border-stone-700'
+                    }`}
+                  >
+                    {formatIDR(nom)}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Custom Value Input */}
+            <div>
+              <label className="text-[11px] font-mono text-stone-400 block mb-1">
+                {tempDiscountType === 'percent' ? 'Nilai Diskon (%)' : 'Nominal Potongan (Rp)'}
+              </label>
+              <NumericInput
+                min={0}
+                max={tempDiscountType === 'percent' ? 100 : subtotalAmount}
+                step={tempDiscountType === 'percent' ? 1 : 1000}
+                prefix={tempDiscountType === 'nominal' ? 'Rp' : undefined}
+                suffix={tempDiscountType === 'percent' ? '%' : undefined}
+                value={tempDiscountValue}
+                onChange={(val) => setTempDiscountValue(val)}
+                placeholder="0"
+              />
+            </div>
+
+            {/* Reason / Promo Name */}
+            <div>
+              <label className="text-[11px] font-mono text-stone-400 block mb-1">
+                Keterangan / Alasan Promo (Opsional)
+              </label>
+              <input
+                type="text"
+                value={tempDiscountReason}
+                onChange={(e) => setTempDiscountReason(e.target.value)}
+                placeholder="Contoh: Teman Owner, Jumat Berkah, Nobar"
+                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2]"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-2 pt-2 border-t border-stone-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setDiscountValue(0)
+                  setDiscountReason('')
+                  setIsDiscountModalOpen(false)
+                }}
+                className="flex-1 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-400 hover:text-stone-200 text-xs font-semibold cursor-pointer"
+              >
+                Hapus Diskon
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDiscountType(tempDiscountType)
+                  setDiscountValue(tempDiscountValue)
+                  setDiscountReason(tempDiscountReason.trim())
+                  setIsDiscountModalOpen(false)
+                }}
+                className="flex-1 py-2 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all cursor-pointer shadow-sm"
+              >
+                Terapkan Diskon
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dialog Peringatan Uang Tunai Kurang */}
+      <ConfirmDialog
+        isOpen={cashWarningOpen}
+        title={paymentMethod === 'split' ? "Nominal Split Tunai Belum Sesuai" : "Uang Tunai Belum Cukup"}
+        message={
+          paymentMethod === 'split'
+            ? `Porsi uang tunai yang diinput (${formatIDR(cashTendered)}) harus lebih dari Rp 0 dan kurang dari total tagihan (${formatIDR(totalAmount)}). Jika bayar tunai penuh, silakan pilih tab Tunai.`
+            : `Nominal uang tunai yang diinput (${formatIDR(cashTendered)}) kurang dari total belanja (${formatIDR(totalAmount)}). Silakan sesuaikan jumlah uang tunai yang diterima dari pelanggan.`
+        }
+        confirmText="Periksa Kembali"
+        variant="warning"
+        onConfirm={() => setCashWarningOpen(false)}
+        onCancel={() => setCashWarningOpen(false)}
+      />
+
+      {/* Modal Catat Kas Masuk / Keluar Shift */}
+      <RecordExpenseModal
+        isOpen={isExpenseModalOpen}
+        onClose={() => setIsExpenseModalOpen(false)}
+        shiftId={currentShift.id}
+        cashierId={currentUser.id}
+        shiftExpenses={currentShift.expenses}
+        onExpenseRecorded={(newExpense) => {
+          if (onExpenseAdded) {
+            onExpenseAdded(newExpense)
+          }
+        }}
+      />
 
     </div>
   )

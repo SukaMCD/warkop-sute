@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { PlayCircle, Clock, ShieldCheck, Loader2 } from 'lucide-react'
 import type { User, Shift } from '../../types'
 import { NumericInput } from '../ui/NumericInput'
+import { SearchableSelect } from '../ui/SearchableSelect'
 
 interface StartShiftModalProps {
   currentUser: User
@@ -72,6 +73,7 @@ export const StartShiftModal = ({
       // Fallback if backend offline
       const mockShift: Shift = {
         id: `shift_${Date.now()}`,
+        cashier_id: cashierId,
         cashier_name: cashierName,
         start_time: new Date().toISOString().replace('T', ' ').substring(0, 19),
         initial_cash: initialCash,
@@ -93,7 +95,7 @@ export const StartShiftModal = ({
         {/* Header Modal */}
         <div className="flex items-center gap-3 pb-4 border-b border-stone-800">
           <div className="w-11 h-11 rounded-2xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs shrink-0">
-            <PlayCircle className="w-6 h-6 stroke-[2]" />
+            <PlayCircle className="w-6 h-6 stroke-2" />
           </div>
           <div>
             <h2 className="text-base font-bold text-stone-100">
@@ -112,20 +114,21 @@ export const StartShiftModal = ({
               Petugas Kasir
             </span>
             {cashiers.length > 0 ? (
-              <select
+              <SearchableSelect
                 value={cashierId}
-                onChange={e => {
-                  const id = e.target.value
+                onChange={id => {
                   setCashierId(id)
                   const found = cashiers.find(c => c.id === id)
                   if (found) setCashierName(found.name)
                 }}
-                className="w-full bg-stone-900 border border-stone-800 rounded-lg px-2 py-1 text-xs font-bold text-stone-200 focus:outline-none focus:border-[#E2DFD2] cursor-pointer"
-              >
-                {cashiers.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                options={cashiers.map(c => ({
+                  value: c.id,
+                  label: c.name,
+                  badge: 'Kasir'
+                }))}
+                placeholder="Pilih petugas kasir..."
+                searchPlaceholder="Cari nama kasir..."
+              />
             ) : (
               <span className="text-xs font-bold text-stone-200 mt-0.5 block truncate">
                 {currentUser.name}
@@ -133,7 +136,7 @@ export const StartShiftModal = ({
             )}
           </div>
           <div>
-            <span className="text-[11px] text-stone-500 uppercase tracking-wider font-mono block flex items-center gap-1">
+            <span className="text-[11px] text-stone-500 uppercase tracking-wider font-mono flex items-center gap-1">
               <Clock className="w-3 h-3 text-stone-400" />
               <span>Jam Mulai</span>
             </span>

@@ -4,6 +4,7 @@ import { formatRupiah } from '../../utils/formatters'
 import { formatShiftSchedule, calculateShiftDuration } from '../../utils/shiftHelpers'
 import { Clock, PowerOff, RefreshCw, Plus, Pencil, Trash2 } from 'lucide-react'
 import { ShiftFormModal } from './ShiftFormModal'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 
 interface ShiftAuditViewProps {
   currentShift: Shift
@@ -41,6 +42,8 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
   const [isLoading, setIsLoading] = useState(false)
   // undefined = closed, null = add new, Shift = edit
   const [modalShift, setModalShift] = useState<Shift | null | undefined>(undefined)
+  const [shiftToDeleteId, setShiftToDeleteId] = useState<string | null>(null)
+  const [isDeletingShift, setIsDeletingShift] = useState(false)
 
   // Realtime tick for active shift duration
   const [, setTick] = useState(0)
@@ -75,17 +78,27 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
     fetchShifts()
   }, [currentShift])
 
-  const handleDeleteShift = async (shiftId: string) => {
-    if (!window.confirm('Yakin ingin menghapus data shift ini?')) return
-    try {
-      const res = await fetch(`/api/shifts/${shiftId}`, { method: 'DELETE' })
-      if (res.ok) {
-        setHistoricalShifts(prev => prev.filter(s => s.id !== shiftId))
-      }
-    } catch {}
+  const handleDeleteShift = (shiftId: string) => {
+    setShiftToDeleteId(shiftId)
   }
 
-  const expectedCashCurrent = currentShift.initial_cash + currentShift.total_cash_sales
+  const handleConfirmDeleteShift = async () => {
+    if (!shiftToDeleteId) return
+    setIsDeletingShift(true)
+    try {
+      const res = await fetch(`/api/shifts/${shiftToDeleteId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setHistoricalShifts(prev => prev.filter(s => s.id !== shiftToDeleteId))
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsDeletingShift(false)
+      setShiftToDeleteId(null)
+    }
+  }
+
+  const expectedCashCurrent = currentShift.initial_cash + currentShift.total_cash_sales + (currentShift.total_incomes || 0) - (currentShift.total_expenses || 0)
   const activeSchedule = formatShiftSchedule(currentShift.start_time, currentShift.end_time || null)
   const activeDuration = calculateShiftDuration(currentShift.start_time, currentShift.end_time || null)
 
@@ -97,7 +110,7 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-stone-800 mb-4 gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
-              <Clock className="w-4 h-4 stroke-[2]" />
+              <Clock className="w-4 h-4 stroke-2" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -142,7 +155,7 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-3.5 rounded-xl bg-stone-950 border border-stone-800 shadow-xs">
             <span className="text-xs text-stone-400 block mb-1">Modal Awal Kas</span>
             <span className="font-mono tabular-nums text-lg font-bold text-stone-100">
@@ -155,6 +168,19 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
             <span className="font-mono tabular-nums text-lg font-bold text-[#E2DFD2]">
               {formatRupiah(currentShift.total_cash_sales)}
             </span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-stone-950 border border-stone-800 shadow-xs">
+            <span className="text-xs text-stone-400 block mb-1">Kas Masuk / Keluar</span>
+            <div className="flex items-center gap-1.5 font-mono text-sm mt-0.5">
+              <span className="text-emerald-400 font-bold" title="Kas Masuk">
+                +{formatRupiah(currentShift.total_incomes || 0)}
+              </span>
+              <span className="text-stone-600">/</span>
+              <span className="text-amber-400 font-bold" title="Kas Keluar (Gas, Es, dll)">
+                -{formatRupiah(currentShift.total_expenses || 0)}
+              </span>
+            </div>
           </div>
 
           <div className="p-3.5 rounded-xl bg-stone-950 border border-stone-800 shadow-xs">
@@ -201,6 +227,7 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
                 <th className="py-3 px-3 font-semibold">Jam Shift</th>
                 <th className="py-3 px-3 font-semibold text-right">Modal Awal</th>
                 <th className="py-3 px-3 font-semibold text-right">Penjualan Tunai</th>
+                <th className="py-3 px-3 font-semibold text-right">Kas +/-</th>
                 <th className="py-3 px-3 font-semibold text-right">Penjualan QRIS</th>
                 <th className="py-3 px-3 font-semibold text-right">Uang Fisik Dihitung</th>
                 <th className="py-3 px-3 font-semibold text-center">Selisih Kas</th>
@@ -210,7 +237,8 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
             </thead>
             <tbody className="divide-y divide-stone-800/60">
               {historicalShifts.map((s) => {
-                const expected = s.initial_cash + s.total_cash_sales
+                const netAdjustment = (s.total_incomes || 0) - (s.total_expenses || 0)
+                const expected = s.initial_cash + s.total_cash_sales + (s.total_incomes || 0) - (s.total_expenses || 0)
                 const diff = (s.actual_cash_counted || 0) - expected
                 const schedule = formatShiftSchedule(s.start_time, s.end_time)
 
@@ -231,6 +259,20 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
                     </td>
                     <td className="py-3 px-3 text-right font-mono tabular-nums text-[#E2DFD2] font-semibold">
                       {formatRupiah(s.total_cash_sales)}
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono tabular-nums">
+                      {netAdjustment === 0 ? (
+                        <span className="text-stone-500">Rp 0</span>
+                      ) : (
+                        <div className="flex flex-col items-end text-[10px]">
+                          {(s.total_incomes || 0) > 0 && (
+                            <span className="text-emerald-400 font-semibold">+{formatRupiah(s.total_incomes || 0)}</span>
+                          )}
+                          {(s.total_expenses || 0) > 0 && (
+                            <span className="text-amber-400 font-semibold">-{formatRupiah(s.total_expenses || 0)}</span>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="py-3 px-3 text-right font-mono tabular-nums text-cyan-300">
                       {formatRupiah(s.total_qris_sales)}
@@ -311,6 +353,19 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
           }}
         />
       )}
+
+      {/* Dialog Konfirmasi Hapus Shift */}
+      <ConfirmDialog
+        isOpen={!!shiftToDeleteId}
+        title="Hapus Data Shift"
+        message="Yakin ingin menghapus data shift ini? Data log shift dan audit kasir yang dihapus tidak dapat dipulihkan."
+        confirmText="Hapus Shift"
+        cancelText="Batal"
+        variant="danger"
+        isLoading={isDeletingShift}
+        onConfirm={handleConfirmDeleteShift}
+        onCancel={() => !isDeletingShift && setShiftToDeleteId(null)}
+      />
 
     </div>
   )
