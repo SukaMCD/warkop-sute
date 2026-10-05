@@ -14,11 +14,14 @@ import {
   Wifi,
   WifiOff,
   RefreshCw,
-  Check
+  Check,
+  Download,
+  Sparkles
 } from 'lucide-react'
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
 import { subscribeToQueue, syncPendingOrders, getPendingCount } from '../../utils/offlineQueue'
+import { subscribePwaInstall, subscribePwaUpdate, promptPwaInstall, applyPwaUpdate } from '../../utils/pwa'
 
 interface HeaderProps {
   activeTab: TabType
@@ -42,6 +45,18 @@ export const Header = ({
   const [pendingSyncCount, setPendingSyncCount] = useState<number>(() => getPendingCount())
   const [isSyncing, setIsSyncing] = useState<boolean>(false)
   const [justSynced, setJustSynced] = useState<boolean>(false)
+  const [canInstallPwa, setCanInstallPwa] = useState<boolean>(false)
+  const [hasPwaUpdate, setHasPwaUpdate] = useState<boolean>(false)
+
+  // Listen to PWA installability and update events
+  useEffect(() => {
+    const unsubInstall = subscribePwaInstall(setCanInstallPwa)
+    const unsubUpdate = subscribePwaUpdate(() => setHasPwaUpdate(true))
+    return () => {
+      unsubInstall()
+      unsubUpdate()
+    }
+  }, [])
 
   // Listen to network status and offline queue
   useEffect(() => {
@@ -256,6 +271,33 @@ export const Header = ({
                 <Wifi className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span className="text-[11px]">Online</span>
               </div>
+            )}
+
+            {/* PWA Update Banner */}
+            {hasPwaUpdate && (
+              <button
+                type="button"
+                onClick={applyPwaUpdate}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-600/40 text-amber-900 dark:text-[#E2DFD2] dark:border-[#E2DFD2]/40 text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95 animate-pulse"
+                title="Pembaruan sistem telah siap di latar belakang. Klik untuk menerapkan versi terbaru."
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
+                <span className="hidden sm:inline">Pembaruan Tersedia</span>
+                <span className="text-[11px] underline font-mono">Muat Ulang</span>
+              </button>
+            )}
+
+            {/* PWA Install Button */}
+            {canInstallPwa && (
+              <button
+                type="button"
+                onClick={promptPwaInstall}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/70 dark:bg-stone-900 dark:hover:bg-stone-850 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95"
+                title="Pasang aplikasi POS Warkop Sudut Temu ke layar utama perangkat"
+              >
+                <Download className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
+                <span className="hidden md:inline">Install POS</span>
+              </button>
             )}
 
             {/* Realtime Clock & Date */}
