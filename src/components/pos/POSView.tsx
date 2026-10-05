@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import type { Product, Order, User, Shift, ReceiptConfig, ShiftExpense } from '../../types'
 import {
   Search,
@@ -24,7 +24,8 @@ import {
   PowerOff,
   ArrowUpDown,
   Tag,
-  Split
+  Split,
+  AlertCircle
 } from 'lucide-react'
 import { calculateShiftDuration } from '../../utils/shiftHelpers'
 import { RecordExpenseModal } from './RecordExpenseModal'
@@ -65,6 +66,8 @@ export const POSView = ({
   const [orderType, setOrderType] = useState<'dine_in' | 'takeaway'>('dine_in')
   const [tableNumber, setTableNumber] = useState<string>('')
   const [customerName, setCustomerName] = useState<string>('')
+  const [nameError, setNameError] = useState<boolean>(false)
+  const customerNameInputRef = useRef<HTMLInputElement>(null)
 
   // Checkout & Payment Modal
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
@@ -204,6 +207,7 @@ export const POSView = ({
     setCart([])
     setTableNumber('')
     setCustomerName('')
+    setNameError(false)
     setCashTendered(0)
     setDiscountValue(0)
     setDiscountReason('')
@@ -271,6 +275,12 @@ export const POSView = ({
   // Open payment modal
   const handleOpenPayment = () => {
     if (cart.length === 0) return
+    if (!customerName.trim()) {
+      setNameError(true)
+      customerNameInputRef.current?.focus()
+      return
+    }
+    setNameError(false)
     setPaymentMethod('qris')
     setCashTendered(totalAmount) // default to exact amount
     setIsPaymentModalOpen(true)
@@ -532,11 +542,11 @@ export const POSView = ({
                 <button
                   type="button"
                   onClick={onEndShift}
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-rose-900/60 hover:bg-rose-950/30 text-stone-300 hover:text-rose-400 text-[11px] font-mono font-semibold transition-colors cursor-pointer"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-950/50 border border-rose-500/60 transition-all cursor-pointer shrink-0"
                   title="Akhiri Shift Kasir & Cetak Rekap"
                 >
-                  <PowerOff className="w-3.5 h-3.5 text-rose-400" />
-                  <span className="hidden sm:inline">Akhiri Shift</span>
+                  <PowerOff className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span className="font-bold tracking-tight">Akhiri Shift</span>
                 </button>
               )}
             </div>
@@ -562,7 +572,7 @@ export const POSView = ({
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span>{cat.label}</span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
                     isActive ? 'bg-stone-950/15 text-stone-950 font-bold' : 'bg-stone-900 text-stone-400'
                   }`}>
                     {count}
@@ -701,21 +711,39 @@ export const POSView = ({
           </div>
 
           {/* Table / Customer Name inputs */}
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              type="text"
-              placeholder={orderType === 'dine_in' ? 'Nomor Meja (cth: Meja 3)' : 'Nama Pemesan'}
-              value={tableNumber}
-              onChange={(e) => setTableNumber(e.target.value)}
-              className="bg-stone-950 border border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-100 placeholder-stone-400 focus:outline-none focus:border-[#E2DFD2]"
-            />
-            <input
-              type="text"
-              placeholder="Catatan / Nama"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className="bg-stone-950 border border-stone-800 rounded-lg px-2.5 py-1.5 text-xs text-stone-100 placeholder-stone-400 focus:outline-none focus:border-[#E2DFD2]"
-            />
+          <div className="space-y-1.5">
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="text"
+                placeholder={orderType === 'dine_in' ? 'Nomor Meja (cth: Meja 3)' : 'Nomor Meja / Antrean'}
+                value={tableNumber}
+                onChange={(e) => setTableNumber(e.target.value)}
+                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-100 placeholder-stone-400 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+              />
+              <input
+                ref={customerNameInputRef}
+                type="text"
+                placeholder="Nama"
+                value={customerName}
+                onChange={(e) => {
+                  setCustomerName(e.target.value)
+                  if (nameError && e.target.value.trim()) {
+                    setNameError(false)
+                  }
+                }}
+                className={`w-full bg-stone-950 border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-100 placeholder-stone-400 focus:outline-none transition-colors ${
+                  nameError
+                    ? 'border-rose-500/90 focus:border-rose-500 ring-1 ring-rose-500/30 bg-rose-950/20'
+                    : 'border-stone-800 focus:border-[#E2DFD2]'
+                }`}
+              />
+            </div>
+            {nameError && (
+              <p className="text-[11px] text-rose-400 font-medium flex items-center gap-1 animate-in fade-in duration-150">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>Nama pemesan wajib diisi</span>
+              </p>
+            )}
           </div>
         </div>
 
@@ -1246,9 +1274,9 @@ export const POSView = ({
                           </span>
                         </div>
                         {cashTendered > 0 && cashTendered < totalAmount && (
-                          <div className="pt-1 flex items-center gap-2 text-[10px] text-stone-400 font-mono">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span>Pelanggan scan QRIS sisa {formatIDR(totalAmount - cashTendered)}</span>
+                          <div className="pt-1.5 flex items-center gap-1.5 text-[11px] text-stone-300 font-mono">
+                            <QrCode className="w-3.5 h-3.5 text-[#E2DFD2] shrink-0" />
+                            <span>Pelanggan scan QRIS sisa <strong className="text-[#E2DFD2] font-bold">{formatIDR(totalAmount - cashTendered)}</strong></span>
                           </div>
                         )}
                       </div>
@@ -1420,51 +1448,68 @@ export const POSView = ({
       )}
 
       {/* MODAL 3: Success & Thermal Receipt Print Modal */}
+      {/* MODAL 3: Success & Thermal Receipt Print Modal */}
       {showReceiptModal && completedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-4">
-          <div className="w-full max-w-sm bg-stone-900 border border-stone-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
-            
-            <div className="flex items-center justify-between border-b border-stone-800 pb-3 shrink-0">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <CheckCircle2 className="w-5 h-5" />
-                <span className="text-sm font-bold text-stone-100">Transaksi Berhasil</span>
+        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+          
+          {/* Header Bar */}
+          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-400 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
               </div>
+              <div>
+                <span className="text-[10px] font-mono uppercase text-emerald-400 font-semibold tracking-wider">
+                  Transaksi Berhasil
+                </span>
+                <h3 className="text-base font-bold font-mono text-stone-100">
+                  {completedOrder.order_number}
+                </h3>
+              </div>
+            </div>
+
+            {/* View Mode Switcher in Success Modal Header */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 p-1 bg-stone-950 rounded-xl border border-stone-800">
+                <button
+                  type="button"
+                  onClick={() => setPrintMode('receipt')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    printMode === 'receipt'
+                      ? 'bg-stone-850 text-stone-100 border border-stone-700 shadow-xs'
+                      : 'text-stone-400 hover:text-stone-200'
+                  }`}
+                >
+                  <Receipt className="w-3.5 h-3.5" />
+                  <span>Struk Kasir</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPrintMode('kitchen')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    printMode === 'kitchen'
+                      ? 'bg-[#E2DFD2]/10 text-[#E2DFD2] border border-[#E2DFD2]/50 shadow-xs'
+                      : 'text-stone-400 hover:text-stone-200'
+                  }`}
+                >
+                  <UtensilsCrossed className="w-3.5 h-3.5" />
+                  <span>Tiket Dapur</span>
+                </button>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setShowReceiptModal(false)}
-                className="text-stone-400 hover:text-stone-200"
+                className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
+          </header>
 
-            {/* View Mode Switcher in Success Modal */}
-            <div className="flex items-center gap-1.5 p-1 bg-stone-950 rounded-xl border border-stone-800 shrink-0">
-              <button
-                type="button"
-                onClick={() => setPrintMode('receipt')}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  printMode === 'receipt'
-                    ? 'bg-stone-850 text-stone-100 border border-stone-700 shadow-xs'
-                    : 'text-stone-400 hover:text-stone-200'
-                }`}
-              >
-                <Receipt className="w-3.5 h-3.5" />
-                <span>Struk Kasir</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintMode('kitchen')}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  printMode === 'kitchen'
-                    ? 'bg-[#E2DFD2]/10 text-[#E2DFD2] border border-[#E2DFD2]/50 shadow-xs'
-                    : 'text-stone-400 hover:text-stone-200'
-                }`}
-              >
-                <UtensilsCrossed className="w-3.5 h-3.5" />
-                <span>Tiket Dapur</span>
-              </button>
-            </div>
+          {/* Centered Body with Printable Thermal Paper */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
+            <div className="w-full max-w-sm">
 
             {/* Thermal Print Paper Layout */}
             {printMode === 'kitchen' ? (
@@ -1675,34 +1720,36 @@ export const POSView = ({
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2 pt-1 shrink-0">
-              <button
-                type="button"
-                onClick={handlePrintReceipt}
-                className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 hover:border-[#E2DFD2] text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Printer className="w-4 h-4 text-[#E2DFD2]" />
-                <span>Cetak Struk Kasir</span>
-              </button>
-              <button
-                type="button"
-                onClick={handlePrintKitchen}
-                className="flex-1 py-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <UtensilsCrossed className="w-4 h-4 text-[#E2DFD2]" />
-                <span>Cetak Tiket Dapur</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowReceiptModal(false)}
-                className="px-4 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-              >
-                <span>Pesanan Baru</span>
-              </button>
             </div>
-
           </div>
+
+          {/* Sticky Bottom Action Bar */}
+          <footer className="border-t border-stone-800 bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex items-center justify-end gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={handlePrintReceipt}
+              className="py-2.5 px-4 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2] text-stone-200 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Printer className="w-4 h-4 text-[#E2DFD2]" />
+              <span>Cetak Struk Kasir</span>
+            </button>
+            <button
+              type="button"
+              onClick={handlePrintKitchen}
+              className="py-2.5 px-4 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-[#E2DFD2] text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <UtensilsCrossed className="w-4 h-4 text-[#E2DFD2]" />
+              <span>Cetak Tiket Dapur</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowReceiptModal(false)}
+              className="py-2.5 px-5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+            >
+              <span>Pesanan Baru</span>
+            </button>
+          </footer>
+
         </div>
       )}
 
@@ -1719,30 +1766,35 @@ export const POSView = ({
 
       {/* MODAL: Tambah Diskon / Promo */}
       {isDiscountModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="w-full max-w-sm bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-800">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2]">
-                  <Tag className="w-3.5 h-3.5" />
-                </div>
-                <h4 className="text-sm font-bold text-stone-100">Diskon & Promo Pesanan</h4>
+        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+                <Tag className="w-5 h-5 stroke-2" />
               </div>
-              <button
-                type="button"
-                onClick={() => setIsDiscountModalOpen(false)}
-                className="p-1 rounded-lg text-stone-400 hover:text-stone-200 hover:bg-stone-800 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div>
+                <h4 className="text-base font-bold text-stone-100">Diskon & Promo Pesanan</h4>
+                <p className="text-xs text-stone-400">Terapkan potongan nominal rupiah atau persentase promo</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsDiscountModalOpen(false)}
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </header>
+
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
+            <div className="w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-5">
 
             {/* Tipe Diskon (Nominal vs Persen) */}
-            <div className="grid grid-cols-2 gap-2 p-1 bg-stone-950 border border-stone-800 rounded-xl">
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-stone-950 border border-stone-800 rounded-xl">
               <button
                 type="button"
                 onClick={() => setTempDiscountType('nominal')}
-                className={`py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   tempDiscountType === 'nominal'
                     ? 'bg-[#E2DFD2] text-stone-950 font-bold'
                     : 'text-stone-400 hover:text-stone-200'
@@ -1753,7 +1805,7 @@ export const POSView = ({
               <button
                 type="button"
                 onClick={() => setTempDiscountType('percent')}
-                className={`py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   tempDiscountType === 'percent'
                     ? 'bg-[#E2DFD2] text-stone-950 font-bold'
                     : 'text-stone-400 hover:text-stone-200'
@@ -1771,7 +1823,7 @@ export const POSView = ({
                     key={pct}
                     type="button"
                     onClick={() => setTempDiscountValue(pct)}
-                    className={`py-2 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
+                    className={`py-2.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                       tempDiscountValue === pct
                         ? 'bg-stone-800 border-[#E2DFD2] text-[#E2DFD2]'
                         : 'bg-stone-950 border-stone-800 text-stone-300 hover:border-stone-700'
@@ -1788,7 +1840,7 @@ export const POSView = ({
                     key={nom}
                     type="button"
                     onClick={() => setTempDiscountValue(nom)}
-                    className={`py-2 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
+                    className={`py-2.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                       tempDiscountValue === nom
                         ? 'bg-stone-800 border-[#E2DFD2] text-[#E2DFD2]'
                         : 'bg-stone-950 border-stone-800 text-stone-300 hover:border-stone-700'
@@ -1802,7 +1854,7 @@ export const POSView = ({
 
             {/* Custom Value Input */}
             <div>
-              <label className="text-[11px] font-mono text-stone-400 block mb-1">
+              <label className="text-xs font-mono text-stone-400 block mb-1.5 font-medium">
                 {tempDiscountType === 'percent' ? 'Nilai Diskon (%)' : 'Nominal Potongan (Rp)'}
               </label>
               <NumericInput
@@ -1819,7 +1871,7 @@ export const POSView = ({
 
             {/* Reason / Promo Name */}
             <div>
-              <label className="text-[11px] font-mono text-stone-400 block mb-1">
+              <label className="text-xs font-mono text-stone-400 block mb-1.5 font-medium">
                 Keterangan / Alasan Promo (Opsional)
               </label>
               <input
@@ -1827,12 +1879,12 @@ export const POSView = ({
                 value={tempDiscountReason}
                 onChange={(e) => setTempDiscountReason(e.target.value)}
                 placeholder="Contoh: Teman Owner, Jumat Berkah, Nobar"
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2]"
+                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2]"
               />
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 pt-2 border-t border-stone-800">
+            <div className="flex items-center gap-3 pt-3 border-t border-stone-800">
               <button
                 type="button"
                 onClick={() => {
@@ -1840,7 +1892,7 @@ export const POSView = ({
                   setDiscountReason('')
                   setIsDiscountModalOpen(false)
                 }}
-                className="flex-1 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-400 hover:text-stone-200 text-xs font-semibold cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-stone-400 hover:text-stone-200 text-xs font-semibold cursor-pointer"
               >
                 Hapus Diskon
               </button>
@@ -1852,11 +1904,12 @@ export const POSView = ({
                   setDiscountReason(tempDiscountReason.trim())
                   setIsDiscountModalOpen(false)
                 }}
-                className="flex-1 py-2 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                className="flex-1 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all cursor-pointer shadow-sm"
               >
                 Terapkan Diskon
               </button>
             </div>
+          </div>
           </div>
         </div>
       )}

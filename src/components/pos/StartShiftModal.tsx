@@ -89,124 +89,136 @@ export const StartShiftModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-5">
-        
-        {/* Header Modal */}
-        <div className="flex items-center gap-3 pb-4 border-b border-stone-800">
-          <div className="w-11 h-11 rounded-2xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs shrink-0">
-            <PlayCircle className="w-6 h-6 stroke-2" />
+    <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+      
+      {/* Header Bar */}
+      <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs shrink-0">
+            <PlayCircle className="w-5 h-5 stroke-2" />
           </div>
           <div>
             <h2 className="text-base font-bold text-stone-100">
               Mulai Shift Kasir Baru
             </h2>
             <p className="text-xs text-stone-400 mt-0.5">
-              Masukkan saldo awal fisik di laci kasir
+              Masukkan saldo modal awal fisik di laci kasir
             </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono text-stone-400 bg-stone-900 border border-stone-800 px-3 py-1.5 rounded-lg">
+            Terminal Kasir
+          </span>
+        </div>
+      </header>
 
-        {/* Info Petugas & Waktu */}
-        <div className="grid grid-cols-2 gap-3 p-3.5 rounded-2xl bg-stone-950 border border-stone-800/80">
-          <div>
-            <span className="text-[11px] text-stone-500 uppercase tracking-wider font-mono block mb-1">
-              Petugas Kasir
-            </span>
-            {cashiers.length > 0 ? (
-              <SearchableSelect
-                value={cashierId}
-                onChange={id => {
-                  setCashierId(id)
-                  const found = cashiers.find(c => c.id === id)
-                  if (found) setCashierName(found.name)
-                }}
-                options={cashiers.map(c => ({
-                  value: c.id,
-                  label: c.name,
-                  badge: 'Kasir'
-                }))}
-                placeholder="Pilih petugas kasir..."
-                searchPlaceholder="Cari nama kasir..."
-              />
-            ) : (
-              <span className="text-xs font-bold text-stone-200 mt-0.5 block truncate">
-                {currentUser.name}
-              </span>
+      {/* Fullscreen Form */}
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto px-6 sm:px-12 py-8">
+          <div className="max-w-3xl mx-auto space-y-6">
+            
+            {/* Info Petugas & Waktu */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-stone-900/60 border border-stone-800">
+              <div>
+                <span className="text-xs text-stone-500 uppercase tracking-wider font-mono block mb-1.5">
+                  Petugas Kasir
+                </span>
+                {cashiers.length > 0 ? (
+                  <SearchableSelect
+                    value={cashierId}
+                    onChange={id => {
+                      setCashierId(id)
+                      const found = cashiers.find(c => c.id === id)
+                      if (found) setCashierName(found.name)
+                    }}
+                    options={cashiers.map(c => ({
+                      value: c.id,
+                      label: c.name,
+                      badge: 'Kasir'
+                    }))}
+                    placeholder="Pilih petugas kasir..."
+                    searchPlaceholder="Cari nama kasir..."
+                  />
+                ) : (
+                  <span className="text-sm font-bold text-stone-200 mt-1 block truncate">
+                    {currentUser.name}
+                  </span>
+                )}
+              </div>
+              <div>
+                <span className="text-xs text-stone-500 uppercase tracking-wider font-mono flex items-center gap-1.5 mb-1.5">
+                  <Clock className="w-4 h-4 text-stone-400" />
+                  <span>Jam Mulai Shift</span>
+                </span>
+                <span className="text-base font-mono font-bold text-[#E2DFD2] block mt-1">
+                  {currentTime} WIB
+                </span>
+              </div>
+            </div>
+
+            {errorMsg && (
+              <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs">
+                {errorMsg}
+              </div>
             )}
-          </div>
-          <div>
-            <span className="text-[11px] text-stone-500 uppercase tracking-wider font-mono flex items-center gap-1">
-              <Clock className="w-3 h-3 text-stone-400" />
-              <span>Jam Mulai</span>
-            </span>
-            <span className="text-xs font-mono font-bold text-[#E2DFD2] mt-0.5 block">
-              {currentTime} WIB
-            </span>
+
+            <div>
+              <label className="text-stone-200 text-xs font-semibold block mb-1.5 font-mono uppercase tracking-wider">
+                Saldo Awal Laci / Modal Kas (Rp) <span className="text-rose-400">*</span>
+              </label>
+              <NumericInput
+                value={initialCash}
+                onChange={setInitialCash}
+                min={0}
+                step={10000}
+                prefix="Rp"
+                required
+                placeholder="100.000"
+              />
+              <p className="text-xs text-stone-400 mt-2 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#E2DFD2] shrink-0" />
+                <span>Hitung uang fisik di laci kasir secara teliti sebelum mulai transaksi.</span>
+              </p>
+            </div>
+
+            <div>
+              <label className="text-stone-200 text-xs font-semibold block mb-1.5 font-mono uppercase tracking-wider">
+                Catatan Pembukaan (Opsional)
+              </label>
+              <textarea
+                rows={4}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Contoh: Pecahan 50rb (1 lbr), 20rb (2 lbr), 10rb (1 lbr)..."
+                className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors resize-none"
+              />
+            </div>
+
           </div>
         </div>
 
-        {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs">
-            {errorMsg}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-stone-300 text-xs font-semibold block mb-1.5">
-              Saldo Awal Laci / Modal Kas (Rp) <span className="text-rose-400">*</span>
-            </label>
-            <NumericInput
-              value={initialCash}
-              onChange={setInitialCash}
-              min={0}
-              step={10000}
-              prefix="Rp"
-              required
-              placeholder="100.000"
-            />
-            <p className="text-[11px] text-stone-500 mt-1.5 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-              <span>Hitung uang fisik di laci kasir secara teliti sebelum mulai transaksi.</span>
-            </p>
-          </div>
-
-          <div>
-            <label className="text-stone-300 text-xs font-semibold block mb-1.5">
-              Catatan Pembukaan (Opsional)
-            </label>
-            <textarea
-              rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Contoh: Pecahan 50rb (1 lbr), 20rb (2 lbr), 10rb (1 lbr)..."
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors resize-none"
-            />
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] active:bg-[#c9c6ba] text-stone-950 font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Membuka Shift...</span>
-                </>
-              ) : (
-                <>
-                  <PlayCircle className="w-4 h-4 stroke-[2.5]" />
-                  <span>Buka Shift & Masuk ke Kasir</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-
-      </div>
+        {/* Sticky Bottom Fullscreen Footer Bar */}
+        <footer className="border-t border-stone-800 bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-end shrink-0">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] active:bg-[#c9c6ba] text-stone-950 font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Membuka Shift...</span>
+              </>
+            ) : (
+              <>
+                <PlayCircle className="w-4 h-4 stroke-[2.5]" />
+                <span>Buka Shift & Masuk ke Kasir</span>
+              </>
+            )}
+          </button>
+        </footer>
+      </form>
     </div>
   )
 }

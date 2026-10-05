@@ -328,144 +328,152 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
       </div>
 
       {/* Modal: Tambah Petugas Baru */}
+      {/* Modal: Tambah Petugas Baru */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-800 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2]">
-                  <UserPlus className="w-4 h-4" />
-                </div>
-                <h3 className="text-sm font-bold text-stone-100">Tambah Kasir Baru</h3>
+        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+                <UserPlus className="w-5 h-5 stroke-2" />
               </div>
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(false)}
-                className="w-7 h-7 rounded-lg bg-stone-950 hover:bg-stone-800 border border-stone-800 flex items-center justify-center text-stone-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <div>
+                <h3 className="text-base font-bold text-stone-100">Tambah Kasir Baru</h3>
+                <p className="text-xs text-stone-400">Daftarkan akun kasir atau operator baru untuk operasional warkop</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(false)}
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </header>
 
-            <form onSubmit={handleCreateUser} className="space-y-3.5">
-              <div>
-                <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-                  Nama Petugas
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Budi Santoso"
-                  value={newName}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    setNewName(val)
-                    setNewUsername(generateUsername(val))
-                  }}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
-                />
-              </div>
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
+            <div className="w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+              <form onSubmit={handleCreateUser} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                    Nama Petugas
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Budi Santoso"
+                    value={newName}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setNewName(val)
+                      setNewUsername(generateUsername(val))
+                    }}
+                    className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-                  PIN Akses (6-Digit Angka)
-                </label>
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  maxLength={6}
-                  required
-                  placeholder="Contoh: 123456"
-                  value={newPin}
-                  onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs font-mono tracking-widest text-center text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
-                />
-                <span className="text-[10px] text-stone-500 font-mono block mt-1">
-                  Harus 6 digit angka numerik.
-                </span>
-              </div>
+                <div>
+                  <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                    PIN Akses (6-Digit Angka)
+                  </label>
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={6}
+                    required
+                    placeholder="Contoh: 123456"
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-sm font-mono tracking-widest text-center text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
+                  />
+                  <span className="text-[11px] text-stone-500 font-mono block mt-1.5 text-center">
+                    Harus tepat 6 digit angka numerik.
+                  </span>
+                </div>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-stone-800">
-                <button
-                  type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="flex-1 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isCreating}
-                  className="flex-1 py-2 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                >
-                  {isCreating ? 'Menyimpan...' : 'Simpan Petugas'}
-                </button>
-              </div>
-            </form>
+                <div className="flex items-center gap-3 pt-3 border-t border-stone-800">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCreating}
+                    className="flex-1 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
+                  >
+                    {isCreating ? 'Menyimpan...' : 'Simpan Petugas'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* Modal: Ubah PIN */}
       {selectedUserForPin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-800 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2]">
-                  <KeyRound className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-stone-100">Ubah PIN Akses</h3>
-                  <p className="text-[11px] text-stone-400">{selectedUserForPin.name} (@{selectedUserForPin.username})</p>
-                </div>
+        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+                <KeyRound className="w-5 h-5 stroke-2" />
               </div>
-              <button
-                type="button"
-                onClick={() => setSelectedUserForPin(null)}
-                className="w-7 h-7 rounded-lg bg-stone-950 hover:bg-stone-800 border border-stone-800 flex items-center justify-center text-stone-400 hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdatePin} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-                  Masukkan PIN 6-Digit Baru
-                </label>
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  maxLength={6}
-                  required
-                  placeholder="******"
-                  value={editPin}
-                  onChange={(e) => setEditPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-sm font-mono tracking-widest text-center text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
-                />
-                <span className="text-[10px] text-stone-500 font-mono block mt-1 text-center">
-                  PIN baru akan dienkripsi dengan standar SHA-256.
-                </span>
+                <h3 className="text-base font-bold text-stone-100">Ubah PIN Akses</h3>
+                <p className="text-xs text-stone-400">{selectedUserForPin.name} (@{selectedUserForPin.username})</p>
               </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedUserForPin(null)}
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </header>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-stone-800">
-                <button
-                  type="button"
-                  onClick={() => setSelectedUserForPin(null)}
-                  className="flex-1 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isUpdatingPin || editPin.length !== 6}
-                  className="flex-1 py-2 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] active:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
-                >
-                  {isUpdatingPin ? 'Menyimpan...' : 'Perbarui PIN'}
-                </button>
-              </div>
-            </form>
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
+            <div className="w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+              <form onSubmit={handleUpdatePin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                    Masukkan PIN 6-Digit Baru
+                  </label>
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    maxLength={6}
+                    required
+                    placeholder="******"
+                    value={editPin}
+                    onChange={(e) => setEditPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-3 text-sm font-mono tracking-widest text-center text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
+                  />
+                  <span className="text-[11px] text-stone-500 font-mono block mt-1.5 text-center">
+                    PIN baru akan dienkripsi dengan standar SHA-256.
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 pt-3 border-t border-stone-800">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUserForPin(null)}
+                    className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isUpdatingPin || editPin.length !== 6}
+                    className="flex-1 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] active:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-sm"
+                  >
+                    {isUpdatingPin ? 'Menyimpan...' : 'Perbarui PIN'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

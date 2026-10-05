@@ -564,31 +564,32 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
       </div>
 
       {/* Modal Detail Transaksi & Cetak Ulang Struk */}
+      {/* Modal Detail Transaksi & Cetak Ulang Struk */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
-            
-            {/* Header Modal */}
-            <div className="flex items-center justify-between pb-3 border-b border-stone-800 mb-4 shrink-0">
-              <div>
-                <span className="text-[10px] font-mono uppercase text-[#E2DFD2] tracking-wider font-semibold">
-                  Rincian Transaksi
-                </span>
-                <h3 className="text-base font-bold font-mono text-stone-100">
-                  {selectedOrder.order_number}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedOrder(null)}
-                className="w-8 h-8 rounded-xl bg-stone-950 hover:bg-stone-800 border border-stone-800 flex items-center justify-center text-stone-400 hover:text-white transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+          
+          {/* Header Modal */}
+          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+            <div>
+              <span className="text-[10px] font-mono uppercase text-[#E2DFD2] tracking-wider font-semibold">
+                Rincian Transaksi
+              </span>
+              <h3 className="text-base font-bold font-mono text-stone-100">
+                {selectedOrder.order_number}
+              </h3>
             </div>
+            <button
+              type="button"
+              onClick={() => setSelectedOrder(null)}
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </header>
 
-            {/* Content (Scrollable) */}
-            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+          {/* Content (Scrollable) */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center">
+            <div className="w-full max-w-xl space-y-6">
 
               {/* Status Notice if Cancelled */}
               {selectedOrder.status === 'cancelled' && (
@@ -957,35 +958,34 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
               )}
 
             </div>
-
-            {/* Footer Buttons */}
-            <div className="mt-4 pt-3 border-t border-stone-800 flex flex-col sm:flex-row items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handlePrintReceipt}
-                className="w-full sm:flex-1 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-[#E2DFD2] text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Printer className="w-3.5 h-3.5 text-[#E2DFD2]" />
-                <span>Cetak Struk Kasir</span>
-              </button>
-              <button
-                type="button"
-                onClick={handlePrintKitchen}
-                className="w-full sm:flex-1 py-2 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <UtensilsCrossed className="w-3.5 h-3.5 text-[#E2DFD2]" />
-                <span>Cetak Tiket Dapur</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedOrder(null)}
-                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-750 text-stone-200 text-xs font-semibold transition-all cursor-pointer border border-stone-700"
-              >
-                Tutup
-              </button>
-            </div>
-
           </div>
+
+          {/* Sticky Bottom Footer Buttons */}
+          <footer className="border-t border-stone-800 bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex flex-col sm:flex-row items-center justify-end gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={handlePrintReceipt}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2] text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Printer className="w-3.5 h-3.5 text-[#E2DFD2]" />
+              <span>Cetak Struk Kasir</span>
+            </button>
+            <button
+              type="button"
+              onClick={handlePrintKitchen}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <UtensilsCrossed className="w-3.5 h-3.5 text-[#E2DFD2]" />
+              <span>Cetak Tiket Dapur</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedOrder(null)}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-750 text-stone-200 text-xs font-semibold transition-all cursor-pointer border border-stone-700"
+            >
+              Tutup
+            </button>
+          </footer>
         </div>
       )}
 

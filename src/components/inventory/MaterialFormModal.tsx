@@ -127,209 +127,210 @@ export const MaterialFormModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-lg p-5 sm:p-6 shadow-2xl relative space-y-4 max-h-[92vh] overflow-y-auto">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-stone-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
-              {isEditing ? <Pencil className="w-4 h-4 stroke-2" /> : <Plus className="w-4 h-4 stroke-2" />}
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-stone-100">
-                {isEditing ? 'Edit Master Bahan Baku' : 'Tambah Bahan Baku Baru'}
-              </h3>
-              <p className="text-[11px] text-stone-400">
-                Khusus Owner: Kelola spesifikasi bahan, satuan, dan harga modal (HPP)
-              </p>
-            </div>
+    <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+      
+      {/* Header Bar */}
+      <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+            {isEditing ? <Pencil className="w-5 h-5 stroke-2" /> : <Plus className="w-5 h-5 stroke-2" />}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-stone-950 hover:bg-stone-800 border border-stone-800 flex items-center justify-center text-stone-400 hover:text-white transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {errorMessage && (
-          <div className="p-3 rounded-xl bg-rose-950/50 border border-rose-900/60 flex items-center gap-2 text-rose-300 text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Nama Bahan */}
           <div>
-            <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-              Nama Bahan Baku <span className="text-rose-400">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Contoh: Gas LPG 3kg Melon / Biji Kopi Robusta"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors"
-            />
+            <h3 className="text-base font-bold text-stone-100">
+              {isEditing ? 'Edit Master Bahan Baku' : 'Tambah Bahan Baku Baru'}
+            </h3>
+            <p className="text-xs text-stone-400">
+              Khusus Owner: Kelola spesifikasi bahan, satuan, dan harga modal (HPP)
+            </p>
           </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </header>
 
-          {/* Kategori & Satuan */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* Fullscreen Form */}
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto px-6 sm:px-12 py-8">
+          <div className="max-w-4xl mx-auto space-y-6">
+
+            {errorMessage && (
+              <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-900/60 flex items-center gap-2 text-rose-300 text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* Nama Bahan */}
             <div>
-              <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-                Kategori
+              <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                Nama Bahan Baku <span className="text-rose-400">*</span>
               </label>
-              <SearchableSelect
-                value={category}
-                onChange={setCategory}
-                searchPlaceholder="Cari kategori..."
-                placeholder="Pilih kategori..."
-                options={CATEGORIES.map((c) => ({
-                  value: c,
-                  label: c
-                }))}
+              <input
+                type="text"
+                required
+                placeholder="Contoh: Gas LPG 3kg Melon / Biji Kopi Robusta"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors"
               />
             </div>
 
-            <div>
-              <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-                Satuan Ukuran <span className="text-rose-400">*</span>
-              </label>
-              <div className="flex gap-2">
+            {/* Kategori & Satuan */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  Kategori
+                </label>
+                <SearchableSelect
+                  value={category}
+                  onChange={setCategory}
+                  searchPlaceholder="Cari kategori..."
+                  placeholder="Pilih kategori..."
+                  options={CATEGORIES.map((c) => ({
+                    value: c,
+                    label: c
+                  }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  Satuan Ukuran <span className="text-rose-400">*</span>
+                </label>
                 <input
                   type="text"
                   required
                   placeholder="kg / kaleng / tabung"
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors font-mono"
+                  className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors font-mono"
+                />
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {COMMON_UNITS.slice(0, 6).map((u) => (
+                    <button
+                      key={u}
+                      type="button"
+                      onClick={() => setUnit(u)}
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border cursor-pointer transition-all ${
+                        unit === u
+                          ? 'bg-[#E2DFD2] text-stone-950 border-[#E2DFD2] font-bold'
+                          : 'bg-stone-900/80 border-stone-800 text-stone-400 hover:text-stone-200'
+                      }`}
+                    >
+                      {u}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Stok Awal & Peringatan Minimum */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  Stok Fisik Saat Ini ({unit || 'satuan'})
+                </label>
+                <NumericInput
+                  value={currentStock}
+                  onChange={(val) => setCurrentStock(val)}
+                  allowDecimals={true}
+                  min={0}
+                  step={1}
+                  placeholder="0"
+                  suffix={unit}
                 />
               </div>
-              <div className="flex flex-wrap gap-1 mt-1.5">
-                {COMMON_UNITS.slice(0, 6).map((u) => (
-                  <button
-                    key={u}
-                    type="button"
-                    onClick={() => setUnit(u)}
-                    className={`text-[10px] font-mono px-1.5 py-0.5 rounded border cursor-pointer ${
-                      unit === u
-                        ? 'bg-[#E2DFD2] text-stone-950 border-[#E2DFD2] font-bold'
-                        : 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-200'
-                    }`}
-                  >
-                    {u}
-                  </button>
-                ))}
+
+              <div>
+                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  Batas Minimum Alert ({unit || 'satuan'})
+                </label>
+                <NumericInput
+                  value={minStockAlert}
+                  onChange={(val) => setMinStockAlert(val)}
+                  allowDecimals={true}
+                  min={0}
+                  step={1}
+                  placeholder="3"
+                  suffix={unit}
+                />
+                <span className="text-[11px] text-stone-500 font-mono mt-1 block">
+                  Notifikasi merah jika sisa stok &le; batas ini
+                </span>
               </div>
             </div>
-          </div>
 
-          {/* Stok Awal & Peringatan Minimum */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-                Stok Fisik Saat Ini ({unit || 'satuan'})
-              </label>
+            {/* Harga Beli Modal (HPP) - Khusus Owner */}
+            <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-mono text-[#E2DFD2] uppercase tracking-wider font-semibold block">
+                  Harga Modal / Beli per {unit || 'satuan'} (Rp)
+                </label>
+                <span className="text-[10px] font-mono text-stone-400">Kerahasiaan Owner</span>
+              </div>
               <NumericInput
-                value={currentStock}
-                onChange={(val) => setCurrentStock(val)}
-                allowDecimals={true}
+                value={costPerUnit}
+                onChange={(val) => setCostPerUnit(val)}
+                prefix="Rp"
                 min={0}
-                step={1}
+                step={500}
                 placeholder="0"
-                suffix={unit}
+                suffix={`/ ${unit || 'satuan'}`}
               />
+              {costPerUnit && typeof costPerUnit === 'number' && costPerUnit > 0 ? (
+                <span className="text-xs font-mono text-[#E2DFD2] font-semibold block">
+                  {formatRupiah(costPerUnit)} / {unit}
+                </span>
+              ) : null}
             </div>
 
+            {/* Supplier */}
             <div>
-              <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-                Batas Minimum Alert ({unit || 'satuan'})
+              <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                Supplier / Toko Langganan (Opsional)
               </label>
-              <NumericInput
-                value={minStockAlert}
-                onChange={(val) => setMinStockAlert(val)}
-                allowDecimals={true}
-                min={0}
-                step={1}
-                placeholder="3"
-                suffix={unit}
+              <input
+                type="text"
+                placeholder="Contoh: Pangkalan Gas Barokah, Pasar Induk"
+                value={supplier}
+                onChange={(e) => setSupplier(e.target.value)}
+                className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors"
               />
-              <span className="text-[10px] text-stone-500 font-mono mt-0.5 block">
-                Notifikasi merah jika sisa stok &le; batas ini
-              </span>
             </div>
-          </div>
 
-          {/* Harga Beli Modal (HPP) - Khusus Owner */}
-          <div className="p-3.5 rounded-2xl bg-stone-900/80 border border-stone-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] font-mono text-[#E2DFD2] uppercase tracking-wider font-semibold block">
-                Harga Modal / Beli per {unit || 'satuan'} (Rp)
-              </label>
-              <span className="text-[10px] font-mono text-stone-400">Kerahasiaan Owner</span>
-            </div>
-            <NumericInput
-              value={costPerUnit}
-              onChange={(val) => setCostPerUnit(val)}
-              prefix="Rp"
-              min={0}
-              step={500}
-              placeholder="0"
-              suffix={`/ ${unit || 'satuan'}`}
-            />
-            {costPerUnit && typeof costPerUnit === 'number' && costPerUnit > 0 ? (
-              <span className="text-[11px] font-mono text-[#E2DFD2] font-semibold block">
-                {formatRupiah(costPerUnit)} / {unit}
-              </span>
-            ) : null}
           </div>
+        </div>
 
-          {/* Supplier */}
-          <div>
-            <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-              Supplier / Toko Langganan (Opsional)
-            </label>
-            <input
-              type="text"
-              placeholder="Contoh: Pangkalan Gas Barokah, Pasar Induk"
-              value={supplier}
-              onChange={(e) => setSupplier(e.target.value)}
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors"
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 pt-2 border-t border-stone-800">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <span>{isEditing ? 'Simpan Perubahan' : 'Tambah Bahan Baku'}</span>
-              )}
-            </button>
-          </div>
-        </form>
-
-      </div>
+        {/* Sticky Bottom Fullscreen Footer Bar */}
+        <footer className="border-t border-stone-800 bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-8 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <span>{isEditing ? 'Simpan Perubahan' : 'Tambah Bahan Baku'}</span>
+            )}
+          </button>
+        </footer>
+      </form>
     </div>
   )
 }

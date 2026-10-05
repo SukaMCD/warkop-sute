@@ -146,9 +146,9 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
               <button
                 type="button"
                 onClick={onEndShift}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-950/40 border border-rose-900/60 hover:bg-rose-900/50 text-rose-300 font-bold text-xs transition-colors cursor-pointer shadow-xs active:scale-95"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-950/50 border border-rose-500/60 transition-all cursor-pointer active:scale-95"
               >
-                <PowerOff className="w-3.5 h-3.5 stroke-[2.2]" />
+                <PowerOff className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Akhiri Shift Sekarang</span>
               </button>
             )}

@@ -294,7 +294,7 @@ export const ProductsCatalogView = ({
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{cat.label}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
                   isActive ? 'bg-stone-950/15 text-stone-950 font-bold' : 'bg-stone-900 text-stone-400'
                 }`}>
                   {count}
@@ -457,155 +457,161 @@ export const ProductsCatalogView = ({
 
       {/* MODAL: Tambah / Edit Menu */}
       {isFormModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-            
-            {/* Header Modal */}
-            <div className="flex items-center justify-between pb-3 border-b border-stone-800 mb-4">
-              <div>
-                <span className="text-[10px] font-mono uppercase text-[#E2DFD2] tracking-wider font-semibold">
-                  {editingProduct ? 'Edit Menu' : 'Menu Baru'}
-                </span>
-                <h3 className="text-base font-bold text-stone-100">
-                  {editingProduct ? `Ubah: ${editingProduct.name}` : 'Tambah Menu Baru'}
-                </h3>
+        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+          
+          {/* Header Modal */}
+          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+            <div>
+              <span className="text-[10px] font-mono uppercase text-[#E2DFD2] tracking-wider font-semibold">
+                {editingProduct ? 'Edit Menu' : 'Menu Baru'}
+              </span>
+              <h3 className="text-base font-bold text-stone-100">
+                {editingProduct ? `Ubah: ${editingProduct.name}` : 'Tambah Menu Baru'}
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsFormModalOpen(false)}
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </header>
+
+          {/* Fullscreen Form */}
+          <form onSubmit={handleSaveProduct} className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto px-6 sm:px-12 py-8">
+              <div className="max-w-4xl mx-auto space-y-6">
+
+                <div>
+                  <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                    Nama Menu <span className="text-rose-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Kopi Tubruk Susu"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                    Kategori Menu <span className="text-rose-400">*</span>
+                  </label>
+                  <SearchableSelect
+                    value={formCategory}
+                    onChange={(val) => setFormCategory(val)}
+                    options={categories.map((c) => ({
+                      value: c.id,
+                      label: c.label
+                    }))}
+                    placeholder="Pilih kategori menu..."
+                    searchPlaceholder="Cari kategori..."
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                      Harga Jual <span className="text-rose-400">*</span>
+                    </label>
+                    <NumericInput
+                      value={formPrice}
+                      onChange={setFormPrice}
+                      min={0}
+                      step={500}
+                      prefix="Rp"
+                      required
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                      Modal / HPP
+                    </label>
+                    <NumericInput
+                      value={formCostPrice}
+                      onChange={setFormCostPrice}
+                      min={0}
+                      step={500}
+                      prefix="Rp"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
+
+                {/* Stok Bahan / Porsi */}
+                <div>
+                  <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                    Stok Porsi / Bahan (Opsional)
+                  </label>
+                  <NumericInput
+                    value={formStock}
+                    onChange={(val) => setFormStock(val === 0 ? '' : val)}
+                    min={0}
+                    step={1}
+                    suffix="porsi"
+                    placeholder="Kosongkan jika stok unlimited"
+                  />
+                  <span className="text-xs text-stone-500 font-mono block mt-1.5">
+                    Sistem otomatis memberi peringatan &quot;Menipis&quot; pada kasir jika sisa &le; 5 porsi.
+                  </span>
+                </div>
+
+                {/* Toggles */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center justify-between p-4 rounded-2xl bg-stone-900/60 border border-stone-800 cursor-pointer">
+                    <div>
+                      <span className="text-stone-200 text-xs font-semibold block">Status Ketersediaan</span>
+                      <span className="text-[11px] text-stone-400">Dapat dipesan kasir saat ini</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={formIsAvailable}
+                      onChange={(e) => setFormIsAvailable(e.target.checked)}
+                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-4 rounded-2xl bg-stone-900/60 border border-stone-800 cursor-pointer">
+                    <div>
+                      <span className="text-stone-200 text-xs font-semibold block">Menu Favorit</span>
+                      <span className="text-[11px] text-stone-400">Tampilkan badge favorit</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={formIsFavorite}
+                      onChange={(e) => setFormIsFavorite(e.target.checked)}
+                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                    />
+                  </label>
+                </div>
+
               </div>
+            </div>
+
+            {/* Sticky Bottom Fullscreen Footer Bar */}
+            <footer className="border-t border-stone-800 bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
               <button
                 type="button"
                 onClick={() => setIsFormModalOpen(false)}
-                className="w-8 h-8 rounded-xl bg-stone-950 hover:bg-stone-800 border border-stone-800 flex items-center justify-center text-stone-400 hover:text-white transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                Batal
               </button>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSaveProduct} className="space-y-3.5 text-xs">
-              <div>
-                <label className="text-stone-300 font-medium block mb-1">
-                  Nama Menu <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Kopi Tubruk Susu"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
-                />
-              </div>
-
-              <div>
-                <label className="text-stone-300 font-medium block mb-1">
-                  Kategori Menu <span className="text-rose-400">*</span>
-                </label>
-                <SearchableSelect
-                  value={formCategory}
-                  onChange={(val) => setFormCategory(val)}
-                  options={categories.map((c) => ({
-                    value: c.id,
-                    label: c.label
-                  }))}
-                  placeholder="Pilih kategori menu..."
-                  searchPlaceholder="Cari kategori..."
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-stone-300 font-medium block mb-1">
-                    Harga Jual <span className="text-rose-400">*</span>
-                  </label>
-                  <NumericInput
-                    value={formPrice}
-                    onChange={setFormPrice}
-                    min={0}
-                    step={500}
-                    prefix="Rp"
-                    required
-                    placeholder="0"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-stone-300 font-medium block mb-1">
-                    Modal / HPP
-                  </label>
-                  <NumericInput
-                    value={formCostPrice}
-                    onChange={setFormCostPrice}
-                    min={0}
-                    step={500}
-                    prefix="Rp"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-
-              {/* Stok Bahan / Porsi */}
-              <div>
-                <label className="text-stone-300 font-medium block mb-1">
-                  Stok Porsi / Bahan (Opsional)
-                </label>
-                <NumericInput
-                  value={formStock}
-                  onChange={(val) => setFormStock(val === 0 ? '' : val)}
-                  min={0}
-                  step={1}
-                  suffix="porsi"
-                  placeholder="Kosongkan jika stok unlimited"
-                />
-                <span className="text-[10px] text-stone-500 font-mono block mt-1">
-                  Sistem otomatis memberi peringatan &quot;Menipis&quot; pada kasir jika sisa &le; 5 porsi.
-                </span>
-              </div>
-
-              {/* Toggles */}
-              <div className="pt-2 border-t border-stone-800 space-y-2">
-                <label className="flex items-center justify-between p-2.5 rounded-xl bg-stone-950 border border-stone-800 cursor-pointer">
-                  <span className="text-stone-300 font-medium">Status Ketersediaan</span>
-                  <input
-                    type="checkbox"
-                    checked={formIsAvailable}
-                    onChange={(e) => setFormIsAvailable(e.target.checked)}
-                    className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
-                  />
-                </label>
-
-                <label className="flex items-center justify-between p-2.5 rounded-xl bg-stone-950 border border-stone-800 cursor-pointer">
-                  <div>
-                    <span className="text-stone-300 font-medium block">Menu Favorit</span>
-                    <span className="text-[10px] text-stone-500">Tampilkan badge favorit</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={formIsFavorite}
-                    onChange={(e) => setFormIsFavorite(e.target.checked)}
-                    className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
-                  />
-                </label>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-3 border-t border-stone-800 flex items-center justify-end gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setIsFormModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-stone-800 bg-stone-950 hover:bg-stone-850 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 font-bold text-xs transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Menyimpan...' : editingProduct ? 'Simpan Perubahan' : 'Tambah Menu'}
-                </button>
-              </div>
-            </form>
-
-          </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 font-bold text-xs transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
+              >
+                {isSubmitting ? 'Menyimpan...' : editingProduct ? 'Simpan Perubahan' : 'Tambah Menu'}
+              </button>
+            </footer>
+          </form>
         </div>
       )}
 

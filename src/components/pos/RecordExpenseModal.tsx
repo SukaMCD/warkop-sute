@@ -133,267 +133,270 @@ export const RecordExpenseModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-md p-5 sm:p-6 shadow-2xl relative space-y-4 max-h-[92vh] overflow-y-auto">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-stone-800">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 rounded-2xl flex items-center justify-center border shadow-xs ${
-              isExpense
-                ? 'bg-amber-950/60 border-amber-800/80 text-amber-400'
-                : 'bg-emerald-950/60 border-emerald-800/80 text-emerald-400'
-            }`}>
-              {isExpense ? (
-                <ArrowUpRight className="w-5 h-5 stroke-[2.2]" />
-              ) : (
-                <ArrowDownLeft className="w-5 h-5 stroke-[2.2]" />
-              )}
+    <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+      
+      {/* Header Bar */}
+      <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border shadow-xs ${
+            isExpense
+              ? 'bg-amber-950/60 border-amber-800/80 text-amber-400'
+              : 'bg-emerald-950/60 border-emerald-800/80 text-emerald-400'
+          }`}>
+            {isExpense ? (
+              <ArrowUpRight className="w-5 h-5 stroke-[2.2]" />
+            ) : (
+              <ArrowDownLeft className="w-5 h-5 stroke-[2.2]" />
+            )}
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-stone-100">
+              Kas Shift: {isExpense ? 'Pengeluaran (Kas Keluar)' : 'Pemasukan (Kas Masuk)'}
+            </h3>
+            <p className="text-xs text-stone-400">
+              {isExpense 
+                ? 'Catat belanja darurat/operasional (misal: Gas LPG, Es Batu)' 
+                : 'Catat tambahan modal atau titipan kas masuk laci'}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </header>
+
+      {/* Fullscreen Form */}
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto px-6 sm:px-12 py-8">
+          <div className="max-w-4xl mx-auto space-y-6">
+
+            {/* Tab Selection: Kas Keluar vs Kas Masuk */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 p-1.5 rounded-2xl bg-stone-900/80 border border-stone-800 gap-2">
+              <button
+                type="button"
+                onClick={() => handleTabChange('expense')}
+                className={`py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  isExpense
+                    ? 'bg-amber-950/90 border border-amber-600 text-amber-300 shadow-sm'
+                    : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                <ArrowUpRight className="w-4 h-4 text-amber-400" />
+                <span className="font-bold">Kas Keluar (Pengeluaran)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('income')}
+                className={`py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  !isExpense
+                    ? 'bg-emerald-950/90 border border-emerald-600 text-emerald-300 shadow-sm'
+                    : 'text-stone-400 hover:text-stone-200'
+                }`}
+              >
+                <ArrowDownLeft className="w-4 h-4 text-emerald-400" />
+                <span className="font-bold">Kas Masuk (Pemasukan)</span>
+              </button>
             </div>
+
+            {errorMessage && (
+              <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-900/60 flex items-center gap-2 text-rose-300 text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* Quick Presets */}
             <div>
-              <h3 className="text-sm font-bold text-stone-100">
-                Kas Shift: {isExpense ? 'Pengeluaran (Kas Keluar)' : 'Pemasukan (Kas Masuk)'}
-              </h3>
-              <p className="text-[11px] text-stone-400">
-                {isExpense 
-                  ? 'Catat belanja darurat/operasional (misal: Gas LPG, Es Batu)' 
-                  : 'Catat tambahan modal atau titipan kas masuk laci'}
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-mono text-stone-400 uppercase tracking-wider font-semibold">
+                  {isExpense ? 'Kebutuhan Umum Pengeluaran' : 'Kategori Pemasukan'}
+                </label>
+                {isExpense && (
+                  <span className="text-[11px] text-[#E2DFD2]/90 font-mono">
+                    Contoh: Gas Habis
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {presets.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => {
+                      setDescription(preset)
+                      if (preset.includes('Gas LPG') && !amount) {
+                        setAmount(22000)
+                      }
+                    }}
+                    className={`text-xs px-3 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                      description === preset
+                        ? isExpense
+                          ? 'bg-amber-950/80 border-amber-600 text-amber-200 font-semibold'
+                          : 'bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold'
+                        : 'bg-stone-900/60 border-stone-800 text-stone-300 hover:text-stone-100 hover:bg-stone-850'
+                    }`}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-stone-950 hover:bg-stone-800 border border-stone-800 flex items-center justify-center text-stone-400 hover:text-white transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
 
-        {/* Tab Selection: Kas Keluar vs Kas Masuk */}
-        <div className="grid grid-cols-2 p-1 rounded-2xl bg-stone-950 border border-stone-800 gap-1">
-          <button
-            type="button"
-            onClick={() => handleTabChange('expense')}
-            className={`py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              isExpense
-                ? 'bg-amber-950/70 border border-amber-700/60 text-amber-300 shadow-xs'
-                : 'text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            <ArrowUpRight className="w-3.5 h-3.5" />
-            <span>Kas Keluar (Pengeluaran)</span>
-          </button>
+            {/* Description & Amount in 2 columns */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  Keterangan {isExpense ? 'Pengeluaran' : 'Pemasukan'} <span className="text-rose-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder={isExpense ? "Contoh: Beli Gas LPG 3kg tabung melon" : "Contoh: Tambahan modal uang receh dari Owner"}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+                />
+              </div>
 
-          <button
-            type="button"
-            onClick={() => handleTabChange('income')}
-            className={`py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              !isExpense
-                ? 'bg-emerald-950/70 border border-emerald-700/60 text-emerald-300 shadow-xs'
-                : 'text-stone-400 hover:text-stone-200'
-            }`}
-          >
-            <ArrowDownLeft className="w-3.5 h-3.5" />
-            <span>Kas Masuk (Pemasukan)</span>
-          </button>
-        </div>
+              <div>
+                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  Nominal Uang (Rp) <span className="text-rose-400">*</span>
+                </label>
+                <NumericInput
+                  value={amount}
+                  onChange={(val) => setAmount(val)}
+                  min={500}
+                  step={1000}
+                  prefix="Rp"
+                  placeholder="22.000"
+                  required
+                />
 
-        {errorMessage && (
-          <div className="p-3 rounded-xl bg-rose-950/50 border border-rose-900/60 flex items-center gap-2 text-rose-300 text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Quick Presets */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-[11px] font-mono text-stone-400 uppercase tracking-wider font-semibold">
-                {isExpense ? 'Kebutuhan Umum Pengeluaran' : 'Kategori Pemasukan'}
-              </label>
-              {isExpense && (
-                <span className="text-[10px] text-[#E2DFD2]/90 font-mono">
-                  Contoh: Gas Habis
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {presets.map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => {
-                    setDescription(preset)
-                    // If Gas LPG selected and amount empty, default to standard Rp 22.000
-                    if (preset.includes('Gas LPG') && !amount) {
-                      setAmount(22000)
-                    }
-                  }}
-                  className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
-                    description === preset
-                      ? isExpense
-                        ? 'bg-amber-950/80 border-amber-600 text-amber-200 font-semibold'
-                        : 'bg-emerald-950/80 border-emerald-600 text-emerald-200 font-semibold'
-                      : 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
-                  }`}
-                >
-                  {preset}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Description Input */}
-          <div>
-            <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-              Keterangan {isExpense ? 'Pengeluaran' : 'Pemasukan'} <span className="text-rose-400">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder={isExpense ? "Contoh: Beli Gas LPG 3kg tabung melon" : "Contoh: Tambahan modal uang receh dari Owner"}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2] transition-colors"
-            />
-          </div>
-
-          {/* Amount Input & Quick Nominal Chips */}
-          <div>
-            <label className="block text-[11px] font-mono text-stone-400 uppercase tracking-wider mb-1 font-semibold">
-              Nominal Uang (Rp) <span className="text-rose-400">*</span>
-            </label>
-            <NumericInput
-              value={amount}
-              onChange={(val) => setAmount(val)}
-              min={500}
-              step={1000}
-              prefix="Rp"
-              placeholder="22.000"
-              required
-            />
-
-            {/* Quick Nominal Buttons */}
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {quickAmounts.map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => setAmount(q)}
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded-md border transition-all cursor-pointer ${
-                    amount === q
-                      ? 'bg-[#E2DFD2] text-stone-950 border-[#E2DFD2] font-bold'
-                      : 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-200'
-                  }`}
-                >
-                  +{formatRupiah(q)}
-                </button>
-              ))}
+                {/* Quick Nominal Buttons */}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {quickAmounts.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => setAmount(q)}
+                      className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border transition-all cursor-pointer ${
+                        amount === q
+                          ? 'bg-[#E2DFD2] text-stone-950 border-[#E2DFD2] font-bold'
+                          : 'bg-stone-900/80 border-stone-800 text-stone-400 hover:text-stone-200'
+                      }`}
+                    >
+                      +{formatRupiah(q)}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {amount && typeof amount === 'number' && amount > 0 ? (
-              <div className={`mt-2 p-2.5 rounded-xl border text-xs flex items-center justify-between ${
+              <div className={`p-4 rounded-2xl border text-xs flex items-center justify-between ${
                 isExpense
                   ? 'bg-amber-950/30 border-amber-900/60 text-amber-300'
                   : 'bg-emerald-950/30 border-emerald-900/60 text-emerald-300'
               }`}>
                 <span>{isExpense ? 'Saldo laci berkurang:' : 'Saldo laci bertambah:'}</span>
-                <span className="font-mono font-bold text-sm">
+                <span className="font-mono font-bold text-base">
                   {isExpense ? '-' : '+'}{formatRupiah(amount)}
                 </span>
               </div>
             ) : null}
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 pt-2 border-t border-stone-800">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`flex-1 py-2.5 rounded-xl text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm ${
-                isExpense
-                  ? 'bg-[#E2DFD2] hover:bg-[#edebe2] active:bg-[#d6d3c6]'
-                  : 'bg-emerald-500 hover:bg-emerald-400'
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <>
-                  <Banknote className="w-4 h-4" />
-                  <span>Simpan {isExpense ? 'Kas Keluar' : 'Kas Masuk'}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Existing Shift History Accordion */}
+            {shiftExpenses.length > 0 && (
+              <div className="pt-4 border-t border-stone-800/80 space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setShowHistory(!showHistory)}
+                  className="w-full flex items-center justify-between text-xs font-mono text-stone-400 hover:text-stone-200 cursor-pointer py-1"
+                >
+                  <div className="flex items-center gap-2">
+                    <History className="w-4 h-4 text-stone-400" />
+                    <span className="font-semibold">Riwayat Kas Shift Ini ({shiftExpenses.length} catatan)</span>
+                  </div>
+                  <span className="text-xs text-stone-500">
+                    {showHistory ? 'Sembunyikan ▲' : 'Lihat ▼'}
+                  </span>
+                </button>
 
-        {/* Existing Shift History Accordion */}
-        {shiftExpenses.length > 0 && (
-          <div className="pt-2 border-t border-stone-800">
-            <button
-              type="button"
-              onClick={() => setShowHistory(!showHistory)}
-              className="w-full flex items-center justify-between text-[11px] font-mono text-stone-400 hover:text-stone-200 cursor-pointer py-1"
-            >
-              <div className="flex items-center gap-1.5">
-                <History className="w-3.5 h-3.5" />
-                <span>Riwayat Kas Shift Ini ({shiftExpenses.length} catatan)</span>
-              </div>
-              <span className="text-[10px] text-stone-500">
-                {showHistory ? 'Sembunyikan ▲' : 'Lihat ▼'}
-              </span>
-            </button>
-
-            {showHistory && (
-              <div className="mt-2 space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                {shiftExpenses.map((exp) => {
-                  const isInc = exp.type === 'income' || exp.description.startsWith('[Kas Masuk]')
-                  const cleanDesc = exp.description.replace(/^\[(Kas Masuk|Kas Keluar)\]\s*/, '')
-                  return (
-                    <div
-                      key={exp.id}
-                      className="p-2 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border uppercase font-bold ${
-                          isInc
-                            ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400'
-                            : 'bg-amber-950/60 border-amber-800 text-amber-400'
-                        }`}>
-                          {isInc ? 'Masuk' : 'Keluar'}
-                        </span>
-                        <span className="text-stone-200 text-[11px] truncate max-w-42.5 sm:max-w-52.5">
-                          {cleanDesc}
-                        </span>
-                      </div>
-                      <span className={`font-mono font-bold text-xs tabular-nums ${
-                        isInc ? 'text-emerald-400' : 'text-amber-400'
-                      }`}>
-                        {isInc ? '+' : '-'}{formatRupiah(exp.amount)}
-                      </span>
-                    </div>
-                  )
-                })}
+                {showHistory && (
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {shiftExpenses.map((exp) => {
+                      const isInc = exp.type === 'income' || exp.description.startsWith('[Kas Masuk]')
+                      const cleanDesc = exp.description.replace(/^\[(Kas Masuk|Kas Keluar)\]\s*/, '')
+                      return (
+                        <div
+                          key={exp.id}
+                          className="p-3 rounded-xl bg-stone-900/60 border border-stone-800 flex items-center justify-between text-xs"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border uppercase font-bold ${
+                              isInc
+                                ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400'
+                                : 'bg-amber-950/60 border-amber-800 text-amber-400'
+                            }`}>
+                              {isInc ? 'Masuk' : 'Keluar'}
+                            </span>
+                            <span className="text-stone-200 text-xs font-medium">
+                              {cleanDesc}
+                            </span>
+                          </div>
+                          <span className={`font-mono font-bold text-xs tabular-nums ${
+                            isInc ? 'text-emerald-400' : 'text-amber-400'
+                          }`}>
+                            {isInc ? '+' : '-'}{formatRupiah(exp.amount)}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-      </div>
+          </div>
+        </div>
+
+        {/* Sticky Bottom Fullscreen Footer Bar */}
+        <footer className="border-t border-stone-800 bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-6 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+          >
+            Batal
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`px-8 py-2.5 rounded-xl text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm ${
+              isExpense
+                ? 'bg-[#E2DFD2] hover:bg-[#edebe2] active:bg-[#d6d3c6]'
+                : 'bg-emerald-500 hover:bg-emerald-400'
+            }`}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <>
+                <Banknote className="w-4 h-4" />
+                <span>Simpan {isExpense ? 'Kas Keluar' : 'Kas Masuk'}</span>
+              </>
+            )}
+          </button>
+        </footer>
+      </form>
     </div>
   )
 }

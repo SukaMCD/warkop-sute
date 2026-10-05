@@ -111,10 +111,11 @@ export const CloseShiftModal = ({
     const shiftExpenseItems = closedData.expenses || shift.expenses || []
 
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-        <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-5">
-          
-          <div className="flex items-center gap-3 pb-3 border-b border-stone-800">
+      <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+        
+        {/* Fullscreen Header */}
+        <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-400 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
             </div>
@@ -128,122 +129,11 @@ export const CloseShiftModal = ({
             </div>
           </div>
 
-          {/* Printable Thermal Receipt Container */}
-          <div
-            id="printable-receipt"
-            className="bg-white text-stone-900 p-5 rounded-2xl font-mono text-xs space-y-3 shadow-inner max-h-[50vh] overflow-y-auto select-none"
-          >
-            <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-stone-400">
-              <h1 className="font-extrabold text-sm tracking-tight">WARKOP SUDUT TEMU</h1>
-              <p className="text-[11px] text-stone-600">Kopi • Mi • Tempat Bersua</p>
-              <div className="mt-1.5 inline-block px-2 py-0.5 bg-stone-100 rounded text-[10px] font-bold uppercase tracking-wider text-stone-700">
-                REKAP TUTUP SHIFT KASIR
-              </div>
-            </div>
-
-            <div className="space-y-1 text-[11px] pb-2 border-b border-dashed border-stone-400">
-              <div className="flex justify-between">
-                <span className="text-stone-500">Petugas Kasir:</span>
-                <span className="font-bold">{closedData.cashier_name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">Jam Shift:</span>
-                <span className="font-semibold">{finalSchedule.range}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-stone-500">Durasi Shift:</span>
-                <span className="font-bold">{finalSchedule.duration}</span>
-              </div>
-            </div>
-
-            <div className="space-y-1.5 text-[11px] pb-2 border-b border-dashed border-stone-400">
-              <div className="flex justify-between">
-                <span>Modal Awal Kas</span>
-                <span>{formatRupiah(closedData.initial_cash)}</span>
-              </div>
-              <div className="flex justify-between font-semibold">
-                <span>Penjualan Tunai (Cash)</span>
-                <span>{formatRupiah(closedData.total_cash_sales)}</span>
-              </div>
-              <div className="flex justify-between text-stone-600">
-                <span>Penjualan Non-Tunai (QRIS)</span>
-                <span>{formatRupiah(closedData.total_qris_sales)}</span>
-              </div>
-              {finalIncomes > 0 && (
-                <div className="flex justify-between text-emerald-700 font-semibold">
-                  <span>Kas Masuk (Tambahan Modal)</span>
-                  <span>+{formatRupiah(finalIncomes)}</span>
-                </div>
-              )}
-              {finalExpenses > 0 && (
-                <div className="flex justify-between text-rose-600 font-semibold">
-                  <span>Kas Keluar (Operasional/Gas)</span>
-                  <span>-{formatRupiah(finalExpenses)}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold pt-1 border-t border-dotted border-stone-300">
-                <span>Total Omzet Penjualan</span>
-                <span>{formatRupiah(closedData.total_cash_sales + closedData.total_qris_sales)}</span>
-              </div>
-            </div>
-
-            {shiftExpenseItems.length > 0 && (
-              <div className="space-y-1 text-[10px] pb-2 border-b border-dashed border-stone-400">
-                <div className="font-bold text-stone-700 uppercase tracking-wider">
-                  Rincian Penyesuaian Kas Shift:
-                </div>
-                {shiftExpenseItems.map((item, idx) => {
-                  const isInc = item.type === 'income' || item.description.startsWith('[Kas Masuk]')
-                  const cleanDesc = item.description.replace(/^\[(Kas Masuk|Kas Keluar)\]\s*/, '')
-                  return (
-                    <div key={idx} className="flex justify-between text-stone-600">
-                      <span className="truncate pr-2">• {cleanDesc}</span>
-                      <span className="font-mono shrink-0">
-                        {isInc ? '+' : '-'}{formatRupiah(item.amount)}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            <div className="space-y-1.5 text-[11px] pb-2 border-b border-dashed border-stone-400">
-              <div className="flex justify-between">
-                <span className="text-stone-600">Wajib Ada di Laci:</span>
-                <span className="font-bold">{formatRupiah(finalExpected)}</span>
-              </div>
-              <div className="flex justify-between font-bold">
-                <span>Uang Fisik Dihitung:</span>
-                <span>{formatRupiah(closedData.actual_cash_counted || 0)}</span>
-              </div>
-              <div className="flex justify-between font-extrabold text-[12px] pt-1 border-t border-dotted border-stone-300">
-                <span>Selisih Kas:</span>
-                <span>
-                  {finalDiff === 0
-                    ? 'PAS (Rp 0)'
-                    : finalDiff > 0
-                    ? `+${formatRupiah(finalDiff)} (Lebih)`
-                    : `${formatRupiah(finalDiff)} (Kurang)`}
-                </span>
-              </div>
-            </div>
-
-            {closedData.notes && (
-              <div className="text-[10px] text-stone-600 italic pb-1">
-                Catatan: {closedData.notes}
-              </div>
-            )}
-
-            <div className="text-center pt-2 text-[10px] text-stone-500">
-              Shift selesai. Terima kasih atas kerja kerasnya!
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={handlePrint}
-              className="py-2.5 px-3 rounded-xl bg-stone-800 hover:bg-stone-750 text-stone-100 font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-stone-850 hover:bg-stone-800 border border-stone-700 text-stone-100 font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Cetak Rekap</span>
@@ -252,46 +142,167 @@ export const CloseShiftModal = ({
             <button
               type="button"
               onClick={handleFinishAndRedirect}
-              className="py-2.5 px-3 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              className="py-2.5 px-5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
             >
               <span>{isHandover ? 'Lanjut Buka Shift Baru' : 'Selesai & Ke Layar PIN'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
+        </header>
 
+        {/* Fullscreen Center Body */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
+          <div className="w-full max-w-md space-y-4">
+            
+            {/* Printable Thermal Receipt Container */}
+            <div
+              id="printable-receipt"
+              className="bg-white text-stone-900 p-6 rounded-2xl font-mono text-xs space-y-3 shadow-2xl select-none"
+            >
+              <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-stone-400">
+                <h1 className="font-extrabold text-sm tracking-tight">WARKOP SUDUT TEMU</h1>
+                <p className="text-[11px] text-stone-600">Kopi • Mi • Tempat Bersua</p>
+                <div className="mt-1.5 inline-block px-2 py-0.5 bg-stone-100 rounded text-[10px] font-bold uppercase tracking-wider text-stone-700">
+                  REKAP TUTUP SHIFT KASIR
+                </div>
+              </div>
+
+              <div className="space-y-1 text-[11px] pb-2 border-b border-dashed border-stone-400">
+                <div className="flex justify-between">
+                  <span className="text-stone-500">Petugas Kasir:</span>
+                  <span className="font-bold">{closedData.cashier_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-stone-500">Jam Shift:</span>
+                  <span className="font-semibold">{finalSchedule.range}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-stone-500">Durasi Shift:</span>
+                  <span className="font-bold">{finalSchedule.duration}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 text-[11px] pb-2 border-b border-dashed border-stone-400">
+                <div className="flex justify-between">
+                  <span>Modal Awal Kas</span>
+                  <span>{formatRupiah(closedData.initial_cash)}</span>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <span>Penjualan Tunai (Cash)</span>
+                  <span>{formatRupiah(closedData.total_cash_sales)}</span>
+                </div>
+                <div className="flex justify-between text-stone-600">
+                  <span>Penjualan Non-Tunai (QRIS)</span>
+                  <span>{formatRupiah(closedData.total_qris_sales)}</span>
+                </div>
+                {finalIncomes > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-semibold">
+                    <span>Kas Masuk (Tambahan Modal)</span>
+                    <span>+{formatRupiah(finalIncomes)}</span>
+                  </div>
+                )}
+                {finalExpenses > 0 && (
+                  <div className="flex justify-between text-rose-600 font-semibold">
+                    <span>Kas Keluar (Operasional/Gas)</span>
+                    <span>-{formatRupiah(finalExpenses)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold pt-1 border-t border-dotted border-stone-300">
+                  <span>Total Omzet Penjualan</span>
+                  <span>{formatRupiah(closedData.total_cash_sales + closedData.total_qris_sales)}</span>
+                </div>
+              </div>
+
+              {shiftExpenseItems.length > 0 && (
+                <div className="space-y-1 text-[10px] pb-2 border-b border-dashed border-stone-400">
+                  <div className="font-bold text-stone-700 uppercase tracking-wider">
+                    Rincian Penyesuaian Kas Shift:
+                  </div>
+                  {shiftExpenseItems.map((item, idx) => {
+                    const isInc = item.type === 'income' || item.description.startsWith('[Kas Masuk]')
+                    const cleanDesc = item.description.replace(/^\[(Kas Masuk|Kas Keluar)\]\s*/, '')
+                    return (
+                      <div key={idx} className="flex justify-between text-stone-600">
+                        <span className="truncate pr-2">• {cleanDesc}</span>
+                        <span className="font-mono shrink-0">
+                          {isInc ? '+' : '-'}{formatRupiah(item.amount)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              <div className="space-y-1.5 text-[11px] pb-2 border-b border-dashed border-stone-400">
+                <div className="flex justify-between">
+                  <span className="text-stone-600">Wajib Ada di Laci:</span>
+                  <span className="font-bold">{formatRupiah(finalExpected)}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Uang Fisik Dihitung:</span>
+                  <span>{formatRupiah(closedData.actual_cash_counted || 0)}</span>
+                </div>
+                <div className="flex justify-between font-extrabold text-[12px] pt-1 border-t border-dotted border-stone-300">
+                  <span>Selisih Kas:</span>
+                  <span>
+                    {finalDiff === 0
+                      ? 'PAS (Rp 0)'
+                      : finalDiff > 0
+                      ? `+${formatRupiah(finalDiff)} (Lebih)`
+                      : `${formatRupiah(finalDiff)} (Kurang)`}
+                  </span>
+                </div>
+              </div>
+
+              {closedData.notes && (
+                <div className="text-[10px] text-stone-600 italic pb-1">
+                  Catatan: {closedData.notes}
+                </div>
+              )}
+
+              <div className="text-center pt-2 text-[10px] text-stone-500">
+                Shift selesai. Terima kasih atas kerja kerasnya!
+              </div>
+            </div>
+
+          </div>
         </div>
+
       </div>
     )
   }
 
   // View: Main Close Shift Confirmation Form
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-stone-900 border border-stone-800 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-5">
-        
-        {/* Header Modal */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-stone-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-rose-950/40 border border-rose-900/60 flex items-center justify-center text-rose-400 shadow-xs shrink-0">
-              <PowerOff className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-stone-100">
-                Akhiri Shift Kasir
-              </h2>
-              <p className="text-xs text-stone-400 mt-0.5">
-                Hitung uang fisik di laci kasir dan cetak rekap shift
-              </p>
-            </div>
+    <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+      
+      {/* Header Bar */}
+      <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-rose-950/40 border border-rose-900/60 flex items-center justify-center text-rose-400 shadow-xs shrink-0">
+            <PowerOff className="w-5 h-5 stroke-[2.2]" />
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div>
+            <h2 className="text-base font-bold text-stone-100">
+              Akhiri Shift Kasir
+            </h2>
+            <p className="text-xs text-stone-400 mt-0.5">
+              Hitung uang fisik di laci kasir dan cetak rekap shift
+            </p>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </header>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto px-6 sm:px-12 py-8">
+        <div className="max-w-4xl mx-auto space-y-6">
 
         {/* Dynamic Shift Hours & Cashier Info */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-stone-950 border border-stone-800/80">
@@ -469,38 +480,40 @@ export const CloseShiftModal = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-800">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-4 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
-          >
-            Batal
-          </button>
-
-          <button
-            type="button"
-            onClick={handleConfirmClose}
-            disabled={isSubmitting}
-            className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Menutup Shift...</span>
-              </>
-            ) : (
-              <>
-                <PowerOff className="w-4 h-4 stroke-[2.2]" />
-                <span>Tutup Shift & Cetak Rekap</span>
-              </>
-            )}
-          </button>
         </div>
-
       </div>
+
+      {/* Sticky Bottom Action Bar */}
+      <footer className="border-t border-stone-800 bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex items-center justify-between shrink-0">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isSubmitting}
+          className="px-5 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-850 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+        >
+          Batal
+        </button>
+
+        <button
+          type="button"
+          onClick={handleConfirmClose}
+          disabled={isSubmitting}
+          className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Menutup Shift...</span>
+            </>
+          ) : (
+            <>
+              <PowerOff className="w-4 h-4 stroke-[2.2]" />
+              <span>Tutup Shift & Cetak Rekap</span>
+            </>
+          )}
+        </button>
+      </footer>
+
     </div>
   )
 }

@@ -9,7 +9,6 @@ import {
   Lock,
   Maximize2,
   Minimize2,
-  PanelLeft,
   ChevronRight,
   Printer,
   CalendarRange,
@@ -24,7 +23,7 @@ interface SidebarProps {
   currentUser?: User | null
   onLogout?: () => void
   isCollapsed: boolean
-  setIsCollapsed: (val: boolean | ((prev: boolean) => boolean)) => void
+  setIsCollapsed?: (val: boolean | ((prev: boolean) => boolean)) => void
   isMobileOpen: boolean
   setIsMobileOpen: (val: boolean) => void
 }
@@ -35,7 +34,6 @@ export const Sidebar = ({
   currentUser,
   onLogout,
   isCollapsed,
-  setIsCollapsed,
   isMobileOpen,
   setIsMobileOpen
 }: SidebarProps) => {
@@ -326,14 +324,6 @@ export const Sidebar = ({
                 <Lock className="w-4 h-4" />
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => setIsCollapsed(false)}
-              title="Perluas Sidebar"
-              className="w-full py-2 flex items-center justify-center rounded-lg text-[#E2DFD2] hover:bg-stone-900 transition-colors mt-1"
-            >
-              <PanelLeft className="w-4 h-4" />
-            </button>
           </div>
         )}
 

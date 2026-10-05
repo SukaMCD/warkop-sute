@@ -159,8 +159,9 @@ export const Header = ({
           </div>
 
           {/* Right: Realtime Clock, Status Badge & Quick Controls */}
-          {/* Right: Realtime Clock & Date */}
-          <div className="flex items-center gap-2.5 shrink-0">
+          {/* Right: Realtime Clock, Date & Akhiri Shift Action */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+
             <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-stone-900/60 border border-stone-800/80 font-mono text-xs shadow-xs">
               <div className="flex items-center gap-1.5 text-stone-200 font-bold tabular-nums">
                 <span>{currentTime}</span>

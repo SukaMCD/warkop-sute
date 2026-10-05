@@ -147,9 +147,9 @@ export const ShiftOverview = ({ shift, onEndShift }: ShiftOverviewProps) => {
           <button
             type="button"
             onClick={onEndShift}
-            className="w-full py-2.5 px-3 rounded-xl bg-rose-950/30 border border-rose-900/60 hover:bg-rose-900/50 text-rose-300 font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-95"
+            className="w-full py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-950/50 border border-rose-500/60 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
           >
-            <PowerOff className="w-3.5 h-3.5 stroke-[2.2]" />
+            <PowerOff className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Akhiri Shift Kasir</span>
           </button>
         )}

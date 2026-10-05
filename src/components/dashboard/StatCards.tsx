@@ -80,13 +80,13 @@ export const StatCards = ({
         
         {/* Breakdown bar using #E2DFD2 and cyan */}
         <div className="flex items-center gap-1.5 mb-1.5">
-          <div className="h-2 rounded-full bg-[#E2DFD2] transition-all" style={{ width: `${cashPercent}%` }} />
-          <div className="h-2 rounded-full bg-cyan-600 transition-all" style={{ width: `${qrisPercent}%` }} />
+          <div className="h-2 rounded-xs bg-[#E2DFD2] transition-all" style={{ width: `${cashPercent}%` }} />
+          <div className="h-2 rounded-xs bg-cyan-600 transition-all" style={{ width: `${qrisPercent}%` }} />
         </div>
 
         <div className="mt-2.5 pt-2 border-t border-stone-800/60 flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5 text-stone-300">
-            <span className="w-2 h-2 rounded-full bg-[#E2DFD2]" />
+            <span className="w-2.5 h-2 rounded-xs bg-[#E2DFD2]" />
             <span>Tunai ({cashPercent}%)</span>
           </div>
           <span className="font-mono tabular-nums text-stone-200 font-medium">
@@ -95,7 +95,7 @@ export const StatCards = ({
         </div>
         <div className="flex items-center justify-between text-xs mt-1">
           <div className="flex items-center gap-1.5 text-stone-300">
-            <span className="w-2 h-2 rounded-full bg-cyan-600" />
+            <span className="w-2.5 h-2 rounded-xs bg-cyan-600" />
             <span>QRIS ({qrisPercent}%)</span>
           </div>
           <span className="font-mono tabular-nums text-stone-200 font-medium">
