@@ -134,16 +134,16 @@ export const SearchableSelect = ({
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-stone-950 border text-left transition-all cursor-pointer ${
+        className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-stone-950 border text-left transition-all cursor-pointer ${
           isOpen
-            ? 'border-[#E2DFD2] ring-1 ring-[#E2DFD2]/20'
-            : 'border-stone-800 hover:border-stone-700'
+            ? 'border-stone-900 ring-1 ring-stone-900/10 dark:border-[#E2DFD2] dark:ring-1 dark:ring-[#E2DFD2]/20'
+            : 'border-stone-200 hover:border-stone-400 dark:border-stone-800 dark:hover:border-stone-700'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         <div className="flex-1 truncate">
           {selectedOption ? (
             <div className="flex items-center gap-2 truncate">
-              <span className="font-semibold text-stone-100 truncate">
+              <span className="font-semibold text-stone-900 dark:text-stone-100 truncate">
                 {selectedOption.label}
               </span>
               {selectedOption.sublabel && (
@@ -152,30 +152,30 @@ export const SearchableSelect = ({
                 </span>
               )}
               {selectedOption.badge && (
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-900 border border-stone-800 text-stone-400">
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400">
                   {selectedOption.badge}
                 </span>
               )}
             </div>
           ) : (
-            <span className="text-stone-500">{placeholder}</span>
+            <span className="text-stone-400 dark:text-stone-500">{placeholder}</span>
           )}
         </div>
 
         <ChevronDown
           className={`w-4 h-4 text-stone-400 shrink-0 transition-transform duration-150 ${
-            isOpen ? 'rotate-180 text-stone-200' : ''
+            isOpen ? 'rotate-180 text-stone-800 dark:text-stone-200' : ''
           }`}
         />
       </button>
 
       {/* Dropdown Popover */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-stone-900 border border-stone-800 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl dark:shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           
           {/* Search Input Box */}
-          <div className="p-2 border-b border-stone-800 bg-stone-950/60 flex items-center gap-2">
-            <Search className="w-3.5 h-3.5 text-stone-500 shrink-0 ml-1.5" />
+          <div className="p-2 border-b border-stone-200 dark:border-stone-800 bg-stone-50/80 dark:bg-stone-950/60 flex items-center gap-2">
+            <Search className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500 shrink-0 ml-1.5" />
             <input
               ref={searchInputRef}
               type="text"
@@ -185,7 +185,7 @@ export const SearchableSelect = ({
                 setHighlightedIndex(0)
               }}
               placeholder={searchPlaceholder}
-              className="w-full bg-transparent text-xs text-stone-100 placeholder-stone-500 focus:outline-none py-1 pr-2"
+              className="w-full bg-transparent text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none py-1 pr-2"
             />
             {searchTerm && (
               <button
@@ -194,7 +194,7 @@ export const SearchableSelect = ({
                   setSearchTerm('')
                   searchInputRef.current?.focus()
                 }}
-                className="p-1 rounded-lg text-stone-500 hover:text-stone-300"
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-300 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -209,7 +209,7 @@ export const SearchableSelect = ({
             className="max-h-56 overflow-y-auto p-1.5 space-y-0.5 scrollbar-thin"
           >
             {filteredOptions.length === 0 ? (
-              <li className="py-4 px-3 text-center text-[11px] text-stone-500 font-mono">
+              <li className="py-4 px-3 text-center text-[11px] text-stone-400 dark:text-stone-500 font-mono">
                 Tidak ada pilihan yang cocok
               </li>
             ) : (
@@ -230,10 +230,10 @@ export const SearchableSelect = ({
                       opt.disabled ? 'opacity-40 cursor-not-allowed' : ''
                     } ${
                       isSelected
-                        ? 'bg-stone-800 text-[#E2DFD2] font-bold'
+                        ? 'bg-amber-100/70 text-amber-900 font-bold dark:bg-stone-800 dark:text-[#E2DFD2]'
                         : isHighlighted
-                        ? 'bg-stone-800/60 text-stone-100'
-                        : 'text-stone-300 hover:bg-stone-800/40'
+                        ? 'bg-stone-100 text-stone-900 dark:bg-stone-800/60 dark:text-stone-100'
+                        : 'text-stone-700 hover:bg-stone-50 dark:text-stone-300 dark:hover:bg-stone-800/40'
                     }`}
                   >
                     <div className="flex items-center gap-2 truncate">
@@ -244,14 +244,14 @@ export const SearchableSelect = ({
                         </span>
                       )}
                       {opt.badge && (
-                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-950 border border-stone-800 text-stone-400 font-normal">
+                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-normal">
                           {opt.badge}
                         </span>
                       )}
                     </div>
 
                     {isSelected && (
-                      <Check className="w-3.5 h-3.5 text-[#E2DFD2] shrink-0" />
+                      <Check className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2] shrink-0" />
                     )}
                   </li>
                 )

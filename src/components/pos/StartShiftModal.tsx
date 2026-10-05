@@ -89,25 +89,25 @@ export const StartShiftModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
       
       {/* Header Bar */}
-      <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+      <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-700 dark:text-[#E2DFD2] shadow-xs shrink-0">
             <PlayCircle className="w-5 h-5 stroke-2" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-stone-100">
+            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
               Mulai Shift Kasir Baru
             </h2>
-            <p className="text-xs text-stone-400 mt-0.5">
+            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
               Masukkan saldo modal awal fisik di laci kasir
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-stone-400 bg-stone-900 border border-stone-800 px-3 py-1.5 rounded-lg">
+          <span className="text-xs font-mono text-stone-600 dark:text-stone-400 bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-3 py-1.5 rounded-lg">
             Terminal Kasir
           </span>
         </div>
@@ -119,7 +119,7 @@ export const StartShiftModal = ({
           <div className="max-w-3xl mx-auto space-y-6">
             
             {/* Info Petugas & Waktu */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-stone-900/60 border border-stone-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-white dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 shadow-xs">
               <div>
                 <span className="text-xs text-stone-500 uppercase tracking-wider font-mono block mb-1.5">
                   Petugas Kasir
@@ -141,7 +141,7 @@ export const StartShiftModal = ({
                     searchPlaceholder="Cari nama kasir..."
                   />
                 ) : (
-                  <span className="text-sm font-bold text-stone-200 mt-1 block truncate">
+                  <span className="text-sm font-bold text-stone-900 dark:text-stone-200 mt-1 block truncate">
                     {currentUser.name}
                   </span>
                 )}
@@ -151,21 +151,21 @@ export const StartShiftModal = ({
                   <Clock className="w-4 h-4 text-stone-400" />
                   <span>Jam Mulai Shift</span>
                 </span>
-                <span className="text-base font-mono font-bold text-[#E2DFD2] block mt-1">
+                <span className="text-base font-mono font-bold text-amber-800 dark:text-[#E2DFD2] block mt-1">
                   {currentTime} WIB
                 </span>
               </div>
             </div>
 
             {errorMsg && (
-              <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs">
+              <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs">
                 {errorMsg}
               </div>
             )}
 
             <div>
-              <label className="text-stone-200 text-xs font-semibold block mb-1.5 font-mono uppercase tracking-wider">
-                Saldo Awal Laci / Modal Kas (Rp) <span className="text-rose-400">*</span>
+              <label className="text-stone-800 dark:text-stone-200 text-xs font-semibold block mb-1.5 font-mono uppercase tracking-wider">
+                Saldo Awal Laci / Modal Kas (Rp) <span className="text-rose-500">*</span>
               </label>
               <NumericInput
                 value={initialCash}
@@ -176,14 +176,14 @@ export const StartShiftModal = ({
                 required
                 placeholder="100.000"
               />
-              <p className="text-xs text-stone-400 mt-2 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#E2DFD2] shrink-0" />
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-2 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2] shrink-0" />
                 <span>Hitung uang fisik di laci kasir secara teliti sebelum mulai transaksi.</span>
               </p>
             </div>
 
             <div>
-              <label className="text-stone-200 text-xs font-semibold block mb-1.5 font-mono uppercase tracking-wider">
+              <label className="text-stone-800 dark:text-stone-200 text-xs font-semibold block mb-1.5 font-mono uppercase tracking-wider">
                 Catatan Pembukaan (Opsional)
               </label>
               <textarea
@@ -191,7 +191,7 @@ export const StartShiftModal = ({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Contoh: Pecahan 50rb (1 lbr), 20rb (2 lbr), 10rb (1 lbr)..."
-                className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors resize-none"
+                className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] transition-colors resize-none shadow-xs"
               />
             </div>
 
@@ -199,11 +199,11 @@ export const StartShiftModal = ({
         </div>
 
         {/* Sticky Bottom Fullscreen Footer Bar */}
-        <footer className="border-t border-stone-800 bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-end shrink-0">
+        <footer className="border-t border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-end shrink-0">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] active:bg-[#c9c6ba] text-stone-950 font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+            className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c6] dark:active:bg-[#c9c6ba] dark:text-stone-950 font-bold text-sm transition-all cursor-pointer flex items-center justify-center gap-2 shadow-xs disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

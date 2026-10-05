@@ -48,14 +48,14 @@ export const ConfirmDialog = ({
       />
 
       {/* Modal Dialog Card */}
-      <div className="relative w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl shadow-2xl p-6 overflow-hidden animate-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-md bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl shadow-2xl p-6 overflow-hidden animate-in zoom-in-95 duration-150">
         
         {/* Close Button */}
         <button
           type="button"
           onClick={onCancel}
           disabled={isLoading}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors disabled:opacity-40 cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-800 transition-colors disabled:opacity-40 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -69,7 +69,7 @@ export const ConfirmDialog = ({
               ? 'bg-rose-950/40 border-rose-900/60 text-rose-400'
               : variant === 'warning'
               ? 'bg-amber-950/40 border-amber-900/60 text-amber-400'
-              : 'bg-stone-800/80 border-stone-700/60 text-stone-300'
+              : 'bg-stone-100 border-stone-200 text-stone-700 dark:bg-stone-800/80 dark:border-stone-700/60 dark:text-stone-300'
           }`}>
             {variant === 'danger' ? (
               <Trash2 className="w-5 h-5" />
@@ -81,10 +81,10 @@ export const ConfirmDialog = ({
           </div>
 
           <div className="min-w-0 flex-1 pt-0.5">
-            <h3 className="text-base font-bold text-stone-100 leading-snug">
+            <h3 className="text-base font-bold text-stone-900 dark:text-stone-100 leading-snug">
               {title}
             </h3>
-            <p className="text-xs text-stone-400 mt-1.5 leading-relaxed">
+            <p className="text-xs text-stone-600 dark:text-stone-400 mt-1.5 leading-relaxed">
               {message}
             </p>
           </div>
@@ -98,7 +98,7 @@ export const ConfirmDialog = ({
               type="button"
               disabled={isLoading}
               onClick={onCancel}
-              className="px-4 py-2 text-xs font-semibold text-stone-300 hover:text-stone-100 bg-stone-950 hover:bg-stone-800 border border-stone-800 rounded-xl transition-all cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 border border-stone-200 rounded-xl transition-all cursor-pointer disabled:opacity-50 dark:text-stone-300 dark:hover:text-stone-100 dark:bg-stone-950 dark:hover:bg-stone-800 dark:border-stone-800"
             >
               {cancelText}
             </button>
@@ -111,7 +111,7 @@ export const ConfirmDialog = ({
             className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-50 ${
               variant === 'danger'
                 ? 'bg-rose-600 hover:bg-rose-500 text-white'
-                : 'bg-[#E2DFD2] hover:bg-[#edebe2] active:bg-[#d6d3c6] text-stone-950'
+                : 'bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:active:bg-[#d6d3c6] dark:text-stone-950'
             }`}
           >
             {isLoading ? (

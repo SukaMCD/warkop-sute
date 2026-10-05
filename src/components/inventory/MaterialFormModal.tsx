@@ -127,19 +127,19 @@ export const MaterialFormModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
       
       {/* Header Bar */}
-      <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+      <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 backdrop-blur-xs flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+          <div className="w-10 h-10 rounded-2xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-800 dark:text-[#E2DFD2] shadow-xs">
             {isEditing ? <Pencil className="w-5 h-5 stroke-2" /> : <Plus className="w-5 h-5 stroke-2" />}
           </div>
           <div>
-            <h3 className="text-base font-bold text-stone-100">
+            <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
               {isEditing ? 'Edit Master Bahan Baku' : 'Tambah Bahan Baku Baru'}
             </h3>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-stone-500 dark:text-stone-400">
               Khusus Owner: Kelola spesifikasi bahan, satuan, dan harga modal (HPP)
             </p>
           </div>
@@ -147,7 +147,7 @@ export const MaterialFormModal = ({
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+          className="p-2 rounded-xl text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -159,16 +159,16 @@ export const MaterialFormModal = ({
           <div className="max-w-4xl mx-auto space-y-6">
 
             {errorMessage && (
-              <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-900/60 flex items-center gap-2 text-rose-300 text-xs">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-rose-800 dark:bg-rose-950/50 dark:border-rose-900/60 dark:text-rose-300 text-xs">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
             {/* Nama Bahan */}
             <div>
-              <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
-                Nama Bahan Baku <span className="text-rose-400">*</span>
+              <label className="block text-xs font-mono text-stone-700 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                Nama Bahan Baku <span className="text-rose-500 dark:text-rose-400">*</span>
               </label>
               <input
                 type="text"
@@ -176,14 +176,14 @@ export const MaterialFormModal = ({
                 placeholder="Contoh: Gas LPG 3kg Melon / Biji Kopi Robusta"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+                className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors shadow-xs"
               />
             </div>
 
             {/* Kategori & Satuan */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                <label className="block text-xs font-mono text-stone-700 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
                   Kategori
                 </label>
                 <SearchableSelect
@@ -199,8 +199,8 @@ export const MaterialFormModal = ({
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
-                  Satuan Ukuran <span className="text-rose-400">*</span>
+                <label className="block text-xs font-mono text-stone-700 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  Satuan Ukuran <span className="text-rose-500 dark:text-rose-400">*</span>
                 </label>
                 <input
                   type="text"
@@ -208,7 +208,7 @@ export const MaterialFormModal = ({
                   placeholder="kg / kaleng / tabung"
                   value={unit}
                   onChange={(e) => setUnit(e.target.value)}
-                  className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors font-mono"
+                  className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors font-mono shadow-xs"
                 />
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {COMMON_UNITS.slice(0, 6).map((u) => (
@@ -218,8 +218,8 @@ export const MaterialFormModal = ({
                       onClick={() => setUnit(u)}
                       className={`text-[10px] font-mono px-2 py-0.5 rounded-lg border cursor-pointer transition-all ${
                         unit === u
-                          ? 'bg-[#E2DFD2] text-stone-950 border-[#E2DFD2] font-bold'
-                          : 'bg-stone-900/80 border-stone-800 text-stone-400 hover:text-stone-200'
+                          ? 'bg-stone-900 text-white border-stone-900 font-bold shadow-xs dark:bg-[#E2DFD2] dark:text-stone-950 dark:border-[#E2DFD2]'
+                          : 'bg-white dark:bg-stone-900/80 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'
                       }`}
                     >
                       {u}
@@ -232,7 +232,7 @@ export const MaterialFormModal = ({
             {/* Stok Awal & Peringatan Minimum */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                <label className="block text-xs font-mono text-stone-700 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
                   Stok Fisik Saat Ini ({unit || 'satuan'})
                 </label>
                 <NumericInput
@@ -247,7 +247,7 @@ export const MaterialFormModal = ({
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                <label className="block text-xs font-mono text-stone-700 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
                   Batas Minimum Alert ({unit || 'satuan'})
                 </label>
                 <NumericInput
@@ -266,12 +266,12 @@ export const MaterialFormModal = ({
             </div>
 
             {/* Harga Beli Modal (HPP) - Khusus Owner */}
-            <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800 space-y-2">
+            <div className="p-4 rounded-2xl bg-white dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 space-y-2 shadow-xs">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-mono text-[#E2DFD2] uppercase tracking-wider font-semibold block">
+                <label className="text-xs font-mono text-amber-800 dark:text-[#E2DFD2] uppercase tracking-wider font-semibold block">
                   Harga Modal / Beli per {unit || 'satuan'} (Rp)
                 </label>
-                <span className="text-[10px] font-mono text-stone-400">Kerahasiaan Owner</span>
+                <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400">Kerahasiaan Owner</span>
               </div>
               <NumericInput
                 value={costPerUnit}
@@ -283,7 +283,7 @@ export const MaterialFormModal = ({
                 suffix={`/ ${unit || 'satuan'}`}
               />
               {costPerUnit && typeof costPerUnit === 'number' && costPerUnit > 0 ? (
-                <span className="text-xs font-mono text-[#E2DFD2] font-semibold block">
+                <span className="text-xs font-mono text-amber-900 dark:text-[#E2DFD2] font-semibold block">
                   {formatRupiah(costPerUnit)} / {unit}
                 </span>
               ) : null}
@@ -291,7 +291,7 @@ export const MaterialFormModal = ({
 
             {/* Supplier */}
             <div>
-              <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+              <label className="block text-xs font-mono text-stone-700 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
                 Supplier / Toko Langganan (Opsional)
               </label>
               <input
@@ -299,7 +299,7 @@ export const MaterialFormModal = ({
                 placeholder="Contoh: Pangkalan Gas Barokah, Pasar Induk"
                 value={supplier}
                 onChange={(e) => setSupplier(e.target.value)}
-                className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+                className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors shadow-xs"
               />
             </div>
 
@@ -307,18 +307,18 @@ export const MaterialFormModal = ({
         </div>
 
         {/* Sticky Bottom Fullscreen Footer Bar */}
-        <footer className="border-t border-stone-800 bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
+        <footer className="border-t border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur-xs px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+            className="px-6 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm"
+            className="px-8 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c6] text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm"
           >
             {isSubmitting ? (
               <>

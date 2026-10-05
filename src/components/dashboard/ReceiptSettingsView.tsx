@@ -98,17 +98,17 @@ export const ReceiptSettingsView = ({
     <div className="space-y-6">
       
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold tracking-wider uppercase text-[#E2DFD2] font-mono">
+            <span className="text-xs font-semibold tracking-wider uppercase text-amber-800 dark:text-[#E2DFD2] font-mono">
               Kustomisasi Mesin Struk
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-stone-100 mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mt-1">
             Format & Tata Letak Struk Kasir
           </h1>
-          <p className="text-sm text-stone-400 mt-1 max-w-2xl">
+          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1 max-w-2xl">
             Sesuaikan nama outlet, ucapan terima kasih, akses WiFi pelanggan, dan elemen yang dicetak pada printer thermal 58mm / 80mm.
           </p>
         </div>
@@ -118,7 +118,7 @@ export const ReceiptSettingsView = ({
           <button
             type="button"
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-stone-400 hover:text-stone-200 bg-stone-900 hover:bg-stone-800 border border-stone-800 rounded-xl transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 bg-stone-100 dark:bg-stone-900 hover:bg-stone-200 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-xl transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset Default</span>
@@ -127,9 +127,9 @@ export const ReceiptSettingsView = ({
           <button
             type="button"
             onClick={handleTestPrint}
-            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-stone-200 bg-stone-850 hover:bg-stone-800 border border-stone-700/80 rounded-xl transition-colors shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-stone-700 dark:text-stone-200 bg-stone-100 dark:bg-stone-850 hover:bg-stone-200 dark:hover:bg-stone-800 border border-stone-300 dark:border-stone-700/80 rounded-xl transition-colors shadow-xs cursor-pointer"
           >
-            <Printer className="w-3.5 h-3.5 text-[#E2DFD2]" />
+            <Printer className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
             <span>Cetak Sampel</span>
           </button>
 
@@ -137,16 +137,16 @@ export const ReceiptSettingsView = ({
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-stone-950 bg-[#E2DFD2] hover:bg-[#edebe2] active:bg-[#d6d3c6] disabled:opacity-50 rounded-xl transition-all shadow-sm active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white dark:text-stone-950 bg-amber-700 hover:bg-amber-800 active:bg-amber-900 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:active:bg-[#d6d3c6] disabled:opacity-50 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer"
           >
             {isSaving ? (
               <>
-                <span className="w-3.5 h-3.5 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
+                <span className="w-3.5 h-3.5 border-2 border-white dark:border-stone-950 border-t-transparent rounded-full animate-spin" />
                 <span>Menyimpan...</span>
               </>
             ) : saveSuccess ? (
               <>
-                <Check className="w-3.5 h-3.5 text-stone-950" />
+                <Check className="w-3.5 h-3.5 text-white dark:text-stone-950" />
                 <span>Tersimpan!</span>
               </>
             ) : (
@@ -166,14 +166,14 @@ export const ReceiptSettingsView = ({
         <div className="lg:col-span-7 space-y-6">
           
           {/* Segmented Sub Tabs */}
-          <div className="flex items-center p-1 bg-stone-900/90 border border-stone-800 rounded-xl gap-1">
+          <div className="flex items-center p-1 bg-stone-100 dark:bg-stone-900/90 border border-stone-200 dark:border-stone-800 rounded-xl gap-1">
             <button
               type="button"
               onClick={() => setActiveSubTab('store')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeSubTab === 'store'
-                  ? 'bg-stone-800 text-[#E2DFD2] shadow-sm font-bold'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-[#E2DFD2] shadow-xs font-bold'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
               }`}
             >
               <Store className="w-3.5 h-3.5" />
@@ -185,8 +185,8 @@ export const ReceiptSettingsView = ({
               onClick={() => setActiveSubTab('display')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeSubTab === 'display'
-                  ? 'bg-stone-800 text-[#E2DFD2] shadow-sm font-bold'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-[#E2DFD2] shadow-xs font-bold'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
@@ -198,8 +198,8 @@ export const ReceiptSettingsView = ({
               onClick={() => setActiveSubTab('footer')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeSubTab === 'footer'
-                  ? 'bg-stone-800 text-[#E2DFD2] shadow-sm font-bold'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-[#E2DFD2] shadow-xs font-bold'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
               }`}
             >
               <Wifi className="w-3.5 h-3.5" />
@@ -209,10 +209,10 @@ export const ReceiptSettingsView = ({
 
           {/* TAB 1: IDENTITAS TOKO & HEADER */}
           {activeSubTab === 'store' && (
-            <div className="bg-stone-900/50 border border-stone-800/80 rounded-2xl p-5 space-y-5">
-              <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-                <div className="flex items-center gap-2 text-stone-200 font-semibold text-sm">
-                  <Store className="w-4 h-4 text-[#E2DFD2]" />
+            <div className="bg-white dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800/80 rounded-2xl p-5 space-y-5 shadow-xs">
+              <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3">
+                <div className="flex items-center gap-2 text-stone-900 dark:text-stone-200 font-semibold text-sm">
+                  <Store className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2]" />
                   <span>Informasi Outlet Pada Kepala Struk</span>
                 </div>
                 <span className="text-[11px] font-mono text-stone-500">Baris Atas Struk</span>
@@ -221,15 +221,15 @@ export const ReceiptSettingsView = ({
               {/* Nama Tempat / Usaha */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-medium text-stone-300">
-                    Nama Usaha / Outlet <span className="text-rose-400">*</span>
+                  <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
+                    Nama Usaha / Outlet <span className="text-rose-500">*</span>
                   </label>
-                  <label className="flex items-center gap-1.5 text-[11px] text-stone-400 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.showStoreName}
                       onChange={(e) => handleChange('showStoreName', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                     <span>Tampilkan</span>
                   </label>
@@ -239,7 +239,7 @@ export const ReceiptSettingsView = ({
                   value={formData.storeName}
                   onChange={(e) => handleChange('storeName', e.target.value)}
                   placeholder="Contoh: WARKOP SUDUT TEMU"
-                  className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2] font-mono"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] font-mono"
                 />
                 <p className="text-[11px] text-stone-500">Dicetak dengan huruf kapital tebal di baris paling atas.</p>
               </div>
@@ -247,15 +247,15 @@ export const ReceiptSettingsView = ({
               {/* Tagline / Sub-judul */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-medium text-stone-300">
+                  <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
                     Slogan / Tagline Outlet
                   </label>
-                  <label className="flex items-center gap-1.5 text-[11px] text-stone-400 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.showTagline}
                       onChange={(e) => handleChange('showTagline', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                     <span>Tampilkan</span>
                   </label>
@@ -265,23 +265,23 @@ export const ReceiptSettingsView = ({
                   value={formData.tagline}
                   onChange={(e) => handleChange('tagline', e.target.value)}
                   placeholder="Contoh: Kopi, Cerita, & Sudut Temu"
-                  className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2]"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2]"
                 />
               </div>
 
               {/* Alamat Lengkap */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="flex items-center gap-1.5 text-xs font-medium text-stone-300">
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-stone-700 dark:text-stone-300">
                     <MapPin className="w-3.5 h-3.5 text-stone-400" />
                     <span>Alamat Lengkap</span>
                   </label>
-                  <label className="flex items-center gap-1.5 text-[11px] text-stone-400 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.showAddress}
                       onChange={(e) => handleChange('showAddress', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                     <span>Tampilkan</span>
                   </label>
@@ -291,7 +291,7 @@ export const ReceiptSettingsView = ({
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                   placeholder="Contoh: Jln. Raya Ciawi Gebang No 2, Kuningan"
-                  className="w-full px-3.5 py-2 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] resize-none font-mono text-xs"
+                  className="w-full px-3.5 py-2 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] resize-none font-mono text-xs"
                 />
               </div>
 
@@ -299,16 +299,16 @@ export const ReceiptSettingsView = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label className="flex items-center gap-1.5 text-xs font-medium text-stone-300">
+                    <label className="flex items-center gap-1.5 text-xs font-medium text-stone-700 dark:text-stone-300">
                       <Phone className="w-3.5 h-3.5 text-stone-400" />
                       <span>No. Telp / WhatsApp</span>
                     </label>
-                    <label className="flex items-center gap-1 text-[11px] text-stone-400 cursor-pointer">
+                    <label className="flex items-center gap-1 text-[11px] text-stone-500 dark:text-stone-400 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={formData.showPhone}
                         onChange={(e) => handleChange('showPhone', e.target.checked)}
-                        className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                        className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                       />
                       <span>Cetak</span>
                     </label>
@@ -318,22 +318,22 @@ export const ReceiptSettingsView = ({
                     value={formData.phone}
                     onChange={(e) => handleChange('phone', e.target.value)}
                     placeholder="0812-3456-7890"
-                    className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2] font-mono"
+                    className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] font-mono"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <label className="flex items-center gap-1.5 text-xs font-medium text-stone-300">
+                    <label className="flex items-center gap-1.5 text-xs font-medium text-stone-700 dark:text-stone-300">
                       <AtSign className="w-3.5 h-3.5 text-stone-400" />
                       <span>Akun Instagram</span>
                     </label>
-                    <label className="flex items-center gap-1 text-[11px] text-stone-400 cursor-pointer">
+                    <label className="flex items-center gap-1 text-[11px] text-stone-500 dark:text-stone-400 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={formData.showSocialMedia}
                         onChange={(e) => handleChange('showSocialMedia', e.target.checked)}
-                        className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                        className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                       />
                       <span>Cetak</span>
                     </label>
@@ -343,7 +343,7 @@ export const ReceiptSettingsView = ({
                     value={formData.socialMedia}
                     onChange={(e) => handleChange('socialMedia', e.target.value)}
                     placeholder="@warkopsuduttemu"
-                    className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2] font-mono"
+                    className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] font-mono"
                   />
                 </div>
               </div>
@@ -353,16 +353,16 @@ export const ReceiptSettingsView = ({
 
           {/* TAB 2: FORMAT KERTAS & DETAIL TRANSAKSI */}
           {activeSubTab === 'display' && (
-            <div className="bg-stone-900/50 border border-stone-800/80 rounded-2xl p-5 space-y-6">
+            <div className="bg-white dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800/80 rounded-2xl p-5 space-y-6 shadow-xs">
               
               {/* Ukuran Lebar Kertas Struk */}
-              <div className="space-y-3 pb-5 border-b border-stone-800">
+              <div className="space-y-3 pb-5 border-b border-stone-200 dark:border-stone-800">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-stone-200 font-semibold text-sm">
-                    <FileText className="w-4 h-4 text-[#E2DFD2]" />
+                  <div className="flex items-center gap-2 text-stone-900 dark:text-stone-200 font-semibold text-sm">
+                    <FileText className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2]" />
                     <span>Lebar Kertas Printer Thermal</span>
                   </div>
-                  <span className="text-[11px] font-mono text-[#E2DFD2] font-bold">
+                  <span className="text-[11px] font-mono text-amber-800 dark:text-[#E2DFD2] font-bold">
                     {formData.paperWidth}
                   </span>
                 </div>
@@ -373,13 +373,13 @@ export const ReceiptSettingsView = ({
                     onClick={() => handleChange('paperWidth', '58mm')}
                     className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all cursor-pointer ${
                       formData.paperWidth === '58mm'
-                        ? 'bg-[#E2DFD2]/10 border-[#E2DFD2]/60 text-[#E2DFD2] font-bold'
-                        : 'bg-stone-950/60 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                        ? 'bg-amber-50 dark:bg-[#E2DFD2]/10 border-amber-600 dark:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] font-bold'
+                        : 'bg-stone-50 dark:bg-stone-950/60 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:border-stone-300 dark:hover:border-stone-700'
                     }`}
                   >
                     <span className="font-bold text-sm tracking-wide">58 mm</span>
-                    <span className="text-[11px] text-stone-400 mt-0.5">Printer Kasir Standar / Mini Bluetooth</span>
-                    <span className="mt-2 text-[10px] font-mono px-2 py-0.5 bg-stone-900 border border-stone-700 rounded text-stone-300">
+                    <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Printer Kasir Standar / Mini Bluetooth</span>
+                    <span className="mt-2 text-[10px] font-mono px-2 py-0.5 bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded text-stone-700 dark:text-stone-300">
                       Rekomendasi Warkop
                     </span>
                   </button>
@@ -389,13 +389,13 @@ export const ReceiptSettingsView = ({
                     onClick={() => handleChange('paperWidth', '80mm')}
                     className={`flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all cursor-pointer ${
                       formData.paperWidth === '80mm'
-                        ? 'bg-[#E2DFD2]/10 border-[#E2DFD2]/60 text-[#E2DFD2] font-bold'
-                        : 'bg-stone-950/60 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                        ? 'bg-amber-50 dark:bg-[#E2DFD2]/10 border-amber-600 dark:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] font-bold'
+                        : 'bg-stone-50 dark:bg-stone-950/60 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:border-stone-300 dark:hover:border-stone-700'
                     }`}
                   >
                     <span className="font-bold text-sm tracking-wide">80 mm</span>
-                    <span className="text-[11px] text-stone-400 mt-0.5">Printer Thermal Lebar / POS Desktop</span>
-                    <span className="mt-2 text-[10px] font-mono px-2 py-0.5 bg-stone-900 border border-stone-700 rounded text-stone-300">
+                    <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">Printer Thermal Lebar / POS Desktop</span>
+                    <span className="mt-2 text-[10px] font-mono px-2 py-0.5 bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded text-stone-700 dark:text-stone-300">
                       Lebih Lega
                     </span>
                   </button>
@@ -404,82 +404,82 @@ export const ReceiptSettingsView = ({
 
               {/* Toggles Informasi Transaksi */}
               <div className="space-y-3">
-                <div className="text-stone-200 font-semibold text-sm">
+                <div className="text-stone-900 dark:text-stone-200 font-semibold text-sm">
                   Pilihan Elemen Informasi Transaksi
                 </div>
-                <p className="text-xs text-stone-400">
+                <p className="text-xs text-stone-500 dark:text-stone-400">
                   Pilih informasi detail yang ingin ditampilkan atau disembunyikan pada struk fisik.
                 </p>
 
                 <div className="space-y-2.5 pt-1">
                   
                   {/* Kasir */}
-                  <label className="flex items-center justify-between p-3 bg-stone-950/60 border border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-700 transition-colors">
+                  <label className="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-950/60 border border-stone-200 dark:border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-300 dark:hover:border-stone-700 transition-colors">
                     <div>
-                      <p className="text-xs font-medium text-stone-200">Nama Petugas Kasir</p>
+                      <p className="text-xs font-medium text-stone-900 dark:text-stone-200">Nama Petugas Kasir</p>
                       <p className="text-[11px] text-stone-500">Mencetak nama kasir yang melayani pesanan</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.showCashierName}
                       onChange={(e) => handleChange('showCashierName', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                   </label>
 
                   {/* Pelanggan */}
-                  <label className="flex items-center justify-between p-3 bg-stone-950/60 border border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-700 transition-colors">
+                  <label className="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-950/60 border border-stone-200 dark:border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-300 dark:hover:border-stone-700 transition-colors">
                     <div>
-                      <p className="text-xs font-medium text-stone-200">Nama Pelanggan</p>
+                      <p className="text-xs font-medium text-stone-900 dark:text-stone-200">Nama Pelanggan</p>
                       <p className="text-[11px] text-stone-500">Mencetak nama pemesan jika diisi kasir</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.showCustomerName}
                       onChange={(e) => handleChange('showCustomerName', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                   </label>
 
                   {/* Nomor Meja */}
-                  <label className="flex items-center justify-between p-3 bg-stone-950/60 border border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-700 transition-colors">
+                  <label className="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-950/60 border border-stone-200 dark:border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-300 dark:hover:border-stone-700 transition-colors">
                     <div>
-                      <p className="text-xs font-medium text-stone-200">Nomor Meja</p>
+                      <p className="text-xs font-medium text-stone-900 dark:text-stone-200">Nomor Meja</p>
                       <p className="text-[11px] text-stone-500">Mencetak nomor meja untuk pesanan Di Tempat</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.showTableNumber}
                       onChange={(e) => handleChange('showTableNumber', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                   </label>
 
                   {/* Tipe Pesanan */}
-                  <label className="flex items-center justify-between p-3 bg-stone-950/60 border border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-700 transition-colors">
+                  <label className="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-950/60 border border-stone-200 dark:border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-300 dark:hover:border-stone-700 transition-colors">
                     <div>
-                      <p className="text-xs font-medium text-stone-200">Jenis Pesanan (Dine In / Bungkus)</p>
+                      <p className="text-xs font-medium text-stone-900 dark:text-stone-200">Jenis Pesanan (Dine In / Bungkus)</p>
                       <p className="text-[11px] text-stone-500">Mencetak label Di Tempat atau Bungkus</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.showOrderType}
                       onChange={(e) => handleChange('showOrderType', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                   </label>
 
                   {/* Catatan Item */}
-                  <label className="flex items-center justify-between p-3 bg-stone-950/60 border border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-700 transition-colors">
+                  <label className="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-950/60 border border-stone-200 dark:border-stone-800/80 rounded-xl cursor-pointer hover:border-stone-300 dark:hover:border-stone-700 transition-colors">
                     <div>
-                      <p className="text-xs font-medium text-stone-200">Catatan Khusus Menu (Notes)</p>
+                      <p className="text-xs font-medium text-stone-900 dark:text-stone-200">Catatan Khusus Menu (Notes)</p>
                       <p className="text-[11px] text-stone-500">Contoh: &ldquo;less sugar&rdquo;, &ldquo;pedas mantap&rdquo;</p>
                     </div>
                     <input
                       type="checkbox"
                       checked={formData.showItemNotes}
                       onChange={(e) => handleChange('showItemNotes', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                   </label>
 
@@ -492,21 +492,21 @@ export const ReceiptSettingsView = ({
 
           {/* TAB 3: WIFI & FOOTER CATATAN KAKI */}
           {activeSubTab === 'footer' && (
-            <div className="bg-stone-900/50 border border-stone-800/80 rounded-2xl p-5 space-y-5">
+            <div className="bg-white dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800/80 rounded-2xl p-5 space-y-5 shadow-xs">
               
               {/* Bagian WiFi Pelanggan */}
-              <div className="space-y-4 pb-5 border-b border-stone-800">
+              <div className="space-y-4 pb-5 border-b border-stone-200 dark:border-stone-800">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-stone-200 font-semibold text-sm">
-                    <Wifi className="w-4 h-4 text-[#E2DFD2]" />
+                  <div className="flex items-center gap-2 text-stone-900 dark:text-stone-200 font-semibold text-sm">
+                    <Wifi className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2]" />
                     <span>Informasi Akses WiFi Warkop</span>
                   </div>
-                  <label className="flex items-center gap-1.5 text-xs text-stone-400 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.showWifiInfo}
                       onChange={(e) => handleChange('showWifiInfo', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                     <span>Aktifkan Pada Struk</span>
                   </label>
@@ -514,7 +514,7 @@ export const ReceiptSettingsView = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-stone-300">
+                    <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
                       Nama WiFi (SSID)
                     </label>
                     <input
@@ -523,12 +523,12 @@ export const ReceiptSettingsView = ({
                       value={formData.wifiName}
                       onChange={(e) => handleChange('wifiName', e.target.value)}
                       placeholder="Contoh: Warkop Sudut Temu"
-                      className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2] disabled:opacity-40 font-mono"
+                      className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] disabled:opacity-40 font-mono"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-stone-300">
+                    <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
                       Password WiFi
                     </label>
                     <input
@@ -537,7 +537,7 @@ export const ReceiptSettingsView = ({
                       value={formData.wifiPassword}
                       onChange={(e) => handleChange('wifiPassword', e.target.value)}
                       placeholder="Contoh: kopienak2026"
-                      className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2] disabled:opacity-40 font-mono"
+                      className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] disabled:opacity-40 font-mono"
                     />
                   </div>
                 </div>
@@ -546,16 +546,16 @@ export const ReceiptSettingsView = ({
               {/* Ucapan Terima Kasih (Footer Message) */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <label className="flex items-center gap-1.5 text-xs font-medium text-stone-300">
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-stone-700 dark:text-stone-300">
                     <MessageSquare className="w-3.5 h-3.5 text-stone-400" />
                     <span>Ucapan Terima Kasih (Baris 1)</span>
                   </label>
-                  <label className="flex items-center gap-1.5 text-[11px] text-stone-400 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.showFooterMessage}
                       onChange={(e) => handleChange('showFooterMessage', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                     <span>Tampilkan</span>
                   </label>
@@ -565,13 +565,13 @@ export const ReceiptSettingsView = ({
                   value={formData.footerMessage}
                   onChange={(e) => handleChange('footerMessage', e.target.value)}
                   placeholder="Terima Kasih Atas Kunjungannya!"
-                  className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2]"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2]"
                 />
               </div>
 
               {/* Pesan Subfooter (Baris 2) */}
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-stone-300">
+                <label className="text-xs font-medium text-stone-700 dark:text-stone-300">
                   Pesan Tambahan (Baris 2)
                 </label>
                 <input
@@ -579,23 +579,23 @@ export const ReceiptSettingsView = ({
                   value={formData.footerSubmessage}
                   onChange={(e) => handleChange('footerSubmessage', e.target.value)}
                   placeholder="Ditunggu cangkruk & nongkrong berikutnya!"
-                  className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2]"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2]"
                 />
               </div>
 
               {/* Ketentuan / Garansi Pesanan */}
-              <div className="space-y-1.5 pt-2 border-t border-stone-800">
+              <div className="space-y-1.5 pt-2 border-t border-stone-200 dark:border-stone-800">
                 <div className="flex justify-between items-center">
-                  <label className="flex items-center gap-1.5 text-xs font-medium text-stone-300">
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-stone-700 dark:text-stone-300">
                     <AlertCircle className="w-3.5 h-3.5 text-stone-400" />
                     <span>Catatan Ketentuan Toko (Opsional)</span>
                   </label>
-                  <label className="flex items-center gap-1.5 text-[11px] text-stone-400 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.showCustomNotice}
                       onChange={(e) => handleChange('showCustomNotice', e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-amber-700 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                     <span>Aktifkan</span>
                   </label>
@@ -607,7 +607,7 @@ export const ReceiptSettingsView = ({
                   value={formData.customNotice}
                   onChange={(e) => handleChange('customNotice', e.target.value)}
                   placeholder="Contoh: Barang yang sudah dibeli tidak dapat ditukar"
-                  className="w-full px-3.5 py-2.5 bg-stone-950 border border-stone-800 rounded-xl text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-[#E2DFD2] disabled:opacity-40"
+                  className="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 text-sm focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] disabled:opacity-40"
                 />
                 <p className="text-[11px] text-stone-500">Cocok untuk catatan pengingat atau aturan outlet.</p>
               </div>
@@ -622,18 +622,18 @@ export const ReceiptSettingsView = ({
           
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
-              <Eye className="w-4 h-4 text-[#E2DFD2]" />
-              <span className="text-xs font-semibold text-stone-200 uppercase tracking-wider font-mono">
+              <Eye className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2]" />
+              <span className="text-xs font-semibold text-stone-900 dark:text-stone-200 uppercase tracking-wider font-mono">
                 Pratinjau Kertas Struk Fisik
               </span>
             </div>
-            <span className="text-[11px] font-mono px-2 py-0.5 bg-stone-900 border border-stone-800 rounded text-stone-400">
+            <span className="text-[11px] font-mono px-2 py-0.5 bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded text-stone-600 dark:text-stone-400">
               Format {formData.paperWidth}
             </span>
           </div>
 
           {/* Authentic Thermal Paper Container with Jagged / Perforated Edge */}
-          <div className="flex justify-center p-6 bg-stone-950 border border-stone-800/80 rounded-2xl overflow-hidden shadow-2xl relative">
+          <div className="flex justify-center p-6 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800/80 rounded-2xl overflow-hidden shadow-xl relative">
             
             {/* The Thermal Paper Sheet */}
             <div

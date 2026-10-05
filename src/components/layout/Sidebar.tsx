@@ -12,10 +12,13 @@ import {
   ChevronRight,
   Printer,
   CalendarRange,
-  Package
+  Package,
+  Sun,
+  Moon
 } from 'lucide-react'
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
+import { useTheme } from '../../contexts/ThemeContext'
 
 interface SidebarProps {
   activeTab: TabType
@@ -37,6 +40,7 @@ export const Sidebar = ({
   isMobileOpen,
   setIsMobileOpen
 }: SidebarProps) => {
+  const { theme, toggleTheme } = useTheme()
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
@@ -139,14 +143,14 @@ export const Sidebar = ({
   }
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-stone-950 border-r border-stone-800/90 text-stone-100 select-none">
+    <div className="flex flex-col h-full bg-[#FAF8F5] dark:bg-stone-950 border-r border-stone-200 dark:border-stone-800/90 text-stone-900 dark:text-stone-100 select-none transition-colors">
       
       {/* 1. Header: Brand Logo & Collapse Toggle */}
-      <div className={`flex items-center h-16 px-4 border-b border-stone-800/80 transition-all ${
+      <div className={`flex items-center h-16 px-4 border-b border-stone-200 dark:border-stone-800/80 transition-all ${
         isCollapsed ? 'justify-center' : 'justify-between'
       }`}>
         <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-stone-700/80 bg-stone-900 flex items-center justify-center shadow-xs shrink-0">
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-stone-300 dark:border-stone-700/80 bg-stone-100 dark:bg-stone-900 flex items-center justify-center shadow-xs shrink-0">
             <img
               src="/logo.png"
               alt="Warkop Sudut Temu"
@@ -155,10 +159,10 @@ export const Sidebar = ({
           </div>
           {!isCollapsed && (
             <div className="truncate">
-              <span className="font-bold tracking-tight text-stone-100 text-sm block leading-tight">
+              <span className="font-bold tracking-tight text-stone-900 dark:text-stone-100 text-sm block leading-tight">
                 Sudut Temu
               </span>
-              <span className="text-[10px] font-mono text-stone-400 block tracking-wider uppercase">
+              <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 block tracking-wider uppercase">
                 {isOwner ? 'Owner Dashboard' : 'Kasir Terminal'}
               </span>
             </div>
@@ -172,7 +176,7 @@ export const Sidebar = ({
         {/* Operasional Group */}
         <div>
           {!isCollapsed && (
-            <div className="px-3 pb-1.5 text-[10px] font-mono uppercase tracking-wider text-stone-400 font-semibold">
+            <div className="px-3 pb-1.5 text-[10px] font-mono uppercase tracking-wider text-stone-500 dark:text-stone-400 font-semibold">
               Operasional
             </div>
           )}
@@ -190,8 +194,8 @@ export const Sidebar = ({
                     title={isCollapsed ? item.label : undefined}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer group ${
                       isActive
-                        ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-xs'
-                        : 'text-stone-400 hover:text-stone-100 hover:bg-stone-900/80'
+                        ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
+                        : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-stone-900/80'
                     } ${isCollapsed ? 'justify-center px-2' : ''}`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 transition-transform ${
@@ -201,7 +205,7 @@ export const Sidebar = ({
                       <span className="truncate flex-1 text-left">{item.label}</span>
                     )}
                     {!isCollapsed && isActive && (
-                      <ChevronRight className="w-3.5 h-3.5 text-stone-950 shrink-0 opacity-60" />
+                      <ChevronRight className="w-3.5 h-3.5 text-stone-50 dark:text-stone-950 shrink-0 opacity-60" />
                     )}
                   </button>
                 )
@@ -213,7 +217,7 @@ export const Sidebar = ({
         {isOwner && (
           <div>
             {!isCollapsed && (
-              <div className="px-3 pb-1.5 pt-2 text-[10px] font-mono uppercase tracking-wider text-stone-400 font-semibold border-t border-stone-800/60">
+              <div className="px-3 pb-1.5 pt-2 text-[10px] font-mono uppercase tracking-wider text-stone-500 dark:text-stone-400 font-semibold border-t border-stone-200 dark:border-stone-800/60">
                 Manajemen
               </div>
             )}
@@ -231,8 +235,8 @@ export const Sidebar = ({
                       title={isCollapsed ? item.label : undefined}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer group ${
                         isActive
-                          ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-xs'
-                          : 'text-stone-400 hover:text-stone-100 hover:bg-stone-900/80'
+                          ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
+                          : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-stone-900/80'
                       } ${isCollapsed ? 'justify-center px-2' : ''}`}
                     >
                       <Icon className={`w-4 h-4 shrink-0 transition-transform ${
@@ -242,7 +246,7 @@ export const Sidebar = ({
                         <span className="truncate flex-1 text-left">{item.label}</span>
                       )}
                       {!isCollapsed && isActive && (
-                        <ChevronRight className="w-3.5 h-3.5 text-stone-950 shrink-0 opacity-60" />
+                        <ChevronRight className="w-3.5 h-3.5 text-stone-50 dark:text-stone-950 shrink-0 opacity-60" />
                       )}
                     </button>
                   )
@@ -254,25 +258,25 @@ export const Sidebar = ({
       </div>
 
       {/* 3. Bottom Footer: User Identity & Action Buttons */}
-      <div className="p-3 border-t border-stone-800/80 space-y-2 bg-stone-950/60 shrink-0">
+      <div className="p-3 border-t border-stone-200 dark:border-stone-800/80 space-y-2 bg-stone-100/50 dark:bg-stone-950/60 shrink-0">
         
         {/* User Card */}
         {currentUser && (
-          <div className={`p-2.5 rounded-xl bg-stone-900/70 border border-stone-800 flex items-center ${
+          <div className={`p-2.5 rounded-xl bg-white dark:bg-stone-900/70 border border-stone-200 dark:border-stone-800 shadow-xs flex items-center ${
             isCollapsed ? 'justify-center py-2' : 'justify-between'
           }`}>
             <div className="min-w-0 truncate">
               {!isCollapsed ? (
                 <>
-                  <p className="text-xs font-semibold text-stone-100 truncate leading-tight">
+                  <p className="text-xs font-semibold text-stone-900 dark:text-stone-100 truncate leading-tight">
                     {currentUser.name}
                   </p>
-                  <span className="text-[10px] font-mono text-[#E2DFD2] uppercase tracking-wider block mt-0.5">
+                  <span className="text-[10px] font-mono text-amber-800 dark:text-[#E2DFD2] font-semibold uppercase tracking-wider block mt-0.5">
                     {isOwner ? 'Owner' : 'Kasir'}
                   </span>
                 </>
               ) : (
-                <span className="text-[11px] font-mono font-bold text-[#E2DFD2] tracking-wider block text-center">
+                <span className="text-[11px] font-mono font-bold text-amber-800 dark:text-[#E2DFD2] tracking-wider block text-center">
                   {isOwner ? 'OWN' : 'KSR'}
                 </span>
               )}
@@ -282,9 +286,17 @@ export const Sidebar = ({
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
+                  onClick={toggleTheme}
+                  title={theme === 'dark' ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
+                  className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                >
+                  {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-[#E2DFD2]" /> : <Moon className="w-3.5 h-3.5 text-stone-700" />}
+                </button>
+                <button
+                  type="button"
                   onClick={handleToggleFullscreen}
                   title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
-                  className="p-1.5 rounded-lg text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                 >
                   {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
                 </button>
@@ -293,7 +305,7 @@ export const Sidebar = ({
                     type="button"
                     onClick={onLogout}
                     title="Kunci Terminal (PIN)"
-                    className="p-1.5 rounded-lg text-stone-400 hover:text-rose-400 hover:bg-stone-800 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg text-stone-500 hover:text-rose-600 dark:text-stone-400 dark:hover:text-rose-400 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                   >
                     <Lock className="w-3.5 h-3.5" />
                   </button>
@@ -308,9 +320,17 @@ export const Sidebar = ({
           <div className="flex flex-col items-center gap-1 pt-1">
             <button
               type="button"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Ganti ke Mode Terang' : 'Ganti ke Mode Gelap'}
+              className="w-full py-2 flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4 text-[#E2DFD2]" /> : <Moon className="w-4 h-4 text-stone-700" />}
+            </button>
+            <button
+              type="button"
               onClick={handleToggleFullscreen}
               title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
-              className="w-full py-2 flex items-center justify-center rounded-lg text-stone-400 hover:text-stone-100 hover:bg-stone-900 transition-colors"
+              className="w-full py-2 flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
@@ -319,7 +339,7 @@ export const Sidebar = ({
                 type="button"
                 onClick={onLogout}
                 title="Kunci Terminal (PIN)"
-                className="w-full py-2 flex items-center justify-center rounded-lg text-stone-400 hover:text-rose-400 hover:bg-stone-900 transition-colors"
+                className="w-full py-2 flex items-center justify-center rounded-lg text-stone-500 hover:text-rose-600 dark:text-stone-400 dark:hover:text-rose-400 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
               >
                 <Lock className="w-4 h-4" />
               </button>

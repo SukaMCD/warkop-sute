@@ -464,13 +464,13 @@ export const POSView = ({
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-full overflow-hidden bg-stone-950">
+    <div className="flex flex-col md:flex-row h-full overflow-hidden bg-[#FBF9F5] dark:bg-stone-950">
       
       {/* LEFT SECTION: Menu Catalog */}
-      <div className="flex-1 flex flex-col min-w-0 border-r border-stone-800 h-full">
+      <div className="flex-1 flex flex-col min-w-0 border-r border-stone-200 dark:border-stone-800 h-full">
         
         {/* Search & Categories Bar */}
-        <div className="p-4 border-b border-stone-800 bg-stone-900/60 backdrop-blur space-y-3 shrink-0">
+        <div className="p-4 border-b border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-900/60 backdrop-blur space-y-3 shrink-0">
           
           <div className="flex items-center gap-3">
             {/* Search Input */}
@@ -481,13 +481,13 @@ export const POSView = ({
                 placeholder="Cari menu warkop (misal: kopi, indomie, nutrisari)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl pl-10 pr-9 py-2.5 text-xs text-stone-100 placeholder-stone-400 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+                className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl pl-10 pr-9 py-2.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2] transition-colors"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -496,24 +496,24 @@ export const POSView = ({
 
             {/* Quick Shift Status Tag, Kas Masuk / Keluar & Akhiri Shift Button */}
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-[11px] font-mono text-stone-300">
-                <span className="text-[#E2DFD2] font-semibold">{currentUser.name}</span>
-                <span className="text-stone-600">•</span>
-                <span className="text-stone-400">
+              <div className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-[11px] font-mono text-stone-700 dark:text-stone-300 shadow-xs">
+                <span className="text-stone-950 dark:text-[#E2DFD2] font-semibold">{currentUser.name}</span>
+                <span className="text-stone-300 dark:text-stone-600">•</span>
+                <span className="text-stone-500 dark:text-stone-400">
                   {calculateShiftDuration(currentShift.start_time, currentShift.end_time || null)}
                 </span>
                 {(currentShift.total_expenses || 0) > 0 && (
                   <>
-                    <span className="text-stone-600">•</span>
-                    <span className="text-amber-400 font-semibold" title="Total Kas Keluar">
+                    <span className="text-stone-300 dark:text-stone-600">•</span>
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold" title="Total Kas Keluar">
                       -{formatIDR(currentShift.total_expenses || 0)}
                     </span>
                   </>
                 )}
                 {(currentShift.total_incomes || 0) > 0 && (
                   <>
-                    <span className="text-stone-600">•</span>
-                    <span className="text-emerald-400 font-semibold" title="Total Kas Masuk">
+                    <span className="text-stone-300 dark:text-stone-600">•</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold" title="Total Kas Masuk">
                       +{formatIDR(currentShift.total_incomes || 0)}
                     </span>
                   </>
@@ -524,14 +524,14 @@ export const POSView = ({
                 <button
                   type="button"
                   onClick={() => setIsExpenseModalOpen(true)}
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-stone-300 hover:text-[#E2DFD2] text-[11px] font-mono font-semibold transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-[#E2DFD2]/60 hover:bg-stone-100 dark:hover:bg-[#E2DFD2]/10 text-stone-700 hover:text-stone-950 dark:text-stone-300 dark:hover:text-[#E2DFD2] text-[11px] font-mono font-semibold transition-colors cursor-pointer shadow-xs"
                   title="Catat Pengeluaran (Beli Gas, Es, dll) atau Pemasukan Kas Kasir"
                 >
-                  <ArrowUpDown className="w-3.5 h-3.5 text-[#E2DFD2]" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-stone-700 dark:text-[#E2DFD2]" />
                   <span className="hidden sm:inline">Kas Masuk / Keluar</span>
                   <span className="sm:hidden">Kas +/-</span>
                   {((currentShift.total_expenses || 0) > 0 || (currentShift.total_incomes || 0) > 0) && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-stone-900 border border-stone-700 text-[#E2DFD2] font-mono font-bold">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-[#E2DFD2] font-mono font-bold">
                       {(currentShift.expenses?.length || 0) > 0 ? currentShift.expenses?.length : '!'}
                     </span>
                   )}
@@ -542,7 +542,7 @@ export const POSView = ({
                 <button
                   type="button"
                   onClick={onEndShift}
-                  className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-950/50 border border-rose-500/60 transition-all cursor-pointer shrink-0"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-950/20 dark:shadow-rose-950/50 border border-rose-500/60 transition-all cursor-pointer shrink-0"
                   title="Akhiri Shift Kasir & Cetak Rekap"
                 >
                   <PowerOff className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -566,14 +566,16 @@ export const POSView = ({
                   onClick={() => setSelectedCategory(cat.id)}
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-sm'
-                      : 'bg-stone-950 border border-stone-800 text-stone-400 hover:text-stone-200 hover:bg-stone-850'
+                      ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
+                      : 'bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-850 shadow-xs'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
                   <span>{cat.label}</span>
                   <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-                    isActive ? 'bg-stone-950/15 text-stone-950 font-bold' : 'bg-stone-900 text-stone-400'
+                    isActive
+                      ? 'bg-white/20 text-stone-50 dark:bg-stone-950/15 dark:text-stone-950 font-bold'
+                      : 'bg-stone-100 text-stone-500 dark:bg-stone-900 dark:text-stone-400'
                   }`}>
                     {count}
                   </span>
@@ -588,8 +590,8 @@ export const POSView = ({
         <div className="flex-1 overflow-y-auto p-4">
           {filteredProducts.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center text-center">
-              <p className="text-sm font-medium text-stone-300">Menu tidak ditemukan</p>
-              <p className="text-xs text-stone-400 mt-1">Coba kata kunci lain atau pilih tab kategori lain</p>
+              <p className="text-sm font-medium text-stone-800 dark:text-stone-300">Menu tidak ditemukan</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Coba kata kunci lain atau pilih tab kategori lain</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -606,47 +608,47 @@ export const POSView = ({
                     onClick={() => handleAddToCart(product)}
                     className={`group relative text-left p-3.5 rounded-xl border transition-all flex flex-col justify-between min-h-26.25 select-none ${
                       isOutOfStock
-                        ? 'opacity-40 bg-stone-950 border-stone-850 cursor-not-allowed'
+                        ? 'opacity-40 bg-stone-100 dark:bg-stone-950 border-stone-200 dark:border-stone-850 cursor-not-allowed'
                         : cartQuantity > 0
-                        ? 'bg-stone-900/90 border-[#E2DFD2]/70 shadow-md ring-1 ring-[#E2DFD2]/25 cursor-pointer'
-                        : 'bg-stone-900/40 border-stone-800/80 hover:bg-stone-900 hover:border-stone-700 cursor-pointer'
+                        ? 'bg-amber-500/8 dark:bg-stone-900/90 border-amber-600/50 dark:border-[#E2DFD2]/70 shadow-md ring-1 ring-amber-600/25 dark:ring-[#E2DFD2]/25 cursor-pointer'
+                        : 'bg-white dark:bg-stone-900/40 border-stone-200 dark:border-stone-800/80 hover:bg-stone-50/80 dark:hover:bg-stone-900 hover:border-stone-300 dark:hover:border-stone-700 shadow-[0_1px_3px_rgba(0,0,0,0.03)] dark:shadow-none cursor-pointer'
                     }`}
                   >
                     <div>
                       {/* Top Badges */}
                       <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#E2DFD2]/80 truncate">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-amber-800 dark:text-[#E2DFD2]/80 truncate">
                           {categoryNameMap[product.category_id] || product.category_id}
                         </span>
 
                         {isOutOfStock ? (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase bg-rose-950 border border-rose-900 text-rose-400">
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase bg-rose-100 border border-rose-200 text-rose-700 dark:bg-rose-950 dark:border-rose-900 dark:text-rose-400">
                             Habis
                           </span>
                         ) : isLowStock ? (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase bg-amber-950 border border-amber-900 text-amber-400">
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase bg-amber-100 border border-amber-200 text-amber-700 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-400">
                             Sisa {product.stock}
                           </span>
                         ) : null}
                       </div>
 
                       {/* Product Name */}
-                      <h4 className="text-xs font-semibold text-stone-100 leading-snug line-clamp-2">
+                      <h4 className="text-xs font-semibold text-stone-900 dark:text-stone-100 leading-snug line-clamp-2">
                         {product.name}
                       </h4>
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-800/60">
-                      <span className="font-mono text-xs font-bold text-[#E2DFD2]">
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-100 dark:border-stone-800/60">
+                      <span className="font-mono text-xs font-bold text-stone-900 dark:text-[#E2DFD2]">
                         {formatIDR(product.price)}
                       </span>
 
                       {cartQuantity > 0 ? (
-                        <span className="px-2 py-0.5 rounded-md bg-[#E2DFD2] text-stone-950 font-mono text-[11px] font-bold">
+                        <span className="px-2 py-0.5 rounded-md bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-mono text-[11px] font-bold">
                           {cartQuantity}x
                         </span>
                       ) : (
-                        <span className="w-6 h-6 rounded-lg bg-stone-950 border border-stone-800 group-hover:border-[#E2DFD2]/50 flex items-center justify-center text-stone-400 group-hover:text-[#E2DFD2] transition-colors">
+                        <span className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 group-hover:border-stone-300 dark:group-hover:border-[#E2DFD2]/50 flex items-center justify-center text-stone-500 group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-[#E2DFD2] transition-colors">
                           <Plus className="w-3.5 h-3.5" />
                         </span>
                       )}
@@ -661,14 +663,14 @@ export const POSView = ({
       </div>
 
       {/* RIGHT SECTION: Cart & Billing */}
-      <div className="w-full md:w-87.5 lg:w-97.5 xl:w-105 bg-stone-900/95 border-t md:border-t-0 md:border-l border-stone-800 flex flex-col h-100 md:h-full shrink-0 shadow-2xl">
+      <div className="w-full md:w-87.5 lg:w-97.5 xl:w-105 bg-[#FAF8F5] dark:bg-stone-900/95 border-t md:border-t-0 md:border-l border-stone-200 dark:border-stone-800 flex flex-col h-100 md:h-full shrink-0 shadow-lg dark:shadow-2xl">
         
         {/* Cart Header */}
-        <div className="p-4 border-b border-stone-800 bg-stone-900/80 space-y-3 shrink-0">
+        <div className="p-4 border-b border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-900/80 space-y-3 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-[#E2DFD2]" />
-              <h3 className="text-sm font-bold text-stone-100 tracking-tight">
+              <Receipt className="w-4 h-4 text-amber-800 dark:text-[#E2DFD2]" />
+              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 tracking-tight">
                 Pesanan Baru
               </h3>
             </div>
@@ -676,7 +678,7 @@ export const POSView = ({
               <button
                 type="button"
                 onClick={handleResetCart}
-                className="text-[11px] font-mono text-stone-400 hover:text-rose-400 transition-colors flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-mono text-stone-500 hover:text-rose-500 dark:text-stone-400 dark:hover:text-rose-400 transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>Reset</span>
@@ -685,14 +687,14 @@ export const POSView = ({
           </div>
 
           {/* Order Type Toggle (Dine-in vs Takeaway) */}
-          <div className="grid grid-cols-2 gap-2 p-1 bg-stone-950 border border-stone-800 rounded-xl">
+          <div className="grid grid-cols-2 gap-2 p-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl">
             <button
               type="button"
               onClick={() => setOrderType('dine_in')}
               className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 orderType === 'dine_in'
-                  ? 'bg-[#E2DFD2] text-stone-950 shadow-xs'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               Makan di Tempat
@@ -702,8 +704,8 @@ export const POSView = ({
               onClick={() => setOrderType('takeaway')}
               className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 orderType === 'takeaway'
-                  ? 'bg-[#E2DFD2] text-stone-950 shadow-xs'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               Bungkus (Takeaway)
@@ -718,7 +720,7 @@ export const POSView = ({
                 placeholder={orderType === 'dine_in' ? 'Nomor Meja (cth: Meja 3)' : 'Nomor Meja / Antrean'}
                 value={tableNumber}
                 onChange={(e) => setTableNumber(e.target.value)}
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-100 placeholder-stone-400 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+                className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2] transition-colors"
               />
               <input
                 ref={customerNameInputRef}
@@ -731,15 +733,15 @@ export const POSView = ({
                     setNameError(false)
                   }
                 }}
-                className={`w-full bg-stone-950 border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-100 placeholder-stone-400 focus:outline-none transition-colors ${
+                className={`w-full bg-white dark:bg-stone-950 border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none transition-colors ${
                   nameError
-                    ? 'border-rose-500/90 focus:border-rose-500 ring-1 ring-rose-500/30 bg-rose-950/20'
-                    : 'border-stone-800 focus:border-[#E2DFD2]'
+                    ? 'border-rose-500/90 focus:border-rose-500 ring-1 ring-rose-500/30 bg-rose-50 dark:bg-rose-950/20'
+                    : 'border-stone-200 focus:border-stone-700 dark:border-stone-800 dark:focus:border-[#E2DFD2]'
                 }`}
               />
             </div>
             {nameError && (
-              <p className="text-[11px] text-rose-400 font-medium flex items-center gap-1 animate-in fade-in duration-150">
+              <p className="text-[11px] text-rose-500 dark:text-rose-400 font-medium flex items-center gap-1 animate-in fade-in duration-150">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>Nama pemesan wajib diisi</span>
               </p>
@@ -751,9 +753,9 @@ export const POSView = ({
         <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
           {cart.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
-              <Receipt className="w-10 h-10 stroke-[1.25] text-stone-700 mb-2" />
-              <p className="text-xs font-semibold text-stone-400">Keranjang masih kosong</p>
-              <p className="text-[11px] text-stone-400 mt-1 max-w-50">
+              <Receipt className="w-10 h-10 stroke-[1.25] text-stone-300 dark:text-stone-700 mb-2" />
+              <p className="text-xs font-semibold text-stone-600 dark:text-stone-400">Keranjang masih kosong</p>
+              <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 max-w-50">
                 Ketuk menu di sebelah kiri untuk menambahkan pesanan pelanggan.
               </p>
             </div>
@@ -761,30 +763,30 @@ export const POSView = ({
             cart.map((item, index) => (
               <div
                 key={item.product.id}
-                className="p-3 rounded-xl bg-stone-950 border border-stone-800/80 flex flex-col gap-2"
+                className="p-3 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800/80 flex flex-col gap-2 shadow-xs"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-stone-200 leading-tight">
+                    <p className="text-xs font-semibold text-stone-900 dark:text-stone-200 leading-tight">
                       {item.product.name}
                     </p>
-                    <p className="text-[11px] font-mono text-stone-400 mt-0.5">
+                    <p className="text-[11px] font-mono text-stone-500 dark:text-stone-400 mt-0.5">
                       {formatIDR(item.product.price)} / porsi
                     </p>
                   </div>
-                  <span className="font-mono text-xs font-bold text-stone-100">
+                  <span className="font-mono text-xs font-bold text-stone-900 dark:text-stone-100">
                     {formatIDR(item.product.price * item.quantity)}
                   </span>
                 </div>
 
                 {/* Notes if any */}
                 {item.notes && (
-                  <div className="px-2 py-1 rounded bg-stone-900 border border-stone-800 text-[10px] text-[#E2DFD2] font-mono flex items-center justify-between">
+                  <div className="px-2 py-1 rounded bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[10px] text-amber-900 dark:text-[#E2DFD2] font-mono flex items-center justify-between">
                     <span>{item.notes}</span>
                     <button
                       type="button"
                       onClick={() => handleOpenNoteModal(index)}
-                      className="text-stone-400 hover:text-stone-200 underline ml-2"
+                      className="text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200 underline ml-2"
                     >
                       Ubah
                     </button>
@@ -792,11 +794,11 @@ export const POSView = ({
                 )}
 
                 {/* Actions row: Note trigger, Qty controller, Delete */}
-                <div className="flex items-center justify-between pt-1 border-t border-stone-900">
+                <div className="flex items-center justify-between pt-1 border-t border-stone-100 dark:border-stone-900">
                   <button
                     type="button"
                     onClick={() => handleOpenNoteModal(index)}
-                    className="text-[10px] text-stone-400 hover:text-[#E2DFD2] font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                    className="text-[10px] text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#E2DFD2] font-medium flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <FileText className="w-3 h-3" />
                     <span>{item.notes ? 'Edit Catatan' : '+ Catatan (pedas, manis)'}</span>
@@ -806,27 +808,27 @@ export const POSView = ({
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(index)}
-                      className="p-1 text-stone-600 hover:text-rose-400 transition-colors cursor-pointer mr-1"
+                      className="p-1 text-stone-400 hover:text-rose-500 dark:text-stone-600 dark:hover:text-rose-400 transition-colors cursor-pointer mr-1"
                       title="Hapus menu"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
 
-                    <div className="flex items-center bg-stone-900 border border-stone-800 rounded-lg overflow-hidden">
+                    <div className="flex items-center bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-lg overflow-hidden">
                       <button
                         type="button"
                         onClick={() => handleUpdateQuantity(index, -1)}
-                        className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-100 hover:bg-stone-800 active:scale-95 transition-all cursor-pointer"
+                        className="w-8 h-8 flex items-center justify-center text-stone-600 hover:text-stone-950 hover:bg-stone-200/70 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800 active:scale-95 transition-all cursor-pointer"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="w-8 text-center font-mono text-xs font-bold text-stone-100 select-none">
+                      <span className="w-8 text-center font-mono text-xs font-bold text-stone-900 dark:text-stone-100 select-none">
                         {item.quantity}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleUpdateQuantity(index, 1)}
-                        className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-100 hover:bg-stone-800 active:scale-95 transition-all cursor-pointer"
+                        className="w-8 h-8 flex items-center justify-center text-stone-600 hover:text-stone-950 hover:bg-stone-200/70 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800 active:scale-95 transition-all cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -839,20 +841,20 @@ export const POSView = ({
         </div>
 
         {/* Cart Bottom Summary & Checkout Button */}
-        <div className="p-4 border-t border-stone-800 bg-stone-900/90 space-y-3 shrink-0">
+        <div className="p-4 border-t border-stone-200 dark:border-stone-800 bg-[#F5F2EB]/90 dark:bg-stone-900/90 space-y-3 shrink-0">
           <div className="space-y-1 text-xs">
-            <div className="flex items-center justify-between text-stone-400">
+            <div className="flex items-center justify-between text-stone-600 dark:text-stone-400">
               <span>Total Item</span>
-              <span className="font-mono text-stone-200">{totalItemsCount} item</span>
+              <span className="font-mono text-stone-800 dark:text-stone-200">{totalItemsCount} item</span>
             </div>
-            <div className="flex items-center justify-between text-stone-400">
+            <div className="flex items-center justify-between text-stone-600 dark:text-stone-400">
               <span>Subtotal</span>
-              <span className="font-mono text-stone-200">{formatIDR(subtotalAmount)}</span>
+              <span className="font-mono text-stone-800 dark:text-stone-200">{formatIDR(subtotalAmount)}</span>
             </div>
 
             {/* Discount Row */}
             {discountAmount > 0 ? (
-              <div className="flex items-center justify-between text-rose-400 font-medium">
+              <div className="flex items-center justify-between text-rose-600 dark:text-rose-400 font-medium">
                 <div className="flex items-center gap-1.5">
                   <span>Diskon {discountReason ? `(${discountReason})` : ''}</span>
                   <button
@@ -861,7 +863,7 @@ export const POSView = ({
                       setDiscountValue(0)
                       setDiscountReason('')
                     }}
-                    className="text-stone-500 hover:text-rose-400 cursor-pointer"
+                    className="text-stone-400 hover:text-rose-600 dark:text-stone-500 dark:hover:text-rose-400 cursor-pointer"
                     title="Hapus diskon"
                   >
                     <X className="w-3 h-3" />
@@ -879,16 +881,16 @@ export const POSView = ({
                   setIsDiscountModalOpen(true)
                 }}
                 disabled={cart.length === 0}
-                className="text-[11px] font-mono text-stone-400 hover:text-[#E2DFD2] flex items-center gap-1 pt-0.5 cursor-pointer disabled:opacity-40"
+                className="text-[11px] font-mono text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#E2DFD2] flex items-center gap-1 pt-0.5 cursor-pointer disabled:opacity-40"
               >
                 <Tag className="w-3 h-3" />
                 <span>+ Tambah Diskon / Promo</span>
               </button>
             )}
 
-            <div className="flex items-center justify-between text-sm font-semibold text-stone-100 pt-1 border-t border-stone-800">
+            <div className="flex items-center justify-between text-sm font-semibold text-stone-900 dark:text-stone-100 pt-1 border-t border-stone-200 dark:border-stone-800">
               <span>Total Tagihan</span>
-              <span className="font-mono text-base font-bold text-[#E2DFD2]">
+              <span className="font-mono text-base font-bold text-stone-950 dark:text-[#E2DFD2]">
                 {formatIDR(totalAmount)}
               </span>
             </div>
@@ -898,7 +900,7 @@ export const POSView = ({
             type="button"
             onClick={handleOpenPayment}
             disabled={cart.length === 0}
-            className="w-full h-12 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] disabled:bg-stone-800 disabled:text-stone-600 disabled:cursor-not-allowed text-stone-950 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98]"
+            className="w-full h-12 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] disabled:bg-stone-200 disabled:text-stone-400 dark:disabled:bg-stone-800 dark:disabled:text-stone-600 disabled:cursor-not-allowed text-stone-50 dark:text-stone-950 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98]"
           >
             <Banknote className="w-4 h-4" />
             <span>Proses Pembayaran ({formatIDR(totalAmount)})</span>
@@ -909,36 +911,36 @@ export const POSView = ({
 
       {/* FULLSCREEN CHECKOUT VIEW */}
       {isPaymentModalOpen && (
-        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
           
           {/* Top Fullscreen Bar */}
-          <div className="h-14 px-4 sm:px-6 border-b border-stone-800 bg-stone-900/90 flex items-center justify-between shrink-0">
+          <div className="h-14 px-4 sm:px-6 border-b border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setIsPaymentModalOpen(false)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-300 hover:text-stone-100 hover:bg-stone-800 text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200 text-stone-700 hover:text-stone-950 text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-95 dark:bg-stone-950 dark:border-stone-800 dark:text-stone-300 dark:hover:text-stone-100 dark:hover:bg-stone-800"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Kembali ke Kasir</span>
               </button>
-              <div className="h-5 w-px bg-stone-800 hidden sm:block" />
+              <div className="h-5 w-px bg-stone-200 dark:bg-stone-800 hidden sm:block" />
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-stone-100 tracking-tight">
+                <h2 className="text-sm sm:text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight">
                   Proses Pembayaran Pesanan
                 </h2>
-                <div className="flex items-center gap-2 text-xs text-stone-400 font-mono">
+                <div className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400 font-mono">
                   <span>{orderType === 'dine_in' ? 'Makan di Tempat' : 'Bungkus (Takeaway)'}</span>
                   {tableNumber && (
                     <>
                       <span>•</span>
-                      <span className="text-[#E2DFD2] font-semibold">{tableNumber}</span>
+                      <span className="text-amber-800 dark:text-[#E2DFD2] font-semibold">{tableNumber}</span>
                     </>
                   )}
                   {customerName && (
                     <>
                       <span>•</span>
-                      <span className="text-stone-300">{customerName}</span>
+                      <span className="text-stone-700 dark:text-stone-300">{customerName}</span>
                     </>
                   )}
                 </div>
@@ -947,15 +949,15 @@ export const POSView = ({
 
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block font-mono text-xs">
-                <span className="text-stone-400 block text-[11px]">Total Tagihan</span>
-                <span className="text-[#E2DFD2] text-lg font-bold tabular-nums">
+                <span className="text-stone-500 dark:text-stone-400 block text-[11px]">Total Tagihan</span>
+                <span className="text-stone-950 dark:text-[#E2DFD2] text-lg font-bold tabular-nums">
                   {formatIDR(totalAmount)}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsPaymentModalOpen(false)}
-                className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                 title="Tutup / Kembali"
               >
                 <X className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -967,28 +969,28 @@ export const POSView = ({
           <div className="flex-1 grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 overflow-hidden">
             
             {/* LEFT COLUMN: Payment Mode (QRIS or Cash) */}
-            <div className="md:col-span-7 lg:col-span-7 xl:col-span-7 px-6 py-3.5 sm:px-8 sm:py-4 flex flex-col justify-center border-b md:border-b-0 md:border-r border-stone-800 bg-stone-900/30 overflow-y-auto md:overflow-y-hidden">
+            <div className="md:col-span-7 lg:col-span-7 xl:col-span-7 px-6 py-3.5 sm:px-8 sm:py-4 flex flex-col justify-center border-b md:border-b-0 md:border-r border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/60 dark:bg-stone-900/30 overflow-y-auto md:overflow-y-hidden">
               <div className="max-w-xl mx-auto w-full space-y-3 sm:space-y-3.5 my-auto">
                 
                 {/* Method Switcher Tabs */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-stone-300 uppercase tracking-wider font-mono">
+                    <span className="text-xs font-semibold text-stone-700 dark:text-stone-300 uppercase tracking-wider font-mono">
                       Pilih Metode Bayar
                     </span>
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-stone-950 border border-stone-800 text-[#E2DFD2]">
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-[#E2DFD2]">
                       {paymentMethod === 'qris' ? 'Metode: QRIS' : paymentMethod === 'split' ? 'Metode: Split Pay' : 'Metode: Tunai'}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 p-1.5 bg-stone-950 border border-stone-800 rounded-2xl">
+                  <div className="grid grid-cols-3 gap-2 p-1.5 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl">
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('cash')}
                       className={`h-12 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         paymentMethod === 'cash'
-                          ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-md'
-                          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
+                          ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-md'
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-900'
                       }`}
                     >
                       <Banknote className="w-4 h-4" />
@@ -1000,8 +1002,8 @@ export const POSView = ({
                       onClick={() => setPaymentMethod('qris')}
                       className={`h-12 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         paymentMethod === 'qris'
-                          ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-md'
-                          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
+                          ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-md'
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-900'
                       }`}
                     >
                       <QrCode className="w-4 h-4" />
@@ -1018,8 +1020,8 @@ export const POSView = ({
                       }}
                       className={`h-12 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                         paymentMethod === 'split'
-                          ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-md'
-                          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
+                          ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-md'
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50 dark:text-stone-400 dark:hover:text-stone-200 dark:hover:bg-stone-900'
                       }`}
                     >
                       <Split className="w-4 h-4" />
@@ -1031,7 +1033,7 @@ export const POSView = ({
                 {/* VIEW 1: QRIS STATIS (Large, Scannable & Clear) */}
                 {paymentMethod === 'qris' && (
                   <div className="flex flex-col items-center text-center space-y-4 py-2 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="w-72 h-72 sm:w-80 sm:h-80 bg-white p-4 rounded-3xl shadow-2xl border-2 border-stone-400/80 flex items-center justify-center">
+                    <div className="w-72 h-72 sm:w-80 sm:h-80 bg-white p-4 rounded-3xl shadow-xl border-2 border-stone-200 dark:border-stone-400/80 flex items-center justify-center">
                       <img
                         src="/images/qris-clean.png"
                         alt="QRIS Warkop Sudut Temu"
@@ -1039,13 +1041,13 @@ export const POSView = ({
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <div className="inline-block px-3.5 py-1.5 rounded-lg bg-stone-950 border border-stone-800 text-xs font-mono font-bold text-[#E2DFD2] tracking-widest shadow-inner">
+                      <div className="inline-block px-3.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-xs font-mono font-bold text-stone-800 dark:text-[#E2DFD2] tracking-widest shadow-inner">
                         NMID: ID1026568944999
                       </div>
-                      <p className="text-xs text-stone-300 font-medium">
+                      <p className="text-xs text-stone-800 dark:text-stone-300 font-medium">
                         Warkop Sudut Temu • Ciawigebang, Kuningan
                       </p>
-                      <p className="text-[11px] text-stone-400 max-w-sm leading-relaxed">
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 max-w-sm leading-relaxed">
                         Arahkan pelanggan scan kode QR di atas menggunakan GoPay, OVO, ShopeePay, DANA, BCA Mobile, Mandiri Livin', BRImo, atau aplikasi QRIS lainnya.
                       </p>
                     </div>
@@ -1059,14 +1061,14 @@ export const POSView = ({
                     {/* Nominal Display Box (Virtual Input without OS Keyboard) */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-medium text-stone-300 font-mono">
+                        <label className="text-xs font-medium text-stone-700 dark:text-stone-300 font-mono">
                           Nominal Uang Diterima dari Pelanggan
                         </label>
                         {cashTendered > 0 && (
                           <button
                             type="button"
                             onClick={handleKeypadClear}
-                            className="text-[11px] font-mono text-stone-400 hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1"
+                            className="text-[11px] font-mono text-stone-500 hover:text-rose-500 dark:text-stone-400 dark:hover:text-rose-400 transition-colors cursor-pointer flex items-center gap-1"
                           >
                             <RotateCcw className="w-3 h-3" />
                             <span>Reset (0)</span>
@@ -1082,13 +1084,13 @@ export const POSView = ({
                           inputMode="none"
                           readOnly
                           value={cashTendered > 0 ? cashTendered.toLocaleString('id-ID') : '0'}
-                          className="w-full bg-stone-950 border border-stone-800 rounded-2xl pl-12 pr-12 py-2.5 text-2xl sm:text-3xl font-mono font-bold text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors cursor-default select-none shadow-inner"
+                          className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-2xl pl-12 pr-12 py-2.5 text-2xl sm:text-3xl font-mono font-bold text-stone-900 dark:text-stone-100 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2] transition-colors cursor-default select-none shadow-inner"
                         />
                         {cashTendered > 0 && (
                           <button
                             type="button"
                             onClick={handleKeypadBackspace}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-stone-400 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                             title="Hapus satu angka"
                           >
                             <Delete className="w-5 h-5" />
@@ -1099,7 +1101,7 @@ export const POSView = ({
 
                     {/* Quick Preset Buttons */}
                     <div>
-                      <span className="text-[11px] text-stone-400 block mb-1 font-mono">Pilihan Cepat Pecahan Uang</span>
+                      <span className="text-[11px] text-stone-500 dark:text-stone-400 block mb-1 font-mono">Pilihan Cepat Pecahan Uang</span>
                       <div className="grid grid-cols-4 gap-2">
                         {[
                           { label: 'Uang Pas', amount: totalAmount },
@@ -1113,8 +1115,8 @@ export const POSView = ({
                             onClick={() => handleSelectCashPreset(preset.amount)}
                             className={`py-2 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer active:scale-95 ${
                               cashTendered === preset.amount
-                                ? 'bg-stone-800 border-[#E2DFD2] text-[#E2DFD2] shadow-sm'
-                                : 'bg-stone-950 border-stone-800 hover:border-stone-700 text-stone-300'
+                                ? 'bg-stone-900 border-stone-900 text-stone-50 dark:bg-stone-800 dark:border-[#E2DFD2] dark:text-[#E2DFD2] shadow-sm'
+                                : 'bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 text-stone-700 dark:text-stone-300'
                             }`}
                           >
                             {preset.label}
@@ -1125,9 +1127,9 @@ export const POSView = ({
 
                     {/* On-Screen Touchscreen Numpad Grid */}
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[11px] font-mono text-stone-400">
+                      <div className="flex items-center justify-between text-[11px] font-mono text-stone-500 dark:text-stone-400">
                         <span>Keypad Layar Sentuh</span>
-                        <span className="text-stone-500 hidden sm:inline">Sentuh angka untuk mengisi</span>
+                        <span className="text-stone-400 dark:text-stone-500 hidden sm:inline">Sentuh angka untuk mengisi</span>
                       </div>
 
                       <div className="grid grid-cols-4 gap-2">
@@ -1135,28 +1137,28 @@ export const POSView = ({
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('1')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           1
                         </button>
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('2')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           2
                         </button>
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('3')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           3
                         </button>
                         <button
                           type="button"
                           onClick={handleKeypadBackspace}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-900 border border-stone-800/90 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-400 hover:text-stone-100 transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800/90 hover:bg-stone-200 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                           title="Hapus satu angka"
                         >
                           <Delete className="w-5 h-5" />
@@ -1166,28 +1168,28 @@ export const POSView = ({
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('4')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           4
                         </button>
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('5')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           5
                         </button>
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('6')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           6
                         </button>
                         <button
                           type="button"
                           onClick={handleKeypadClear}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-900 border border-stone-800/90 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-400 hover:text-rose-400 font-mono text-sm font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800/90 hover:bg-stone-200 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-600 dark:text-stone-400 hover:text-rose-500 dark:hover:text-rose-400 font-mono text-sm font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                           title="Reset ke 0"
                         >
                           C
@@ -1197,28 +1199,28 @@ export const POSView = ({
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('7')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           7
                         </button>
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('8')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           8
                         </button>
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('9')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           9
                         </button>
                         <button
                           type="button"
                           onClick={() => handleAddNominal(10000)}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-900 border border-stone-800/90 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-300 font-mono text-xs font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800/90 hover:bg-stone-200 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-700 dark:text-stone-300 font-mono text-xs font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                           title="Tambah 10.000"
                         >
                           +10k
@@ -1228,21 +1230,21 @@ export const POSView = ({
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('0')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-xl font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           0
                         </button>
                         <button
                           type="button"
                           onClick={() => handleKeypadDigit('00')}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-100 font-mono text-base font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-900 dark:text-stone-100 font-mono text-base font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                         >
                           00
                         </button>
                         <button
                           type="button"
                           onClick={handleKeypadTripleZero}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-[#E2DFD2] font-mono text-base font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-amber-800 dark:text-[#E2DFD2] font-mono text-base font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                           title="Tambah tiga nol (000)"
                         >
                           000
@@ -1250,7 +1252,7 @@ export const POSView = ({
                         <button
                           type="button"
                           onClick={() => handleAddNominal(50000)}
-                          className="h-12 sm:h-13 rounded-xl bg-stone-900 border border-stone-800/90 hover:bg-stone-850 hover:border-stone-700 active:scale-[0.95] text-stone-300 font-mono text-xs font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
+                          className="h-12 sm:h-13 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800/90 hover:bg-stone-200 dark:hover:bg-stone-850 hover:border-stone-300 dark:hover:border-stone-700 active:scale-[0.95] text-stone-700 dark:text-stone-300 font-mono text-xs font-bold transition-all flex items-center justify-center cursor-pointer shadow-xs select-none"
                           title="Tambah 50.000"
                         >
                           +50k
@@ -1260,36 +1262,36 @@ export const POSView = ({
 
                     {/* Status Box for Cash or Split */}
                     {paymentMethod === 'split' ? (
-                      <div className="py-2.5 px-4 rounded-2xl bg-stone-950 border border-stone-800 space-y-1.5 shadow-inner">
+                      <div className="py-2.5 px-4 rounded-2xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-1.5 shadow-inner">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-stone-400 font-mono">1. Porsi Uang Tunai:</span>
-                          <span className="font-mono font-bold text-stone-100">{formatIDR(cashTendered)}</span>
+                          <span className="text-stone-500 dark:text-stone-400 font-mono">1. Porsi Uang Tunai:</span>
+                          <span className="font-mono font-bold text-stone-900 dark:text-stone-100">{formatIDR(cashTendered)}</span>
                         </div>
-                        <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-850">
-                          <span className="text-stone-400 font-mono">2. Sisa Bayar via QRIS:</span>
-                          <span className={`font-mono font-bold text-sm ${cashTendered < totalAmount && cashTendered > 0 ? 'text-amber-400' : 'text-stone-400'}`}>
+                        <div className="flex items-center justify-between text-xs pt-1 border-t border-stone-100 dark:border-stone-850">
+                          <span className="text-stone-500 dark:text-stone-400 font-mono">2. Sisa Bayar via QRIS:</span>
+                          <span className={`font-mono font-bold text-sm ${cashTendered < totalAmount && cashTendered > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-stone-500 dark:text-stone-400'}`}>
                             {cashTendered >= totalAmount
                               ? 'Lunas Tunai (Gunakan Tab Tunai)'
                               : formatIDR(totalAmount - cashTendered)}
                           </span>
                         </div>
                         {cashTendered > 0 && cashTendered < totalAmount && (
-                          <div className="pt-1.5 flex items-center gap-1.5 text-[11px] text-stone-300 font-mono">
-                            <QrCode className="w-3.5 h-3.5 text-[#E2DFD2] shrink-0" />
-                            <span>Pelanggan scan QRIS sisa <strong className="text-[#E2DFD2] font-bold">{formatIDR(totalAmount - cashTendered)}</strong></span>
+                          <div className="pt-1.5 flex items-center gap-1.5 text-[11px] text-stone-700 dark:text-stone-300 font-mono">
+                            <QrCode className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2] shrink-0" />
+                            <span>Pelanggan scan QRIS sisa <strong className="text-amber-800 dark:text-[#E2DFD2] font-bold">{formatIDR(totalAmount - cashTendered)}</strong></span>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="py-2.5 px-4 rounded-2xl bg-stone-950 border border-stone-800 flex items-center justify-between shadow-inner">
+                      <div className="py-2.5 px-4 rounded-2xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-between shadow-inner">
                         <div>
-                          <span className="text-xs text-stone-400 block font-mono">Status Kembalian</span>
-                          <span className="text-[11px] text-stone-400">
+                          <span className="text-xs text-stone-500 dark:text-stone-400 block font-mono">Status Kembalian</span>
+                          <span className="text-[11px] text-stone-500 dark:text-stone-400">
                             {cashTendered >= totalAmount ? 'Kembalikan ke pelanggan:' : 'Uang tunai kurang:'}
                           </span>
                         </div>
                         <span className={`font-mono text-xl sm:text-2xl font-bold tabular-nums ${
-                          cashTendered >= totalAmount ? 'text-emerald-400' : 'text-rose-400'
+                          cashTendered >= totalAmount ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                         }`}>
                           {cashTendered >= totalAmount
                             ? formatIDR(changeAmount)
@@ -1305,15 +1307,15 @@ export const POSView = ({
             </div>
 
             {/* RIGHT COLUMN: Order Items Breakdown & Complete Transaction Action */}
-            <div className="md:col-span-5 lg:col-span-5 xl:col-span-5 p-6 sm:p-8 flex flex-col justify-between bg-stone-950 overflow-y-auto space-y-6">
+            <div className="md:col-span-5 lg:col-span-5 xl:col-span-5 p-6 sm:p-8 flex flex-col justify-between bg-[#F5F2EB]/50 dark:bg-stone-950 overflow-y-auto space-y-6">
               
               <div>
-                <div className="flex items-center justify-between border-b border-stone-800 pb-3 mb-4">
+                <div className="flex items-center justify-between border-b border-stone-200 dark:border-stone-800 pb-3 mb-4">
                   <div>
-                    <h3 className="text-sm font-bold text-stone-100 tracking-tight">Rincian Item Pesanan</h3>
-                    <p className="text-xs text-stone-400 mt-0.5 font-mono">{totalItemsCount} menu dalam keranjang</p>
+                    <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 tracking-tight">Rincian Item Pesanan</h3>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 font-mono">{totalItemsCount} menu dalam keranjang</p>
                   </div>
-                  <span className="text-xs font-mono font-semibold text-stone-300">
+                  <span className="text-xs font-mono font-semibold text-stone-700 dark:text-stone-300">
                     {orderType === 'dine_in' ? 'Dine In' : 'Takeaway'}
                   </span>
                 </div>
@@ -1323,25 +1325,25 @@ export const POSView = ({
                   {cart.map((item) => (
                     <div
                       key={item.product.id}
-                      className="p-3 rounded-xl bg-stone-900/90 border border-stone-800/80 flex items-start justify-between gap-3 text-xs"
+                      className="p-3 rounded-xl bg-white dark:bg-stone-900/90 border border-stone-200 dark:border-stone-800/80 flex items-start justify-between gap-3 text-xs shadow-xs"
                     >
                       <div className="flex items-start gap-3 min-w-0">
-                        <span className="px-2 py-1 rounded-md bg-stone-800 text-[#E2DFD2] font-mono text-xs font-bold shrink-0">
+                        <span className="px-2 py-1 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-800 dark:text-[#E2DFD2] font-mono text-xs font-bold shrink-0">
                           {item.quantity}x
                         </span>
                         <div className="min-w-0">
-                          <p className="font-semibold text-stone-100 text-sm truncate">{item.product.name}</p>
-                          <p className="text-xs font-mono text-stone-400 mt-0.5">
+                          <p className="font-semibold text-stone-900 dark:text-stone-100 text-sm truncate">{item.product.name}</p>
+                          <p className="text-xs font-mono text-stone-500 dark:text-stone-400 mt-0.5">
                             {formatIDR(item.product.price)}
                           </p>
                           {item.notes && (
-                            <p className="text-[11px] text-[#E2DFD2]/90 italic mt-1 font-mono">
+                            <p className="text-[11px] text-amber-800 dark:text-[#E2DFD2]/90 italic mt-1 font-mono">
                               Catatan: "{item.notes}"
                             </p>
                           )}
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-sm text-stone-100 tabular-nums shrink-0">
+                      <span className="font-mono font-bold text-sm text-stone-900 dark:text-stone-100 tabular-nums shrink-0">
                         {formatIDR(item.product.price * item.quantity)}
                       </span>
                     </div>
@@ -1350,21 +1352,21 @@ export const POSView = ({
               </div>
 
               {/* Bottom Totals & Action Buttons */}
-              <div className="space-y-4 pt-4 border-t border-stone-800 bg-stone-950">
+              <div className="space-y-4 pt-4 border-t border-stone-200 dark:border-stone-800 bg-transparent">
                 <div className="space-y-2 text-xs">
-                  <div className="flex justify-between text-stone-400">
+                  <div className="flex justify-between text-stone-600 dark:text-stone-400">
                     <span>Jumlah Item</span>
-                    <span className="font-mono text-stone-200">{totalItemsCount} item</span>
+                    <span className="font-mono text-stone-800 dark:text-stone-200">{totalItemsCount} item</span>
                   </div>
-                  <div className="flex justify-between text-stone-400">
+                  <div className="flex justify-between text-stone-600 dark:text-stone-400">
                     <span>Metode Pembayaran</span>
-                    <span className="font-semibold text-stone-200">
-                      {paymentMethod === 'cash' ? 'Tunai' : 'QRIS Statis'}
+                    <span className="font-semibold text-stone-800 dark:text-stone-200">
+                      {paymentMethod === 'cash' ? 'Tunai' : paymentMethod === 'split' ? 'Split Pay (Tunai + QRIS)' : 'QRIS Statis'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-base font-semibold text-stone-100 pt-3 border-t border-stone-800">
-                    <span className="tracking-wide text-stone-300">TOTAL TAGIHAN</span>
-                    <span className="font-mono text-3xl font-bold text-[#E2DFD2] tabular-nums">
+                  <div className="flex items-center justify-between text-base font-semibold text-stone-900 dark:text-stone-100 pt-3 border-t border-stone-200 dark:border-stone-800">
+                    <span className="tracking-wide text-stone-700 dark:text-stone-300">TOTAL TAGIHAN</span>
+                    <span className="font-mono text-3xl font-bold text-stone-950 dark:text-[#E2DFD2] tabular-nums">
                       {formatIDR(totalAmount)}
                     </span>
                   </div>
@@ -1380,7 +1382,7 @@ export const POSView = ({
                       (paymentMethod === 'cash' && cashTendered < totalAmount) ||
                       (paymentMethod === 'split' && (cashTendered <= 0 || cashTendered >= totalAmount))
                     }
-                    className="w-full h-14 rounded-2xl bg-[#E2DFD2] hover:bg-[#edebe2] disabled:bg-stone-800 disabled:text-stone-600 disabled:cursor-not-allowed text-stone-950 text-base font-bold transition-all cursor-pointer shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full h-14 rounded-2xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 disabled:bg-stone-200 disabled:text-stone-400 dark:disabled:bg-stone-800 dark:disabled:text-stone-600 disabled:cursor-not-allowed text-base font-bold transition-all cursor-pointer shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
                   >
                     <CheckCircle2 className="w-5 h-5 stroke-[2.25]" />
                     <span>
@@ -1395,7 +1397,7 @@ export const POSView = ({
                   <button
                     type="button"
                     onClick={() => setIsPaymentModalOpen(false)}
-                    className="w-full py-3 rounded-xl bg-transparent hover:bg-stone-900 border border-stone-800 text-stone-400 hover:text-stone-200 text-xs font-semibold transition-colors cursor-pointer text-center"
+                    className="w-full py-3 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-600 hover:text-stone-900 text-xs font-semibold transition-colors cursor-pointer text-center dark:bg-transparent dark:hover:bg-stone-900 dark:border-stone-800 dark:text-stone-400 dark:hover:text-stone-200"
                   >
                     Batal dan Kembali ke Katalog Menu
                   </button>
@@ -1412,8 +1414,8 @@ export const POSView = ({
       {/* MODAL 2: Note Editor Modal */}
       {editingNoteIndex !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
-          <div className="w-full max-w-xs bg-stone-900 border border-stone-800 rounded-2xl p-5 shadow-2xl space-y-4">
-            <h4 className="text-xs font-bold text-stone-100">
+          <div className="w-full max-w-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-2xl space-y-4">
+            <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">
               Catatan Pesanan: {cart[editingNoteIndex]?.product.name}
             </h4>
             <input
@@ -1425,20 +1427,20 @@ export const POSView = ({
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSaveNote()
               }}
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2]"
+              className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2]"
             />
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setEditingNoteIndex(null)}
-                className="flex-1 py-2 rounded-lg bg-stone-950 border border-stone-800 text-stone-400 text-xs"
+                className="flex-1 py-2 rounded-lg bg-stone-100 hover:bg-stone-200/70 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-400 text-xs transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleSaveNote}
-                className="flex-1 py-2 rounded-lg bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 font-bold text-xs"
+                className="flex-1 py-2 rounded-lg bg-stone-900 hover:bg-stone-850 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 font-bold text-xs transition-colors cursor-pointer"
               >
                 Simpan
               </button>
@@ -1448,21 +1450,20 @@ export const POSView = ({
       )}
 
       {/* MODAL 3: Success & Thermal Receipt Print Modal */}
-      {/* MODAL 3: Success & Thermal Receipt Print Modal */}
       {showReceiptModal && completedOrder && (
-        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
           
           {/* Header Bar */}
-          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+          <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-400 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-800 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-[10px] font-mono uppercase text-emerald-400 font-semibold tracking-wider">
+                <span className="text-[10px] font-mono uppercase text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider">
                   Transaksi Berhasil
                 </span>
-                <h3 className="text-base font-bold font-mono text-stone-100">
+                <h3 className="text-base font-bold font-mono text-stone-900 dark:text-stone-100">
                   {completedOrder.order_number}
                 </h3>
               </div>
@@ -1470,14 +1471,14 @@ export const POSView = ({
 
             {/* View Mode Switcher in Success Modal Header */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 p-1 bg-stone-950 rounded-xl border border-stone-800">
+              <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-950 rounded-xl border border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setPrintMode('receipt')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     printMode === 'receipt'
-                      ? 'bg-stone-850 text-stone-100 border border-stone-700 shadow-xs'
-                      : 'text-stone-400 hover:text-stone-200'
+                      ? 'bg-white text-stone-900 border border-stone-300 shadow-xs dark:bg-stone-850 dark:text-stone-100 dark:border-stone-700'
+                      : 'text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
                   }`}
                 >
                   <Receipt className="w-3.5 h-3.5" />
@@ -1488,8 +1489,8 @@ export const POSView = ({
                   onClick={() => setPrintMode('kitchen')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                     printMode === 'kitchen'
-                      ? 'bg-[#E2DFD2]/10 text-[#E2DFD2] border border-[#E2DFD2]/50 shadow-xs'
-                      : 'text-stone-400 hover:text-stone-200'
+                      ? 'bg-amber-500/10 border border-amber-600/40 text-amber-900 shadow-xs dark:bg-[#E2DFD2]/10 dark:text-[#E2DFD2] dark:border-[#E2DFD2]/50'
+                      : 'text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
                   }`}
                 >
                   <UtensilsCrossed className="w-3.5 h-3.5" />
@@ -1500,7 +1501,7 @@ export const POSView = ({
               <button
                 type="button"
                 onClick={() => setShowReceiptModal(false)}
-                className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+                className="p-2 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1724,27 +1725,27 @@ export const POSView = ({
           </div>
 
           {/* Sticky Bottom Action Bar */}
-          <footer className="border-t border-stone-800 bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex items-center justify-end gap-3 shrink-0">
+          <footer className="border-t border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex items-center justify-end gap-3 shrink-0">
             <button
               type="button"
               onClick={handlePrintReceipt}
-              className="py-2.5 px-4 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2] text-stone-200 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 dark:bg-stone-900 dark:border-stone-800 hover:border-stone-300 dark:hover:border-[#E2DFD2] dark:text-stone-200 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
             >
-              <Printer className="w-4 h-4 text-[#E2DFD2]" />
+              <Printer className="w-4 h-4 text-stone-700 dark:text-[#E2DFD2]" />
               <span>Cetak Struk Kasir</span>
             </button>
             <button
               type="button"
               onClick={handlePrintKitchen}
-              className="py-2.5 px-4 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-[#E2DFD2] text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 dark:bg-stone-900 dark:border-stone-800 hover:border-amber-600/40 dark:hover:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
             >
-              <UtensilsCrossed className="w-4 h-4 text-[#E2DFD2]" />
+              <UtensilsCrossed className="w-4 h-4 text-amber-800 dark:text-[#E2DFD2]" />
               <span>Cetak Tiket Dapur</span>
             </button>
             <button
               type="button"
               onClick={() => setShowReceiptModal(false)}
-              className="py-2.5 px-5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+              className="py-2.5 px-5 rounded-xl bg-stone-900 hover:bg-stone-850 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
             >
               <span>Pesanan Baru</span>
             </button>
@@ -1766,38 +1767,38 @@ export const POSView = ({
 
       {/* MODAL: Tambah Diskon / Promo */}
       {isDiscountModalOpen && (
-        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
-          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+        <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
+          <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+              <div className="w-10 h-10 rounded-2xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-800 dark:text-[#E2DFD2] shadow-xs">
                 <Tag className="w-5 h-5 stroke-2" />
               </div>
               <div>
-                <h4 className="text-base font-bold text-stone-100">Diskon & Promo Pesanan</h4>
-                <p className="text-xs text-stone-400">Terapkan potongan nominal rupiah atau persentase promo</p>
+                <h4 className="text-base font-bold text-stone-900 dark:text-stone-100">Diskon & Promo Pesanan</h4>
+                <p className="text-xs text-stone-500 dark:text-stone-400">Terapkan potongan nominal rupiah atau persentase promo</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setIsDiscountModalOpen(false)}
-              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
-            <div className="w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-5">
+            <div className="w-full max-w-md bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-5">
 
             {/* Tipe Diskon (Nominal vs Persen) */}
-            <div className="grid grid-cols-2 gap-2 p-1.5 bg-stone-950 border border-stone-800 rounded-xl">
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl">
               <button
                 type="button"
                 onClick={() => setTempDiscountType('nominal')}
                 className={`py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   tempDiscountType === 'nominal'
-                    ? 'bg-[#E2DFD2] text-stone-950 font-bold'
-                    : 'text-stone-400 hover:text-stone-200'
+                    ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
                 }`}
               >
                 Nominal (Rp)
@@ -1807,8 +1808,8 @@ export const POSView = ({
                 onClick={() => setTempDiscountType('percent')}
                 className={`py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   tempDiscountType === 'percent'
-                    ? 'bg-[#E2DFD2] text-stone-950 font-bold'
-                    : 'text-stone-400 hover:text-stone-200'
+                    ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
+                    : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
                 }`}
               >
                 Persentase (%)
@@ -1825,8 +1826,8 @@ export const POSView = ({
                     onClick={() => setTempDiscountValue(pct)}
                     className={`py-2.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                       tempDiscountValue === pct
-                        ? 'bg-stone-800 border-[#E2DFD2] text-[#E2DFD2]'
-                        : 'bg-stone-950 border-stone-800 text-stone-300 hover:border-stone-700'
+                        ? 'bg-stone-900 border-stone-900 text-stone-50 dark:bg-stone-800 dark:border-[#E2DFD2] dark:text-[#E2DFD2]'
+                        : 'bg-stone-50 dark:bg-stone-950 border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-300 dark:hover:border-stone-700'
                     }`}
                   >
                     {pct}%
@@ -1842,8 +1843,8 @@ export const POSView = ({
                     onClick={() => setTempDiscountValue(nom)}
                     className={`py-2.5 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                       tempDiscountValue === nom
-                        ? 'bg-stone-800 border-[#E2DFD2] text-[#E2DFD2]'
-                        : 'bg-stone-950 border-stone-800 text-stone-300 hover:border-stone-700'
+                        ? 'bg-stone-900 border-stone-900 text-stone-50 dark:bg-stone-800 dark:border-[#E2DFD2] dark:text-[#E2DFD2]'
+                        : 'bg-stone-50 dark:bg-stone-950 border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 hover:border-stone-300 dark:hover:border-stone-700'
                     }`}
                   >
                     {formatIDR(nom)}
@@ -1854,7 +1855,7 @@ export const POSView = ({
 
             {/* Custom Value Input */}
             <div>
-              <label className="text-xs font-mono text-stone-400 block mb-1.5 font-medium">
+              <label className="text-xs font-mono text-stone-500 dark:text-stone-400 block mb-1.5 font-medium">
                 {tempDiscountType === 'percent' ? 'Nilai Diskon (%)' : 'Nominal Potongan (Rp)'}
               </label>
               <NumericInput
@@ -1871,7 +1872,7 @@ export const POSView = ({
 
             {/* Reason / Promo Name */}
             <div>
-              <label className="text-xs font-mono text-stone-400 block mb-1.5 font-medium">
+              <label className="text-xs font-mono text-stone-500 dark:text-stone-400 block mb-1.5 font-medium">
                 Keterangan / Alasan Promo (Opsional)
               </label>
               <input
@@ -1879,12 +1880,12 @@ export const POSView = ({
                 value={tempDiscountReason}
                 onChange={(e) => setTempDiscountReason(e.target.value)}
                 placeholder="Contoh: Teman Owner, Jumat Berkah, Nobar"
-                className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2]"
+                className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2]"
               />
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3 pt-3 border-t border-stone-800">
+            <div className="flex items-center gap-3 pt-3 border-t border-stone-200 dark:border-stone-800">
               <button
                 type="button"
                 onClick={() => {
@@ -1892,7 +1893,7 @@ export const POSView = ({
                   setDiscountReason('')
                   setIsDiscountModalOpen(false)
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-stone-400 hover:text-stone-200 text-xs font-semibold cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200 text-stone-700 dark:bg-stone-950 dark:border-stone-800 dark:text-stone-400 dark:hover:text-stone-200 text-xs font-semibold cursor-pointer transition-colors"
               >
                 Hapus Diskon
               </button>
@@ -1904,7 +1905,7 @@ export const POSView = ({
                   setDiscountReason(tempDiscountReason.trim())
                   setIsDiscountModalOpen(false)
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                className="flex-1 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-850 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 text-xs font-bold transition-all cursor-pointer shadow-sm"
               >
                 Terapkan Diskon
               </button>

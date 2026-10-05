@@ -189,17 +189,17 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-stone-800 gap-3">
+      <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800 gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-700 dark:text-[#E2DFD2] shadow-xs">
               <Users className="w-4 h-4 stroke-2" />
             </div>
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-stone-100">
+              <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100">
                 Kelola Petugas Kasir
               </h2>
-              <p className="text-[11px] text-stone-400">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Atur akun kasir, ubah PIN, dan tambah petugas warkop baru
               </p>
             </div>
@@ -211,7 +211,7 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
               setIsCreateModalOpen(true)
               setErrorMessage('')
             }}
-            className="px-3.5 py-2 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
+            className="px-3.5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c6] dark:text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
           >
             <UserPlus className="w-4 h-4" />
             <span>Tambah Petugas Baru</span>
@@ -220,24 +220,24 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
 
         {/* Alerts */}
         {successMessage && (
-          <div className="mt-4 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/80 flex items-center justify-between text-emerald-300 text-xs">
+          <div className="mt-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 flex items-center justify-between text-emerald-800 dark:text-emerald-300 text-xs">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{successMessage}</span>
             </div>
-            <button type="button" onClick={() => setSuccessMessage('')} className="text-emerald-400 hover:text-white">
+            <button type="button" onClick={() => setSuccessMessage('')} className="text-emerald-600 dark:text-emerald-400 hover:opacity-75">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
 
         {errorMessage && (
-          <div className="mt-4 p-3 rounded-xl bg-rose-950/40 border border-rose-800/80 flex items-center justify-between text-rose-300 text-xs">
+          <div className="mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 flex items-center justify-between text-rose-800 dark:text-rose-300 text-xs">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{errorMessage}</span>
             </div>
-            <button type="button" onClick={() => setErrorMessage('')} className="text-rose-400 hover:text-white">
+            <button type="button" onClick={() => setErrorMessage('')} className="text-rose-600 dark:text-rose-400 hover:opacity-75">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -247,44 +247,44 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
         <div className="mt-4 overflow-hidden">
           <table className="w-full text-left text-xs table-auto">
             <thead>
-              <tr className="border-b border-stone-800 text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-950/40">
+              <tr className="border-b border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-50 dark:bg-stone-950/40">
                 <th className="py-2.5 px-3 font-semibold rounded-l-lg">Nama Petugas</th>
                 <th className="py-2.5 px-3 font-semibold">Username Login</th>
                 <th className="py-2.5 px-3 font-semibold text-center">Peran (Role)</th>
                 <th className="py-2.5 px-3 font-semibold text-right rounded-r-lg">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-800/60">
+            <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60">
               {isLoading ? (
                 <tr>
                   <td colSpan={4} className="py-8 text-center text-stone-400">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-[#E2DFD2]" />
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-amber-700 dark:text-[#E2DFD2]" />
                     <span>Memuat data petugas...</span>
                   </td>
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.id} className="hover:bg-stone-800/30 transition-colors">
-                    <td className="py-3 px-3 font-semibold text-stone-100">
+                  <tr key={u.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30 transition-colors">
+                    <td className="py-3 px-3 font-semibold text-stone-900 dark:text-stone-100">
                       <div className="flex items-center gap-2">
                         <span>{u.name}</span>
                         {u.id === currentUser.id && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-stone-800 text-stone-300">
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
                             (Anda)
                           </span>
                         )}
                       </div>
                     </td>
 
-                    <td className="py-3 px-3 font-mono text-stone-300">
+                    <td className="py-3 px-3 font-mono text-stone-600 dark:text-stone-300">
                       @{u.username}
                     </td>
 
                     <td className="py-3 px-3 text-center">
                       <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-wider font-semibold border ${
                         u.role === 'owner'
-                          ? 'border-[#E2DFD2]/40 bg-[#E2DFD2]/10 text-[#E2DFD2]'
-                          : 'border-stone-800 bg-stone-950 text-stone-300'
+                          ? 'border-amber-600/40 bg-amber-50 dark:border-[#E2DFD2]/40 dark:bg-[#E2DFD2]/10 text-amber-900 dark:text-[#E2DFD2]'
+                          : 'border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 text-stone-700 dark:text-stone-300'
                       }`}>
                         {u.role === 'owner' ? 'Owner' : 'Kasir'}
                       </span>
@@ -300,10 +300,10 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
                             setEditPin('')
                             setErrorMessage('')
                           }}
-                          className="px-2.5 py-1 rounded-lg bg-stone-950 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-stone-300 hover:text-[#E2DFD2] text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:border-amber-600 hover:bg-amber-50 dark:hover:border-[#E2DFD2]/60 dark:hover:bg-[#E2DFD2]/10 text-stone-700 dark:text-stone-300 hover:text-amber-800 dark:hover:text-[#E2DFD2] text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                           title="Ganti PIN 6-digit"
                         >
-                          <KeyRound className="w-3 h-3 text-[#E2DFD2]" />
+                          <KeyRound className="w-3 h-3 text-amber-700 dark:text-[#E2DFD2]" />
                           <span>Ubah PIN</span>
                         </button>
 
@@ -311,7 +311,7 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
                           <button
                             type="button"
                             onClick={() => handleDeleteUser(u)}
-                            className="p-1 rounded-lg bg-stone-950 border border-stone-800 hover:border-rose-900 hover:bg-rose-950/40 text-stone-400 hover:text-rose-400 transition-colors cursor-pointer"
+                            className="p-1 rounded-lg bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:border-rose-300 hover:bg-rose-50 dark:hover:border-rose-900 dark:hover:bg-rose-950/40 text-stone-400 hover:text-rose-600 transition-colors cursor-pointer"
                             title="Hapus Petugas"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -328,33 +328,32 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
       </div>
 
       {/* Modal: Tambah Petugas Baru */}
-      {/* Modal: Tambah Petugas Baru */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
-          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+        <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
+          <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+              <div className="w-10 h-10 rounded-2xl bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-700 dark:text-[#E2DFD2] shadow-xs">
                 <UserPlus className="w-5 h-5 stroke-2" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-stone-100">Tambah Kasir Baru</h3>
-                <p className="text-xs text-stone-400">Daftarkan akun kasir atau operator baru untuk operasional warkop</p>
+                <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">Tambah Kasir Baru</h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">Daftarkan akun kasir atau operator baru untuk operasional warkop</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setIsCreateModalOpen(false)}
-              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
-            <div className="w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="w-full max-w-md bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
               <form onSubmit={handleCreateUser} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  <label className="block text-xs font-mono text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
                     Nama Petugas
                   </label>
                   <input
@@ -367,12 +366,12 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
                       setNewName(val)
                       setNewUsername(generateUsername(val))
                     }}
-                    className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
+                    className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  <label className="block text-xs font-mono text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
                     PIN Akses (6-Digit Angka)
                   </label>
                   <input
@@ -383,25 +382,25 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
                     placeholder="Contoh: 123456"
                     value={newPin}
                     onChange={(e) => setNewPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-2.5 text-sm font-mono tracking-widest text-center text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
+                    className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-sm font-mono tracking-widest text-center text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2]"
                   />
                   <span className="text-[11px] text-stone-500 font-mono block mt-1.5 text-center">
                     Harus tepat 6 digit angka numerik.
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 pt-3 border-t border-stone-800">
+                <div className="flex items-center gap-3 pt-3 border-t border-stone-200 dark:border-stone-800">
                   <button
                     type="button"
                     onClick={() => setIsCreateModalOpen(false)}
-                    className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold cursor-pointer"
+                    className="flex-1 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-200 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={isCreating}
-                    className="flex-1 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-sm"
+                    className="flex-1 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c6] dark:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
                   >
                     {isCreating ? 'Menyimpan...' : 'Simpan Petugas'}
                   </button>
@@ -414,31 +413,31 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
 
       {/* Modal: Ubah PIN */}
       {selectedUserForPin && (
-        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
-          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+        <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
+          <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-stone-900 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+              <div className="w-10 h-10 rounded-2xl bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-700 dark:text-[#E2DFD2] shadow-xs">
                 <KeyRound className="w-5 h-5 stroke-2" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-stone-100">Ubah PIN Akses</h3>
-                <p className="text-xs text-stone-400">{selectedUserForPin.name} (@{selectedUserForPin.username})</p>
+                <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">Ubah PIN Akses</h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400">{selectedUserForPin.name} (@{selectedUserForPin.username})</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setSelectedUserForPin(null)}
-              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex items-center justify-center">
-            <div className="w-full max-w-md bg-stone-900 border border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div className="w-full max-w-md bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
               <form onSubmit={handleUpdatePin} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-mono text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
+                  <label className="block text-xs font-mono text-stone-600 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
                     Masukkan PIN 6-Digit Baru
                   </label>
                   <input
@@ -449,25 +448,25 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
                     placeholder="******"
                     value={editPin}
                     onChange={(e) => setEditPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3.5 py-3 text-sm font-mono tracking-widest text-center text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2]"
+                    className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-3 text-sm font-mono tracking-widest text-center text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2]"
                   />
                   <span className="text-[11px] text-stone-500 font-mono block mt-1.5 text-center">
                     PIN baru akan dienkripsi dengan standar SHA-256.
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 pt-3 border-t border-stone-800">
+                <div className="flex items-center gap-3 pt-3 border-t border-stone-200 dark:border-stone-800">
                   <button
                     type="button"
                     onClick={() => setSelectedUserForPin(null)}
-                    className="flex-1 py-2.5 rounded-xl bg-stone-950 border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold cursor-pointer"
+                    className="flex-1 py-2.5 rounded-xl bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:bg-stone-200 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold cursor-pointer"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdatingPin || editPin.length !== 6}
-                    className="flex-1 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] active:bg-[#d6d3c6] text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-sm"
+                    className="flex-1 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:active:bg-[#d6d3c6] dark:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-xs"
                   >
                     {isUpdatingPin ? 'Menyimpan...' : 'Perbarui PIN'}
                   </button>

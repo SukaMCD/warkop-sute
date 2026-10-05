@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
+
 @theme {
   --color-amber-50: #fdfaf3;
   --color-amber-100: #f7eed8;
@@ -28,7 +30,7 @@
 
 @layer base {
   body {
-    @apply bg-stone-950 text-stone-100 antialiased selection:bg-[#E2DFD2] selection:text-stone-950 min-h-screen font-sans;
+    @apply bg-stone-100 text-stone-900 dark:bg-stone-950 dark:text-stone-100 antialiased selection:bg-[#E2DFD2] selection:text-stone-950 min-h-screen font-sans;
   }
 
   /* Hilangkan spinner default browser */

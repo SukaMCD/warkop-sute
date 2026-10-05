@@ -240,7 +240,7 @@ export const ProductsCatalogView = ({
     <div className="space-y-4">
       
       {/* Top Filter & Action Bar */}
-      <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-3 shadow-sm">
+      <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-3 shadow-xs">
         
         {/* Left: Search & New Menu Button */}
         <div className="flex items-center gap-2.5 w-full md:w-auto flex-1 max-w-md">
@@ -251,13 +251,13 @@ export const ProductsCatalogView = ({
               placeholder="Cari menu warkop..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl pl-10 pr-9 py-2 text-xs text-stone-100 placeholder-stone-400 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+              className="w-full bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl pl-10 pr-9 py-2 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -267,7 +267,7 @@ export const ProductsCatalogView = ({
           <button
             type="button"
             onClick={handleOpenCreateModal}
-            className="px-3.5 py-2 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95 shrink-0"
+            className="px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Tambah Menu</span>
@@ -288,14 +288,14 @@ export const ProductsCatalogView = ({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#E2DFD2] text-stone-950 font-bold shadow-sm'
-                    : 'bg-stone-950 border border-stone-800 text-stone-400 hover:text-stone-200 hover:bg-stone-850'
+                    ? 'bg-stone-900 text-white font-bold shadow-xs dark:bg-[#E2DFD2] dark:text-stone-950'
+                    : 'bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-850'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{cat.label}</span>
                 <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono ${
-                  isActive ? 'bg-stone-950/15 text-stone-950 font-bold' : 'bg-stone-900 text-stone-400'
+                  isActive ? 'bg-white/20 text-white dark:bg-stone-950/15 dark:text-stone-950 font-bold' : 'bg-stone-200/70 text-stone-600 dark:bg-stone-900 dark:text-stone-400'
                 }`}>
                   {count}
                 </span>
@@ -307,11 +307,11 @@ export const ProductsCatalogView = ({
       </div>
 
       {/* Product List Table */}
-      <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-sm overflow-visible">
+      <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-xs overflow-visible">
         <div className="overflow-x-auto">
           <table className="w-full min-w-190 text-left text-xs table-auto">
             <thead>
-              <tr className="border-b border-stone-800 text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-950/40">
+              <tr className="border-b border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-50/60 dark:bg-stone-950/40">
                 <th className="py-3 px-3.5 font-semibold rounded-l-lg">Nama Menu</th>
                 <th className="py-3 px-3.5 font-semibold">Kategori</th>
                 <th className="py-3 px-3.5 font-semibold text-right">Harga Jual</th>
@@ -322,10 +322,10 @@ export const ProductsCatalogView = ({
                 <th className="py-3 px-3.5 font-semibold text-center rounded-r-lg w-16">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-800/60">
+            <tbody className="divide-y divide-stone-200 dark:divide-stone-800/60">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-stone-400">
+                  <td colSpan={8} className="py-8 text-center text-stone-400 dark:text-stone-500">
                     Tidak ada menu pada kategori ini.
                   </td>
                 </tr>
@@ -336,53 +336,53 @@ export const ProductsCatalogView = ({
                   const isMenuDropdownOpen = activeDropdownId === p.id
 
                   return (
-                    <tr key={p.id} className="hover:bg-stone-800/30 transition-colors group">
-                      <td className="py-3.5 px-3.5 font-medium text-stone-100">
+                    <tr key={p.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30 transition-colors group">
+                      <td className="py-3.5 px-3.5 font-medium text-stone-900 dark:text-stone-100">
                         <div className="flex items-center gap-2">
                           <span>{p.name}</span>
                           {Boolean(p.is_favorite) && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-stone-950 border border-stone-800 text-[#E2DFD2] font-semibold">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase bg-amber-50 dark:bg-stone-950 border border-amber-200 dark:border-stone-800 text-amber-900 dark:text-[#E2DFD2] font-semibold">
                               Favorit
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3.5 px-3.5 text-stone-400">
-                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-mono uppercase border border-stone-800 bg-stone-950 text-stone-300 font-semibold">
+                      <td className="py-3.5 px-3.5 text-stone-500 dark:text-stone-400">
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] font-mono uppercase border border-stone-200 bg-stone-100 text-stone-700 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-300 font-semibold">
                           {p.category_name}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3.5 text-right font-mono tabular-nums font-bold text-stone-100">
+                      <td className="py-3.5 px-3.5 text-right font-mono tabular-nums font-bold text-stone-900 dark:text-stone-100">
                         {formatRupiah(p.price)}
                       </td>
-                      <td className="py-3.5 px-3.5 text-right font-mono tabular-nums text-stone-400">
+                      <td className="py-3.5 px-3.5 text-right font-mono tabular-nums text-stone-500 dark:text-stone-400">
                         {formatRupiah(p.cost_price)}
                       </td>
-                      <td className="py-3.5 px-3.5 text-right font-mono tabular-nums text-emerald-400 font-bold">
+                      <td className="py-3.5 px-3.5 text-right font-mono tabular-nums text-emerald-700 dark:text-emerald-400 font-bold">
                         +{margin}% ({formatRupiah(profit)})
                       </td>
                       <td className="py-3.5 px-3.5 text-center font-mono">
                         {p.stock === undefined || p.stock === null ? (
-                          <span className="text-stone-500 text-[10px]">Unlimited</span>
+                          <span className="text-stone-400 dark:text-stone-500 text-[10px]">Unlimited</span>
                         ) : p.stock <= 0 ? (
-                          <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold border border-rose-900/60 bg-rose-950/40 text-rose-400">
+                          <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400">
                             Habis (0)
                           </span>
                         ) : p.stock <= 5 ? (
-                          <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold border border-amber-900/60 bg-amber-950/40 text-amber-400">
+                          <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold border border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-400">
                             Sisa {p.stock}
                           </span>
                         ) : (
-                          <span className="text-stone-300 font-semibold text-xs">{p.stock} porsi</span>
+                          <span className="text-stone-700 dark:text-stone-300 font-semibold text-xs">{p.stock} porsi</span>
                         )}
                       </td>
                       <td className="py-3.5 px-3.5 text-center">
                         {p.is_available ? (
-                          <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border border-emerald-900/60 bg-emerald-950/40 text-emerald-400">
+                          <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-400">
                             Tersedia
                           </span>
                         ) : (
-                          <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border border-rose-900/60 bg-rose-950/40 text-rose-400">
+                          <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400">
                             Habis
                           </span>
                         )}
@@ -399,8 +399,8 @@ export const ProductsCatalogView = ({
                             }}
                             className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 ${
                               isMenuDropdownOpen
-                                ? 'bg-stone-800 border-[#E2DFD2] text-[#E2DFD2]'
-                                : 'bg-stone-950 border-stone-800 hover:bg-stone-850 hover:border-stone-700 text-stone-400 hover:text-stone-100'
+                                ? 'bg-stone-100 border-stone-400 text-stone-900 dark:bg-stone-800 dark:border-[#E2DFD2] dark:text-[#E2DFD2]'
+                                : 'bg-stone-50 border-stone-200 hover:bg-stone-100 hover:border-stone-300 text-stone-500 hover:text-stone-900 dark:bg-stone-950 dark:border-stone-800 dark:hover:bg-stone-850 dark:hover:border-stone-700 dark:text-stone-400 dark:hover:text-stone-100'
                             }`}
                             title="Opsi Menu"
                           >
@@ -409,26 +409,26 @@ export const ProductsCatalogView = ({
 
                           {/* 3-Dots Dropdown Menu */}
                           {isMenuDropdownOpen && (
-                            <div className="absolute right-0 top-9 z-30 w-44 rounded-xl bg-stone-900 border border-stone-800 shadow-2xl py-1 text-left text-xs animate-in fade-in zoom-in-95 duration-100">
+                            <div className="absolute right-0 top-9 z-30 w-44 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl dark:shadow-2xl py-1 text-left text-xs animate-in fade-in zoom-in-95 duration-100">
                               <button
                                 type="button"
                                 onClick={() => handleOpenEditModal(p)}
-                                className="w-full px-3 py-2 flex items-center gap-2.5 text-stone-200 hover:bg-stone-800 hover:text-white transition-colors cursor-pointer"
+                                className="w-full px-3 py-2 flex items-center gap-2.5 text-stone-700 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-200 dark:hover:bg-stone-800 dark:hover:text-white transition-colors cursor-pointer"
                               >
-                                <Pencil className="w-3.5 h-3.5 text-[#E2DFD2]" />
+                                <Pencil className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2]" />
                                 <span>Edit Menu</span>
                               </button>
 
                               <button
                                 type="button"
                                 onClick={() => handleToggleAvailability(p)}
-                                className="w-full px-3 py-2 flex items-center gap-2.5 text-stone-200 hover:bg-stone-800 hover:text-white transition-colors cursor-pointer"
+                                className="w-full px-3 py-2 flex items-center gap-2.5 text-stone-700 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-200 dark:hover:bg-stone-800 dark:hover:text-white transition-colors cursor-pointer"
                               >
-                                <Power className={`w-3.5 h-3.5 ${p.is_available ? 'text-amber-400' : 'text-emerald-400'}`} />
+                                <Power className={`w-3.5 h-3.5 ${p.is_available ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`} />
                                 <span>{p.is_available ? 'Tandai Habis' : 'Tandai Tersedia'}</span>
                               </button>
 
-                              <div className="h-px bg-stone-800 my-1" />
+                              <div className="h-px bg-stone-200 dark:bg-stone-800 my-1" />
 
                               <button
                                 type="button"
@@ -436,7 +436,7 @@ export const ProductsCatalogView = ({
                                   setActiveDropdownId(null)
                                   setDeletingProduct(p)
                                 }}
-                                className="w-full px-3 py-2 flex items-center gap-2.5 text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 transition-colors cursor-pointer"
+                                className="w-full px-3 py-2 flex items-center gap-2.5 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300 transition-colors cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                                 <span>Hapus Menu</span>
@@ -457,22 +457,22 @@ export const ProductsCatalogView = ({
 
       {/* MODAL: Tambah / Edit Menu */}
       {isFormModalOpen && (
-        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
           
           {/* Header Modal */}
-          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+          <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 backdrop-blur-xs flex items-center justify-between shrink-0">
             <div>
-              <span className="text-[10px] font-mono uppercase text-[#E2DFD2] tracking-wider font-semibold">
+              <span className="text-[10px] font-mono uppercase text-amber-800 dark:text-[#E2DFD2] tracking-wider font-semibold">
                 {editingProduct ? 'Edit Menu' : 'Menu Baru'}
               </span>
-              <h3 className="text-base font-bold text-stone-100">
+              <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
                 {editingProduct ? `Ubah: ${editingProduct.name}` : 'Tambah Menu Baru'}
               </h3>
             </div>
             <button
               type="button"
               onClick={() => setIsFormModalOpen(false)}
-              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -484,8 +484,8 @@ export const ProductsCatalogView = ({
               <div className="max-w-4xl mx-auto space-y-6">
 
                 <div>
-                  <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
-                    Nama Menu <span className="text-rose-400">*</span>
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                    Nama Menu <span className="text-rose-500 dark:text-rose-400">*</span>
                   </label>
                   <input
                     type="text"
@@ -493,13 +493,13 @@ export const ProductsCatalogView = ({
                     placeholder="Contoh: Kopi Tubruk Susu"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+                    className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
-                    Kategori Menu <span className="text-rose-400">*</span>
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                    Kategori Menu <span className="text-rose-500 dark:text-rose-400">*</span>
                   </label>
                   <SearchableSelect
                     value={formCategory}
@@ -515,8 +515,8 @@ export const ProductsCatalogView = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
-                      Harga Jual <span className="text-rose-400">*</span>
+                    <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                      Harga Jual <span className="text-rose-500 dark:text-rose-400">*</span>
                     </label>
                     <NumericInput
                       value={formPrice}
@@ -530,7 +530,7 @@ export const ProductsCatalogView = ({
                   </div>
 
                   <div>
-                    <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                    <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
                       Modal / HPP
                     </label>
                     <NumericInput
@@ -546,7 +546,7 @@ export const ProductsCatalogView = ({
 
                 {/* Stok Bahan / Porsi */}
                 <div>
-                  <label className="text-xs font-mono text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
+                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
                     Stok Porsi / Bahan (Opsional)
                   </label>
                   <NumericInput
@@ -564,29 +564,29 @@ export const ProductsCatalogView = ({
 
                 {/* Toggles */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <label className="flex items-center justify-between p-4 rounded-2xl bg-stone-900/60 border border-stone-800 cursor-pointer">
+                  <label className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 cursor-pointer shadow-xs">
                     <div>
-                      <span className="text-stone-200 text-xs font-semibold block">Status Ketersediaan</span>
-                      <span className="text-[11px] text-stone-400">Dapat dipesan kasir saat ini</span>
+                      <span className="text-stone-900 dark:text-stone-200 text-xs font-semibold block">Status Ketersediaan</span>
+                      <span className="text-[11px] text-stone-500 dark:text-stone-400">Dapat dipesan kasir saat ini</span>
                     </div>
                     <input
                       type="checkbox"
                       checked={formIsAvailable}
                       onChange={(e) => setFormIsAvailable(e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-stone-900 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                   </label>
 
-                  <label className="flex items-center justify-between p-4 rounded-2xl bg-stone-900/60 border border-stone-800 cursor-pointer">
+                  <label className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 cursor-pointer shadow-xs">
                     <div>
-                      <span className="text-stone-200 text-xs font-semibold block">Menu Favorit</span>
-                      <span className="text-[11px] text-stone-400">Tampilkan badge favorit</span>
+                      <span className="text-stone-900 dark:text-stone-200 text-xs font-semibold block">Menu Favorit</span>
+                      <span className="text-[11px] text-stone-500 dark:text-stone-400">Tampilkan badge favorit</span>
                     </div>
                     <input
                       type="checkbox"
                       checked={formIsFavorite}
                       onChange={(e) => setFormIsFavorite(e.target.checked)}
-                      className="w-4 h-4 rounded accent-[#E2DFD2] cursor-pointer"
+                      className="w-4 h-4 rounded accent-stone-900 dark:accent-[#E2DFD2] cursor-pointer"
                     />
                   </label>
                 </div>
@@ -595,18 +595,18 @@ export const ProductsCatalogView = ({
             </div>
 
             {/* Sticky Bottom Fullscreen Footer Bar */}
-            <footer className="border-t border-stone-800 bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
+            <footer className="border-t border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur-xs px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
               <button
                 type="button"
                 onClick={() => setIsFormModalOpen(false)}
-                className="px-6 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+                className="px-6 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-8 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#edebe2] text-stone-950 font-bold text-xs transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
+                className="px-8 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 font-bold text-xs transition-all cursor-pointer shadow-xs active:scale-95 disabled:opacity-50"
               >
                 {isSubmitting ? 'Menyimpan...' : editingProduct ? 'Simpan Perubahan' : 'Tambah Menu'}
               </button>
@@ -618,30 +618,30 @@ export const ProductsCatalogView = ({
       {/* MODAL: Konfirmasi Hapus Menu */}
       {deletingProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-stone-900 border border-stone-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center">
-            <div className="w-11 h-11 rounded-2xl bg-rose-950/60 border border-rose-900/60 text-rose-400 flex items-center justify-center mx-auto mb-3 shadow-inner">
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative text-center">
+            <div className="w-11 h-11 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 dark:bg-rose-950/60 dark:border-rose-900/60 dark:text-rose-400 flex items-center justify-center mx-auto mb-3 shadow-xs">
               <AlertTriangle className="w-6 h-6 stroke-2" />
             </div>
 
-            <h3 className="text-base font-bold text-stone-100">
+            <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
               Hapus Menu Ini?
             </h3>
-            <p className="text-xs text-stone-400 mt-1.5 leading-relaxed">
-              Apakah Anda yakin ingin menghapus <strong className="text-stone-200">"{deletingProduct.name}"</strong>? Menu ini tidak akan muncul lagi di layar kasir.
+            <p className="text-xs text-stone-600 dark:text-stone-400 mt-1.5 leading-relaxed">
+              Apakah Anda yakin ingin menghapus <strong className="text-stone-900 dark:text-stone-200">"{deletingProduct.name}"</strong>? Menu ini tidak akan muncul lagi di layar kasir.
             </p>
 
             <div className="mt-5 flex items-center justify-center gap-2.5">
               <button
                 type="button"
                 onClick={() => setDeletingProduct(null)}
-                className="flex-1 py-2 rounded-xl border border-stone-800 bg-stone-950 hover:bg-stone-850 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+                className="flex-1 py-2 rounded-xl border border-stone-200 bg-stone-100 hover:bg-stone-200 text-stone-700 dark:border-stone-800 dark:bg-stone-950 dark:hover:bg-stone-850 dark:text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleDeleteProduct}
-                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all cursor-pointer shadow-sm active:scale-95"
+                className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all cursor-pointer shadow-xs active:scale-95"
               >
                 Ya, Hapus
               </button>

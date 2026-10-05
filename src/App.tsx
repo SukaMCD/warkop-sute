@@ -408,7 +408,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-950 text-stone-100 flex font-sans selection:bg-[#E2DFD2] selection:text-stone-950 overflow-hidden">
+    <div className="min-h-screen bg-[#FBF9F5] dark:bg-stone-950 text-stone-900 dark:text-stone-100 flex font-sans selection:bg-amber-700 dark:selection:bg-[#E2DFD2] selection:text-white dark:selection:text-stone-950 overflow-hidden">
       
       {/* Sidebar Navigation */}
       <Sidebar

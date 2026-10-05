@@ -120,22 +120,22 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
       
       {/* Header Bar */}
-      <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+      <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 backdrop-blur-xs flex items-center justify-between shrink-0">
         <div>
-          <h2 className="text-base font-bold text-stone-100 tracking-tight">
+          <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight">
             {isEditing ? 'Edit Data Shift' : 'Tambah Shift Manual'}
           </h2>
-          <p className="text-xs text-stone-400">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             {isEditing ? 'Ubah informasi dan status shift kasir' : 'Catat riwayat shift kasir secara manual'}
           </p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+          className="p-2 rounded-xl text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -147,15 +147,15 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
           <div className="max-w-4xl mx-auto space-y-6">
 
             {errorMsg && (
-              <div className="p-3.5 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs">
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300 text-xs">
                 {errorMsg}
               </div>
             )}
 
             {/* Kasir */}
             <div>
-              <label className="text-xs font-semibold text-stone-300 block mb-1.5">
-                Petugas Kasir <span className="text-rose-400">*</span>
+              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block mb-1.5">
+                Petugas Kasir <span className="text-rose-500 dark:text-rose-400">*</span>
               </label>
               {cashiers.length > 0 ? (
                 <SearchableSelect
@@ -175,7 +175,7 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
                   value={cashierName}
                   onChange={e => setCashierName(e.target.value)}
                   placeholder="Nama kasir..."
-                  className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+                  className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-3 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors shadow-xs"
                   required
                 />
               )}
@@ -184,27 +184,27 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
             {/* Start / End Time */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-stone-300 block mb-1.5">
-                  Jam Mulai <span className="text-rose-400">*</span>
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block mb-1.5">
+                  Jam Mulai <span className="text-rose-500 dark:text-rose-400">*</span>
                 </label>
                 <input
                   type="datetime-local"
                   value={startTime}
                   onChange={e => setStartTime(e.target.value)}
-                  className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors scheme-dark"
+                  className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors scheme-light dark:scheme-dark shadow-xs"
                   required
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-stone-300 block mb-1.5">
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block mb-1.5">
                   Jam Akhir{' '}
-                  <span className="text-stone-500 font-normal">(opsional)</span>
+                  <span className="text-stone-400 dark:text-stone-500 font-normal">(opsional)</span>
                 </label>
                 <input
                   type="datetime-local"
                   value={endTime}
                   onChange={e => setEndTime(e.target.value)}
-                  className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-[#E2DFD2] transition-colors scheme-dark"
+                  className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors scheme-light dark:scheme-dark shadow-xs"
                 />
               </div>
             </div>
@@ -212,31 +212,31 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
             {/* Cash fields — 3 col */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="text-xs font-semibold text-stone-300 block mb-1.5">Modal Awal</label>
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block mb-1.5">Modal Awal</label>
                 <NumericInput value={initialCash} onChange={setInitialCash} min={0} step={10000} prefix="Rp" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-stone-300 block mb-1.5">Penjualan Tunai</label>
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block mb-1.5">Penjualan Tunai</label>
                 <NumericInput value={totalCashSales} onChange={setTotalCashSales} min={0} step={1000} prefix="Rp" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-stone-300 block mb-1.5">Penjualan QRIS</label>
+                <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block mb-1.5">Penjualan QRIS</label>
                 <NumericInput value={totalQrisSales} onChange={setTotalQrisSales} min={0} step={1000} prefix="Rp" />
               </div>
             </div>
 
             {/* Actual Cash Counted */}
-            <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800 space-y-2">
+            <div className="p-4 rounded-2xl bg-white dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 space-y-2 shadow-xs">
               <div className="flex items-center gap-2 mb-1">
-                <label className="text-xs font-semibold text-stone-200">Uang Fisik Dihitung</label>
+                <label className="text-xs font-semibold text-stone-800 dark:text-stone-200">Uang Fisik Dihitung</label>
                 <label className="flex items-center gap-1.5 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={hasActualCash}
                     onChange={e => setHasActualCash(e.target.checked)}
-                    className="w-3.5 h-3.5 accent-[#E2DFD2]"
+                    className="w-3.5 h-3.5 accent-stone-900 dark:accent-[#E2DFD2]"
                   />
-                  <span className="text-xs text-stone-400">Isi manual</span>
+                  <span className="text-xs text-stone-500 dark:text-stone-400">Isi manual</span>
                 </label>
               </div>
               {hasActualCash && (
@@ -246,7 +246,7 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
 
             {/* Status */}
             <div>
-              <label className="text-xs font-semibold text-stone-300 block mb-1.5">Status Shift</label>
+              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block mb-1.5">Status Shift</label>
               <SearchableSelect
                 value={status}
                 onChange={val => setStatus(val as 'open' | 'closed')}
@@ -260,13 +260,13 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
 
             {/* Notes */}
             <div>
-              <label className="text-xs font-semibold text-stone-300 block mb-1.5">Catatan</label>
+              <label className="text-xs font-semibold text-stone-700 dark:text-stone-300 block mb-1.5">Catatan</label>
               <textarea
                 rows={3}
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 placeholder="Kondisi kas, serah terima, catatan selisih..."
-                className="w-full bg-stone-900/80 border border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors resize-none"
+                className="w-full bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-xl px-4 py-2.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-stone-900 dark:focus:border-[#E2DFD2] transition-colors resize-none shadow-xs"
               />
             </div>
 
@@ -274,18 +274,18 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
         </div>
 
         {/* Sticky Bottom Fullscreen Footer Bar */}
-        <footer className="border-t border-stone-800 bg-stone-900/90 backdrop-blur px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
+        <footer className="border-t border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-900/90 backdrop-blur-xs px-6 sm:px-12 py-4 flex items-center justify-between shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-800 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+            className="px-6 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-2.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm"
+            className="px-8 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c6] dark:text-stone-950 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-sm"
           >
             {isSubmitting ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />

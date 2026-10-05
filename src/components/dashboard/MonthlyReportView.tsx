@@ -273,22 +273,22 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
     <div className="space-y-6">
       
       {/* 1. Header Toolbar & Month Selector */}
-      <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-sm space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-stone-800/80 gap-4">
+      <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-xs space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800/80 gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-700 dark:text-[#E2DFD2] shadow-xs">
               <CalendarRange className="w-5 h-5 stroke-2" />
             </div>
             <div>
-              <h2 className="text-base font-bold tracking-tight text-stone-100 flex items-center gap-2">
+              <h2 className="text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <span>Rekapan & Laporan Keuangan Bulanan</span>
                 {reportData && (
-                  <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-stone-950 border border-stone-800 text-[#E2DFD2]">
+                  <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-amber-800 dark:text-[#E2DFD2]">
                     {reportData.monthName}
                   </span>
                 )}
               </h2>
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-500 dark:text-stone-400">
                 Pembukuan lengkap omzet, biaya operasional, estimasi laba bersih, serta tren penjualan harian
               </p>
             </div>
@@ -300,7 +300,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               type="button"
               onClick={handleExportExcel}
               disabled={isLoading || !reportData || reportData.totalTransactions === 0}
-              className="px-3.5 py-2 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c4] text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-xs"
+              className="px-3.5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c4] dark:text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-xs"
               title="Download format Spreadsheet Microsoft Excel (.xlsx) resmi tanpa peringatan"
             >
               <FileSpreadsheet className="w-4 h-4" />
@@ -311,7 +311,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               type="button"
               onClick={handleExportCSV}
               disabled={isLoading || !reportData || reportData.totalTransactions === 0}
-              className="px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-stone-600 text-stone-300 text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+              className="px-3 py-2 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
               title="Download format CSV dengan kolom terpisah"
             >
               <Download className="w-3.5 h-3.5 text-stone-400" />
@@ -322,7 +322,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               type="button"
               onClick={() => fetchMonthlyReport(selectedYear, selectedMonth)}
               disabled={isLoading}
-              className="p-2 rounded-xl bg-stone-950 border border-stone-800 hover:border-stone-700 text-stone-400 hover:text-stone-200 transition-all cursor-pointer disabled:opacity-40"
+              className="p-2 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-all cursor-pointer disabled:opacity-40"
               title="Perbarui data"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -340,8 +340,8 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               onClick={handleSelectCurrentMonth}
               className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
                 isCurrentMonthActive
-                  ? 'bg-[#E2DFD2] text-stone-950 border-[#E2DFD2] font-bold shadow-xs'
-                  : 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                  ? 'bg-amber-700 text-white border-amber-700 dark:bg-[#E2DFD2] dark:text-stone-950 dark:border-[#E2DFD2] font-bold shadow-xs'
+                  : 'bg-stone-50 dark:bg-stone-950 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:border-stone-300 dark:hover:border-stone-700'
               }`}
             >
               Bulan Ini
@@ -353,14 +353,14 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
                 selectedMonth === (currentMonth === 1 ? 12 : currentMonth - 1) &&
                 selectedYear === (currentMonth === 1 ? currentYear - 1 : currentYear)
-                  ? 'bg-[#E2DFD2] text-stone-950 border-[#E2DFD2] font-bold shadow-xs'
-                  : 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-200 hover:border-stone-700'
+                  ? 'bg-amber-700 text-white border-amber-700 dark:bg-[#E2DFD2] dark:text-stone-950 dark:border-[#E2DFD2] font-bold shadow-xs'
+                  : 'bg-stone-50 dark:bg-stone-950 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:border-stone-300 dark:hover:border-stone-700'
               }`}
             >
               Bulan Lalu
             </button>
 
-            <div className="h-4 w-px bg-stone-800 mx-1 hidden sm:block" />
+            <div className="h-4 w-px bg-stone-200 dark:bg-stone-800 mx-1 hidden sm:block" />
 
             {/* Dropdown Bulan */}
             <div className="w-36">
@@ -392,14 +392,14 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
           </div>
 
           {/* Sub-tab view switchers */}
-          <div className="flex items-center gap-1 bg-stone-950 p-1 rounded-xl border border-stone-800 text-xs">
+          <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 p-1 rounded-xl border border-stone-200 dark:border-stone-800 text-xs">
             <button
               type="button"
               onClick={() => setActiveSubTab('daily')}
               className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                 activeSubTab === 'daily'
-                  ? 'bg-stone-800 text-[#E2DFD2] font-bold shadow-xs'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-[#E2DFD2] font-bold shadow-xs'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
               }`}
             >
               Tabel Harian (1-31)
@@ -409,8 +409,8 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               onClick={() => setActiveSubTab('products')}
               className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                 activeSubTab === 'products'
-                  ? 'bg-stone-800 text-[#E2DFD2] font-bold shadow-xs'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-[#E2DFD2] font-bold shadow-xs'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
               }`}
             >
               Menu Terlaris
@@ -420,8 +420,8 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               onClick={() => setActiveSubTab('cashflow')}
               className={`px-3 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                 activeSubTab === 'cashflow'
-                  ? 'bg-stone-800 text-[#E2DFD2] font-bold shadow-xs'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-[#E2DFD2] font-bold shadow-xs'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
               }`}
             >
               Arus Kas
@@ -432,7 +432,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
 
       {/* Error state */}
       {error && (
-        <div className="p-4 rounded-xl border border-rose-900/60 bg-rose-950/40 text-rose-300 text-xs">
+        <div className="p-4 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 text-xs">
           {error}
         </div>
       )}
@@ -441,40 +441,40 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Card 1: Total Omzet Kotor */}
-        <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-4 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-stone-400">
+        <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
             <span className="text-xs font-medium uppercase tracking-wider">Total Omzet Kotor</span>
-            <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2]">
+            <div className="w-8 h-8 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-700 dark:text-[#E2DFD2]">
               <Coins className="w-4 h-4 stroke-2" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono tabular-nums text-stone-100 tracking-tight">
+            <span className="text-2xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100 tracking-tight">
               {reportData ? formatRupiah(reportData.totalRevenue) : '...'}
             </span>
           </div>
-          <div className="pt-2 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400 font-mono">
+          <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 font-mono">
             <span>Tunai: {reportData ? formatRupiah(reportData.totalCash) : '0'}</span>
             <span>QRIS: {reportData ? formatRupiah(reportData.totalQris) : '0'}</span>
           </div>
         </div>
 
         {/* Card 2: Pengeluaran Kas Operasional */}
-        <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-4 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-stone-400">
+        <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
             <span className="text-xs font-medium uppercase tracking-wider">Pengeluaran Kas / Petty</span>
-            <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-rose-400">
+            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-stone-950 border border-rose-200 dark:border-stone-800 flex items-center justify-center text-rose-600 dark:text-rose-400">
               <Wallet className="w-4 h-4 stroke-2" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono tabular-nums text-rose-300 tracking-tight">
+            <span className="text-2xl font-bold font-mono tabular-nums text-rose-600 dark:text-rose-300 tracking-tight">
               {reportData ? formatRupiah(reportData.totalExpenses) : '...'}
             </span>
           </div>
-          <div className="pt-2 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
+          <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
             <span>Operasional shift & kas kecil</span>
-            <span className="font-mono text-stone-300">
+            <span className="font-mono text-stone-700 dark:text-stone-300">
               {reportData && reportData.totalRevenue > 0
                 ? `${((reportData.totalExpenses / reportData.totalRevenue) * 100).toFixed(1)}% omzet`
                 : '0%'}
@@ -483,45 +483,45 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
         </div>
 
         {/* Card 3: Estimasi Laba Bersih */}
-        <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-4 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-stone-400">
+        <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
             <span className="text-xs font-medium uppercase tracking-wider">Estimasi Laba Bersih</span>
-            <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-emerald-400">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-stone-950 border border-emerald-200 dark:border-stone-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <TrendingUp className="w-4 h-4 stroke-2" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
             <span className={`text-2xl font-bold font-mono tabular-nums tracking-tight ${
-              reportData && reportData.netProfit < 0 ? 'text-rose-400' : 'text-emerald-400'
+              reportData && reportData.netProfit < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
             }`}>
               {reportData ? formatRupiah(reportData.netProfit) : '...'}
             </span>
           </div>
-          <div className="pt-2 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
+          <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
             <span>Margin Laba:</span>
-            <span className="font-mono font-bold text-emerald-400">
+            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
               ~{profitMarginPercent}%
             </span>
           </div>
         </div>
 
         {/* Card 4: Transaksi & Rata-rata Harian */}
-        <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-4 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-stone-400">
+        <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
             <span className="text-xs font-medium uppercase tracking-wider">Total Transaksi</span>
-            <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-stone-300">
+            <div className="w-8 h-8 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-600 dark:text-stone-300">
               <Receipt className="w-4 h-4 stroke-2" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono tabular-nums text-stone-100 tracking-tight">
+            <span className="text-2xl font-bold font-mono tabular-nums text-stone-900 dark:text-stone-100 tracking-tight">
               {reportData ? formatNumber(reportData.totalTransactions) : '...'}
             </span>
-            <span className="text-xs text-stone-400 font-medium">pesanan</span>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">pesanan</span>
           </div>
-          <div className="pt-2 border-t border-stone-800/80 flex items-center justify-between text-[11px] text-stone-400">
+          <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
             <span>Rata-rata / Hari:</span>
-            <span className="font-mono text-stone-200 font-medium">
+            <span className="font-mono text-stone-800 dark:text-stone-200 font-medium">
               {formatRupiah(averageDailyRevenue)}
             </span>
           </div>
@@ -531,29 +531,29 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
 
       {/* 3. Main Content Views */}
       {activeSubTab === 'daily' && (
-        <div className="bg-stone-900/80 border border-stone-800 rounded-2xl overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-stone-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden shadow-xs">
+          <div className="p-4 border-b border-stone-200 dark:border-stone-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-stone-100 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <span>Rincian Penjualan Harian</span>
-                <span className="text-xs text-stone-400 font-normal font-mono">
+                <span className="text-xs text-stone-500 dark:text-stone-400 font-normal font-mono">
                   ({showOnlyActiveDays ? `${activeDaysCount} hari aktif` : `Hari ke-1 s/d ${reportData?.dailyBreakdown.length || 31}`})
                 </span>
               </h3>
-              <p className="text-[11px] text-stone-400">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Pencatatan akumulasi penjualan, kas masuk, pengeluaran kasir, dan hasil bersih tiap tanggal
               </p>
             </div>
 
             {/* Filter Toggle: All Days vs Active Days Only */}
-            <div className="flex items-center gap-1 bg-stone-950 p-1 rounded-xl border border-stone-800 text-xs self-start sm:self-auto">
+            <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 p-1 rounded-xl border border-stone-200 dark:border-stone-800 text-xs self-start sm:self-auto">
               <button
                 type="button"
                 onClick={() => setShowOnlyActiveDays(false)}
                 className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                   !showOnlyActiveDays
-                    ? 'bg-stone-800 text-stone-100 font-semibold shadow-xs'
-                    : 'text-stone-400 hover:text-stone-200'
+                    ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-semibold shadow-xs'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
                 Semua Hari (1-31)
@@ -563,8 +563,8 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                 onClick={() => setShowOnlyActiveDays(true)}
                 className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                   showOnlyActiveDays
-                    ? 'bg-stone-800 text-stone-100 font-semibold shadow-xs'
-                    : 'text-stone-400 hover:text-stone-200'
+                    ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-semibold shadow-xs'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
                 }`}
               >
                 Hanya Hari Aktif ({activeDaysCount})
@@ -574,7 +574,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-stone-950/60 border-b border-stone-800/80 text-[11px] text-stone-400 font-mono uppercase tracking-wider">
+              <thead className="bg-stone-50 dark:bg-stone-950/60 border-b border-stone-200 dark:border-stone-800/80 text-[11px] text-stone-500 dark:text-stone-400 font-mono uppercase tracking-wider">
                 <tr>
                   <th className="py-3 px-3 text-center w-12">Tgl</th>
                   <th className="py-3 px-3">Hari</th>
@@ -586,10 +586,10 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                   <th className="py-3 px-3 text-right">Laba Bersih</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-800/50">
+              <tbody className="divide-y divide-stone-100 dark:divide-stone-800/50">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-stone-500 font-mono">
+                    <td colSpan={8} className="py-8 text-center text-stone-400 dark:text-stone-500 font-mono">
                       Memuat data rekapan bulanan...
                     </td>
                   </tr>
@@ -612,20 +612,20 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                     return (
                       <tr
                         key={item.date}
-                        className={`hover:bg-stone-800/40 transition-colors ${
+                        className={`hover:bg-stone-50 dark:hover:bg-stone-800/40 transition-colors ${
                           isToday
-                            ? 'bg-[#E2DFD2]/10 text-stone-100 font-medium'
+                            ? 'bg-amber-50 dark:bg-[#E2DFD2]/10 text-stone-900 dark:text-stone-100 font-medium'
                             : hasTransactions
-                            ? 'text-stone-200'
-                            : 'text-stone-500'
+                            ? 'text-stone-800 dark:text-stone-200'
+                            : 'text-stone-400 dark:text-stone-500'
                         }`}
                       >
                         {/* Day Number */}
                         <td className="py-2.5 px-3 text-center font-mono font-bold">
                           <span className={`inline-block w-6 h-6 rounded-md text-center leading-6 text-xs ${
                             isToday
-                              ? 'bg-[#E2DFD2] text-stone-950 font-bold'
-                              : 'text-stone-300'
+                              ? 'bg-amber-700 text-white dark:bg-[#E2DFD2] dark:text-stone-950 font-bold'
+                              : 'text-stone-600 dark:text-stone-300'
                           }`}>
                             {item.day}
                           </span>
@@ -639,41 +639,41 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                         {/* Transactions Count */}
                         <td className="py-2.5 px-3 text-center font-mono tabular-nums">
                           {item.transactions > 0 ? (
-                            <span className="px-2 py-0.5 rounded-md bg-stone-950 border border-stone-800 text-stone-300 font-medium">
+                            <span className="px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 font-medium">
                               {item.transactions}
                             </span>
                           ) : (
-                            <span className="text-stone-600">-</span>
+                            <span className="text-stone-400 dark:text-stone-600">-</span>
                           )}
                         </td>
 
                         {/* Cash Amount */}
-                        <td className="py-2.5 px-3 text-right font-mono tabular-nums text-stone-400">
+                        <td className="py-2.5 px-3 text-right font-mono tabular-nums text-stone-500 dark:text-stone-400">
                           {item.cash > 0 ? formatRupiah(item.cash) : '-'}
                         </td>
 
                         {/* QRIS Amount */}
-                        <td className="py-2.5 px-3 text-right font-mono tabular-nums text-stone-400">
+                        <td className="py-2.5 px-3 text-right font-mono tabular-nums text-stone-500 dark:text-stone-400">
                           {item.qris > 0 ? formatRupiah(item.qris) : '-'}
                         </td>
 
                         {/* Total Revenue */}
-                        <td className="py-2.5 px-3 text-right font-mono tabular-nums font-bold text-stone-100">
+                        <td className="py-2.5 px-3 text-right font-mono tabular-nums font-bold text-stone-900 dark:text-stone-100">
                           {item.revenue > 0 ? formatRupiah(item.revenue) : '-'}
                         </td>
 
                         {/* Expenses */}
-                        <td className="py-2.5 px-3 text-right font-mono tabular-nums text-rose-400">
+                        <td className="py-2.5 px-3 text-right font-mono tabular-nums text-rose-600 dark:text-rose-400">
                           {item.expenses > 0 ? `-${formatRupiah(item.expenses)}` : '-'}
                         </td>
 
                         {/* Net Profit */}
                         <td className={`py-2.5 px-3 text-right font-mono tabular-nums font-semibold ${
                           item.netProfit > 0
-                            ? 'text-emerald-400'
+                            ? 'text-emerald-600 dark:text-emerald-400'
                             : item.netProfit < 0
-                            ? 'text-rose-400'
-                            : 'text-stone-600'
+                            ? 'text-rose-600 dark:text-rose-400'
+                            : 'text-stone-400 dark:text-stone-600'
                         }`}>
                           {item.revenue > 0 ? formatRupiah(item.netProfit) : '-'}
                         </td>
@@ -685,27 +685,27 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
 
               {/* Total Footer */}
               {reportData && (
-                <tfoot className="bg-stone-950 border-t-2 border-stone-800 font-mono text-xs font-bold text-stone-100">
+                <tfoot className="bg-stone-50 dark:bg-stone-950 border-t-2 border-stone-200 dark:border-stone-800 font-mono text-xs font-bold text-stone-900 dark:text-stone-100">
                   <tr>
-                    <td colSpan={2} className="py-3 px-3 uppercase tracking-wider text-stone-400">
+                    <td colSpan={2} className="py-3 px-3 uppercase tracking-wider text-stone-500 dark:text-stone-400">
                       TOTAL {reportData.monthName}
                     </td>
-                    <td className="py-3 px-3 text-center text-[#E2DFD2]">
+                    <td className="py-3 px-3 text-center text-amber-800 dark:text-[#E2DFD2]">
                       {formatNumber(reportData.totalTransactions)}
                     </td>
-                    <td className="py-3 px-3 text-right text-stone-300">
+                    <td className="py-3 px-3 text-right text-stone-700 dark:text-stone-300">
                       {formatRupiah(reportData.totalCash)}
                     </td>
-                    <td className="py-3 px-3 text-right text-stone-300">
+                    <td className="py-3 px-3 text-right text-stone-700 dark:text-stone-300">
                       {formatRupiah(reportData.totalQris)}
                     </td>
-                    <td className="py-3 px-3 text-right text-[#E2DFD2] font-black">
+                    <td className="py-3 px-3 text-right text-amber-800 dark:text-[#E2DFD2] font-black">
                       {formatRupiah(reportData.totalRevenue)}
                     </td>
-                    <td className="py-3 px-3 text-right text-rose-400">
+                    <td className="py-3 px-3 text-right text-rose-600 dark:text-rose-400">
                       {reportData.totalExpenses > 0 ? `-${formatRupiah(reportData.totalExpenses)}` : 'Rp 0'}
                     </td>
-                    <td className="py-3 px-3 text-right text-emerald-400 font-black">
+                    <td className="py-3 px-3 text-right text-emerald-600 dark:text-emerald-400 font-black">
                       {formatRupiah(reportData.netProfit)}
                     </td>
                   </tr>
@@ -718,22 +718,22 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
 
       {/* View 2: Top Selling Menu Bulan Ini */}
       {activeSubTab === 'products' && (
-        <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-stone-800/80">
+        <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800/80">
             <div>
-              <h3 className="text-sm font-bold text-stone-100 flex items-center gap-2">
-                <Award className="w-4 h-4 text-[#E2DFD2]" />
+              <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <Award className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2]" />
                 <span>Peringkat Menu Terlaris</span>
-                <span className="text-xs text-stone-400 font-mono">({reportData?.monthName})</span>
+                <span className="text-xs text-stone-500 dark:text-stone-400 font-mono">({reportData?.monthName})</span>
               </h3>
-              <p className="text-[11px] text-stone-400">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 Menu paling diminati pelanggan warkop berdasarkan volume porsi terjual sepanjang bulan ini
               </p>
             </div>
           </div>
 
           {!reportData || reportData.topProducts.length === 0 ? (
-            <div className="py-12 text-center text-stone-500 text-xs">
+            <div className="py-12 text-center text-stone-400 dark:text-stone-500 text-xs">
               Belum ada penjualan menu yang tercatat pada bulan ini.
             </div>
           ) : (
@@ -747,23 +747,23 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                 return (
                   <div
                     key={prod.id || index}
-                    className="p-3.5 rounded-xl bg-stone-950 border border-stone-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    className="p-3.5 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-mono font-bold text-xs ${
                         index === 0
-                          ? 'bg-[#E2DFD2] text-stone-950 font-bold'
+                          ? 'bg-amber-700 text-white dark:bg-[#E2DFD2] dark:text-stone-950 font-bold'
                           : index === 1
-                          ? 'bg-stone-300 text-stone-950 font-bold'
+                          ? 'bg-stone-200 text-stone-900 dark:bg-stone-300 dark:text-stone-950 font-bold'
                           : index === 2
-                          ? 'bg-stone-700 text-stone-100 font-bold'
-                          : 'bg-stone-900 border border-stone-800 text-stone-400'
+                          ? 'bg-stone-100 text-stone-800 dark:bg-stone-700 dark:text-stone-100 font-bold'
+                          : 'bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400'
                       }`}>
                         #{index + 1}
                       </div>
 
                       <div>
-                        <div className="text-sm font-bold text-stone-200">
+                        <div className="text-sm font-bold text-stone-900 dark:text-stone-200">
                           {prod.name}
                         </div>
                         <div className="text-xs text-stone-500 font-mono">
@@ -774,8 +774,8 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
 
                     <div className="flex items-center justify-between sm:justify-end gap-6 text-xs">
                       <div className="text-left sm:text-right">
-                        <div className="font-mono font-bold text-stone-100">
-                          {formatNumber(prod.quantity)} <span className="text-[10px] text-stone-400 font-normal">porsi</span>
+                        <div className="font-mono font-bold text-stone-900 dark:text-stone-100">
+                          {formatNumber(prod.quantity)} <span className="text-[10px] text-stone-500 dark:text-stone-400 font-normal">porsi</span>
                         </div>
                         <div className="text-[10px] text-stone-500 font-mono">
                           {percentOfTotal}% dari total omzet
@@ -783,7 +783,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                       </div>
 
                       <div className="text-right">
-                        <div className="font-mono font-bold text-[#E2DFD2]">
+                        <div className="font-mono font-bold text-amber-800 dark:text-[#E2DFD2]">
                           {formatRupiah(prod.revenue)}
                         </div>
                         <div className="text-[10px] text-stone-500">
@@ -804,41 +804,41 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* Inflow Card */}
-          <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-sm space-y-4">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-stone-800/80">
-              <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-emerald-400">
+          <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200 dark:border-stone-800/80">
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-stone-950 border border-emerald-200 dark:border-stone-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <ArrowUpRight className="w-4 h-4 stroke-2" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-stone-100">Arus Kas Masuk (Inflow)</h3>
-                <p className="text-[11px] text-stone-400">Penerimaan transaksi lunas</p>
+                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">Arus Kas Masuk (Inflow)</h3>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">Penerimaan transaksi lunas</p>
               </div>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-950 border border-stone-800">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
                 <div className="flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-stone-400" />
-                  <span className="text-stone-300">Penjualan Tunai (Laci Kasir)</span>
+                  <Coins className="w-4 h-4 text-stone-500 dark:text-stone-400" />
+                  <span className="text-stone-700 dark:text-stone-300">Penjualan Tunai (Laci Kasir)</span>
                 </div>
-                <span className="font-mono font-bold text-stone-100">
+                <span className="font-mono font-bold text-stone-900 dark:text-stone-100">
                   {reportData ? formatRupiah(reportData.totalCash) : '0'}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-950 border border-stone-800">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
                 <div className="flex items-center gap-2">
-                  <QrCode className="w-4 h-4 text-[#E2DFD2]" />
-                  <span className="text-stone-300">Penjualan QRIS (Bank Settlement)</span>
+                  <QrCode className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2]" />
+                  <span className="text-stone-700 dark:text-stone-300">Penjualan QRIS (Bank Settlement)</span>
                 </div>
-                <span className="font-mono font-bold text-stone-100">
+                <span className="font-mono font-bold text-stone-900 dark:text-stone-100">
                   {reportData ? formatRupiah(reportData.totalQris) : '0'}
                 </span>
               </div>
 
-              <div className="pt-2 border-t border-stone-800/80 flex items-center justify-between text-xs font-bold">
-                <span className="text-stone-300">Total Kas Masuk Kotor</span>
-                <span className="font-mono text-emerald-400 text-sm">
+              <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-xs font-bold">
+                <span className="text-stone-700 dark:text-stone-300">Total Kas Masuk Kotor</span>
+                <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm">
                   {reportData ? formatRupiah(reportData.totalRevenue) : '0'}
                 </span>
               </div>
@@ -846,42 +846,42 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
           </div>
 
           {/* Outflow & Net Card */}
-          <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-sm space-y-4">
-            <div className="flex items-center gap-2.5 pb-3 border-b border-stone-800/80">
-              <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-rose-400">
+          <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200 dark:border-stone-800/80">
+              <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-stone-950 border border-rose-200 dark:border-stone-800 flex items-center justify-center text-rose-600 dark:text-rose-400">
                 <Wallet className="w-4 h-4 stroke-2" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-stone-100">Arus Kas Keluar & Estimasi HPP</h3>
-                <p className="text-[11px] text-stone-400">Biaya operasional kasir & bahan baku</p>
+                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">Arus Kas Keluar & Estimasi HPP</h3>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">Biaya operasional kasir & bahan baku</p>
               </div>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-950 border border-stone-800">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
                 <div className="flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-rose-400" />
-                  <span className="text-stone-300">Pengeluaran Kas / Petty Cash</span>
+                  <Receipt className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                  <span className="text-stone-700 dark:text-stone-300">Pengeluaran Kas / Petty Cash</span>
                 </div>
-                <span className="font-mono font-bold text-rose-400">
+                <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
                   {reportData ? formatRupiah(reportData.totalExpenses) : '0'}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-950 border border-stone-800">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
                 <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-stone-400" />
-                  <span className="text-stone-300">Estimasi HPP (Modal Menu)</span>
+                  <Layers className="w-4 h-4 text-stone-500 dark:text-stone-400" />
+                  <span className="text-stone-700 dark:text-stone-300">Estimasi HPP (Modal Menu)</span>
                 </div>
-                <span className="font-mono font-bold text-stone-400">
+                <span className="font-mono font-bold text-stone-600 dark:text-stone-400">
                   {reportData ? formatRupiah(reportData.totalCost) : '0'}
                 </span>
               </div>
 
-              <div className="pt-2 border-t border-stone-800/80 flex items-center justify-between text-xs font-bold">
-                <span className="text-stone-300">Estimasi Sisa Kas Bersih</span>
+              <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-xs font-bold">
+                <span className="text-stone-700 dark:text-stone-300">Estimasi Sisa Kas Bersih</span>
                 <span className={`font-mono text-sm ${
-                  reportData && reportData.netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                  reportData && reportData.netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                 }`}>
                   {reportData ? formatRupiah(reportData.netProfit) : '0'}
                 </span>

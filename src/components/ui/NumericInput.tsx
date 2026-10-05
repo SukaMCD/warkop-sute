@@ -136,12 +136,12 @@ export const NumericInput: React.FC<NumericInputProps> = ({
 
   return (
     <div
-      className={`relative flex items-center bg-stone-950 border border-stone-800 rounded-xl focus-within:border-[#E2DFD2] focus-within:ring-1 focus-within:ring-[#E2DFD2]/20 transition-all overflow-hidden ${
+      className={`relative flex items-center bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus-within:border-stone-700 dark:focus-within:border-[#E2DFD2] focus-within:ring-1 focus-within:ring-stone-400/20 dark:focus-within:ring-[#E2DFD2]/20 transition-all overflow-hidden ${
         disabled ? 'opacity-60 cursor-not-allowed' : ''
       } ${className}`}
     >
       {prefix && (
-        <span className="pl-3 pr-1 text-xs font-mono font-bold text-stone-400 select-none">
+        <span className="pl-3 pr-1 text-xs font-mono font-bold text-stone-500 dark:text-stone-400 select-none">
           {prefix}
         </span>
       )}
@@ -155,7 +155,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
-        className="w-full bg-transparent px-3 py-2 text-stone-100 font-mono font-bold text-sm focus:outline-none placeholder-stone-600 tracking-wide"
+        className="w-full bg-transparent px-3 py-2 text-stone-900 dark:text-stone-100 font-mono font-bold text-sm focus:outline-none placeholder-stone-400 dark:placeholder-stone-600 tracking-wide"
       />
       {suffix && (
         <span className="pr-3 text-xs font-mono text-stone-500 select-none">
@@ -164,12 +164,12 @@ export const NumericInput: React.FC<NumericInputProps> = ({
       )}
       {/* Optional Stepper Buttons */}
       {showStepper && (
-        <div className="flex flex-col border-l border-stone-800/80 bg-stone-900/60 self-stretch shrink-0 w-8">
+        <div className="flex flex-col border-l border-stone-200 dark:border-stone-800/80 bg-stone-50 dark:bg-stone-900/60 self-stretch shrink-0 w-8">
           <button
             type="button"
             onClick={handleIncrement}
             disabled={disabled || (max !== undefined && typeof value === 'number' && value >= max)}
-            className="flex-1 flex items-center justify-center text-stone-400 hover:text-[#E2DFD2] hover:bg-stone-800 transition-colors border-b border-stone-800/60 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 dark:text-stone-400 dark:hover:text-[#E2DFD2] dark:hover:bg-stone-800 transition-colors border-b border-stone-200 dark:border-stone-800/60 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             title="Naikkan (+)"
             tabIndex={-1}
           >
@@ -179,7 +179,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
             type="button"
             onClick={handleDecrement}
             disabled={disabled || (min !== undefined && typeof value === 'number' && value <= min)}
-            className="flex-1 flex items-center justify-center text-stone-400 hover:text-[#E2DFD2] hover:bg-stone-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-200/60 dark:text-stone-400 dark:hover:text-[#E2DFD2] dark:hover:bg-stone-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             title="Turunkan (-)"
             tabIndex={-1}
           >

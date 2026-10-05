@@ -111,19 +111,19 @@ export const CloseShiftModal = ({
     const shiftExpenseItems = closedData.expenses || shift.expenses || []
 
     return (
-      <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+      <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
         
         {/* Fullscreen Header */}
-        <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+        <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-stone-100">
+              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
                 Shift Berhasil Ditutup
               </h2>
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-500 dark:text-stone-400">
                 {isHandover ? 'Cetak rekap kasir lalu lanjut ke pembukaan shift baru' : 'Cetak rekap kasir lalu kembali ke Layar PIN'}
               </p>
             </div>
@@ -133,7 +133,7 @@ export const CloseShiftModal = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="py-2.5 px-4 rounded-xl bg-stone-850 hover:bg-stone-800 border border-stone-700 text-stone-100 font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer"
+              className="py-2.5 px-4 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-850 dark:hover:bg-stone-800 border border-stone-300 dark:border-stone-700 text-stone-800 dark:text-stone-100 font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer"
             >
               <Printer className="w-4 h-4" />
               <span>Cetak Rekap</span>
@@ -142,7 +142,7 @@ export const CloseShiftModal = ({
             <button
               type="button"
               onClick={handleFinishAndRedirect}
-              className="py-2.5 px-5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c6] text-stone-950 font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+              className="py-2.5 px-5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c6] dark:text-stone-950 font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
             >
               <span>{isHandover ? 'Lanjut Buka Shift Baru' : 'Selesai & Ke Layar PIN'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -274,19 +274,19 @@ export const CloseShiftModal = ({
 
   // View: Main Close Shift Confirmation Form
   return (
-    <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
       
       {/* Header Bar */}
-      <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+      <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-rose-950/40 border border-rose-900/60 flex items-center justify-center text-rose-400 shadow-xs shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-center justify-center text-rose-600 dark:text-rose-400 shadow-xs shrink-0">
             <PowerOff className="w-5 h-5 stroke-[2.2]" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-stone-100">
+            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">
               Akhiri Shift Kasir
             </h2>
-            <p className="text-xs text-stone-400 mt-0.5">
+            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
               Hitung uang fisik di laci kasir dan cetak rekap shift
             </p>
           </div>
@@ -294,7 +294,7 @@ export const CloseShiftModal = ({
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+          className="p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -305,12 +305,12 @@ export const CloseShiftModal = ({
         <div className="max-w-4xl mx-auto space-y-6">
 
         {/* Dynamic Shift Hours & Cashier Info */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-stone-950 border border-stone-800/80">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800/80 shadow-xs">
           <div>
             <span className="text-[10px] text-stone-500 uppercase tracking-wider font-mono block">
               Petugas Kasir
             </span>
-            <span className="text-xs font-bold text-stone-200 mt-0.5 block truncate">
+            <span className="text-xs font-bold text-stone-900 dark:text-stone-200 mt-0.5 block truncate">
               {shift.cashier_name}
             </span>
           </div>
@@ -320,7 +320,7 @@ export const CloseShiftModal = ({
               <Clock className="w-3 h-3 text-stone-400" />
               <span>Jam Shift</span>
             </span>
-            <span className="text-xs font-mono font-bold text-stone-200 mt-0.5 block truncate">
+            <span className="text-xs font-mono font-bold text-stone-900 dark:text-stone-200 mt-0.5 block truncate">
               {scheduleInfo.range}
             </span>
           </div>
@@ -329,7 +329,7 @@ export const CloseShiftModal = ({
             <span className="text-[10px] text-stone-500 uppercase tracking-wider font-mono block">
               Durasi Shift
             </span>
-            <span className="text-xs font-mono font-bold text-[#E2DFD2] mt-0.5 block">
+            <span className="text-xs font-mono font-bold text-amber-800 dark:text-[#E2DFD2] mt-0.5 block">
               {scheduleInfo.duration}
             </span>
           </div>
@@ -337,41 +337,41 @@ export const CloseShiftModal = ({
 
         {/* Sales & Cash Breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+          <div className="p-3 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 shadow-xs">
             <span className="text-[10px] text-stone-500 uppercase font-mono block">Modal Awal</span>
-            <span className="text-xs font-mono font-bold text-stone-300 mt-0.5 block">
+            <span className="text-xs font-mono font-bold text-stone-800 dark:text-stone-300 mt-0.5 block">
               {formatRupiah(shift.initial_cash)}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+          <div className="p-3 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 shadow-xs">
             <span className="text-[10px] text-stone-500 uppercase font-mono block">Penjualan Cash</span>
-            <span className="text-xs font-mono font-bold text-[#E2DFD2] mt-0.5 block">
+            <span className="text-xs font-mono font-bold text-amber-800 dark:text-[#E2DFD2] mt-0.5 block">
               {formatRupiah(shift.total_cash_sales)}
             </span>
           </div>
 
           {totalIncomes > 0 && (
-            <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+            <div className="p-3 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 shadow-xs">
               <span className="text-[10px] text-stone-500 uppercase font-mono block">Kas Masuk</span>
-              <span className="text-xs font-mono font-bold text-emerald-400 mt-0.5 block">
+              <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
                 +{formatRupiah(totalIncomes)}
               </span>
             </div>
           )}
 
           {totalExpenses > 0 && (
-            <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+            <div className="p-3 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 shadow-xs">
               <span className="text-[10px] text-stone-500 uppercase font-mono block">Kas Keluar</span>
-              <span className="text-xs font-mono font-bold text-amber-400 mt-0.5 block">
+              <span className="text-xs font-mono font-bold text-amber-700 dark:text-amber-400 mt-0.5 block">
                 -{formatRupiah(totalExpenses)}
               </span>
             </div>
           )}
 
-          <div className="p-3 rounded-xl bg-stone-950 border border-stone-800">
+          <div className="p-3 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 shadow-xs">
             <span className="text-[10px] text-stone-500 uppercase font-mono block">Wajib di Laci</span>
-            <span className="text-xs font-mono font-bold text-emerald-400 mt-0.5 block">
+            <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
               {formatRupiah(expectedCash)}
             </span>
           </div>
@@ -379,8 +379,8 @@ export const CloseShiftModal = ({
 
         {/* Mini Itemized Shift Adjustments Preview */}
         {Array.isArray(shift.expenses) && shift.expenses.length > 0 && (
-          <div className="p-2.5 rounded-xl bg-stone-950 border border-stone-800 space-y-1">
-            <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block font-semibold">
+          <div className="p-2.5 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 space-y-1 shadow-xs">
+            <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 uppercase tracking-wider block font-semibold">
               Rincian Kas Shift Ini:
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -392,8 +392,8 @@ export const CloseShiftModal = ({
                     key={i}
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono border ${
                       isInc
-                        ? 'bg-emerald-950/40 border-emerald-900/60 text-emerald-300'
-                        : 'bg-amber-950/40 border-amber-900/60 text-amber-300'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-300'
+                        : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-300'
                     }`}
                   >
                     <span>{cleanDesc}</span>
@@ -408,7 +408,7 @@ export const CloseShiftModal = ({
         )}
 
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs">
+          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs">
             {errorMsg}
           </div>
         )}
@@ -417,13 +417,13 @@ export const CloseShiftModal = ({
         <div className="space-y-3 pt-1">
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-stone-300 text-xs font-semibold">
-                Hitung Uang Fisik di Laci Sekarang <span className="text-rose-400">*</span>
+              <label className="text-stone-700 dark:text-stone-300 text-xs font-semibold">
+                Hitung Uang Fisik di Laci Sekarang <span className="text-rose-500">*</span>
               </label>
               <button
                 type="button"
                 onClick={() => setActualCash(expectedCash)}
-                className="text-[11px] font-mono text-[#E2DFD2] hover:underline cursor-pointer"
+                className="text-[11px] font-mono text-amber-800 dark:text-[#E2DFD2] hover:underline cursor-pointer"
               >
                 Set Sesuai Laci ({formatRupiah(expectedCash)})
               </button>
@@ -442,10 +442,10 @@ export const CloseShiftModal = ({
           {/* Discrepancy Status Card */}
           <div className={`p-3 rounded-xl border flex items-center justify-between text-xs ${
             diff === 0
-              ? 'bg-emerald-950/30 border-emerald-900/60 text-emerald-400'
+              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-400'
               : diff < 0
-              ? 'bg-rose-950/30 border-rose-900/60 text-rose-400'
-              : 'bg-amber-950/30 border-amber-900/60 text-amber-400'
+              ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-400'
+              : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60 text-amber-800 dark:text-amber-400'
           }`}>
             <div className="flex items-center gap-2">
               {diff === 0 ? (
@@ -467,7 +467,7 @@ export const CloseShiftModal = ({
           </div>
 
           <div>
-            <label className="text-stone-300 text-xs font-semibold block mb-1">
+            <label className="text-stone-700 dark:text-stone-300 text-xs font-semibold block mb-1">
               Catatan Penutupan Shift (Opsional)
             </label>
             <textarea
@@ -475,7 +475,7 @@ export const CloseShiftModal = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Catatan kendala shift, serah terima laci..."
-              className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-100 placeholder-stone-600 focus:outline-none focus:border-[#E2DFD2] transition-colors resize-none"
+              className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-600 focus:outline-none focus:border-amber-700 dark:focus:border-[#E2DFD2] transition-colors resize-none shadow-xs"
             />
           </div>
         </div>
@@ -484,12 +484,12 @@ export const CloseShiftModal = ({
       </div>
 
       {/* Sticky Bottom Action Bar */}
-      <footer className="border-t border-stone-800 bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex items-center justify-between shrink-0">
+      <footer className="border-t border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex items-center justify-between shrink-0">
         <button
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
-          className="px-5 py-2.5 rounded-xl border border-stone-800 hover:bg-stone-850 text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
+          className="px-5 py-2.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-100 hover:bg-stone-200 dark:bg-transparent dark:hover:bg-stone-850 text-stone-700 dark:text-stone-300 text-xs font-semibold transition-colors cursor-pointer"
         >
           Batal
         </button>
@@ -498,7 +498,7 @@ export const CloseShiftModal = ({
           type="button"
           onClick={handleConfirmClose}
           disabled={isSubmitting}
-          className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+          className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
         >
           {isSubmitting ? (
             <>

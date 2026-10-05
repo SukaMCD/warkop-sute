@@ -325,19 +325,19 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
   }
 
   return (
-    <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 shadow-sm space-y-4">
+    <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-xs dark:shadow-sm space-y-4">
       
       {/* Header & Export Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-stone-800/80 gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800/80 gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-stone-950 border border-stone-800 flex items-center justify-center text-[#E2DFD2] shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-800 dark:text-[#E2DFD2] shadow-xs">
             <Receipt className="w-4 h-4 stroke-2" />
           </div>
           <div>
-            <h2 className="text-sm font-bold tracking-tight text-stone-100">
+            <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100">
               Riwayat Transaksi Penjualan
             </h2>
-            <p className="text-[11px] text-stone-400">
+            <p className="text-[11px] text-stone-500 dark:text-stone-400">
               Monitoring pesanan real-time, filter, cetak ulang struk & pembatalan
             </p>
           </div>
@@ -348,7 +348,7 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
             type="button"
             onClick={handleExportExcel}
             disabled={filteredOrders.length === 0}
-            className="px-3 py-1.5 rounded-xl bg-[#E2DFD2] hover:bg-[#d6d3c4] text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-xs"
+            className="px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-850 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c4] dark:text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-xs"
             title="Download format Spreadsheet Microsoft Excel (.xlsx) resmi tanpa peringatan"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -359,14 +359,14 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
             type="button"
             onClick={handleExportCSV}
             disabled={filteredOrders.length === 0}
-            className="px-2.5 py-1.5 rounded-xl bg-stone-950 border border-stone-800 hover:border-stone-600 text-stone-300 text-xs font-medium transition-all flex items-center gap-1 cursor-pointer disabled:opacity-40"
+            className="px-2.5 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-600 text-stone-700 dark:text-stone-300 text-xs font-medium transition-all flex items-center gap-1 cursor-pointer disabled:opacity-40"
             title="Download Rekap CSV dengan kolom terpisah"
           >
-            <Download className="w-3.5 h-3.5 text-stone-400" />
+            <Download className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
             <span>CSV</span>
           </button>
 
-          <span className="text-xs text-stone-400 font-mono px-2.5 py-1.5 rounded-lg bg-stone-950 border border-stone-800">
+          <span className="text-xs text-stone-600 dark:text-stone-400 font-mono px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
             {filteredOrders.length} transaksi
           </span>
         </div>
@@ -382,13 +382,13 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
             placeholder="Cari no order / pelanggan / meja..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-stone-950 border border-stone-800 rounded-xl pl-9 pr-8 py-1.5 text-xs text-stone-100 placeholder-stone-500 focus:outline-none focus:border-[#E2DFD2] transition-colors"
+            className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl pl-9 pr-8 py-1.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2] transition-colors"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-white"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-white"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -396,7 +396,7 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
         </div>
 
         {/* Date Filter */}
-        <div className="flex items-center gap-1 bg-stone-950 border border-stone-800 rounded-xl p-1 shrink-0">
+        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl p-1 shrink-0">
           <Calendar className="w-3.5 h-3.5 text-stone-400 ml-1.5" />
           {(['all', 'today', 'yesterday', '7days'] as const).map((df) => (
             <button
@@ -405,8 +405,8 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
               onClick={() => setDateFilter(df)}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                 dateFilter === df
-                  ? 'bg-[#E2DFD2] text-stone-950 shadow-xs'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               {df === 'all' ? 'Semua' : df === 'today' ? 'Hari Ini' : df === 'yesterday' ? 'Kemarin' : '7 Hari'}
@@ -415,7 +415,7 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
         </div>
 
         {/* Payment Filter */}
-        <div className="flex items-center gap-1 bg-stone-950 border border-stone-800 rounded-xl p-1 shrink-0">
+        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl p-1 shrink-0">
           <Filter className="w-3.5 h-3.5 text-stone-400 ml-1.5" />
           {(['all', 'cash', 'qris'] as const).map((pf) => (
             <button
@@ -424,8 +424,8 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
               onClick={() => setPaymentFilter(pf)}
               className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                 paymentFilter === pf
-                  ? 'bg-[#E2DFD2] text-stone-950 shadow-xs'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               {pf === 'all' ? 'Semua Bayar' : pf === 'cash' ? 'Tunai' : 'QRIS'}
@@ -434,7 +434,7 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1 bg-stone-950 border border-stone-800 rounded-xl p-1 shrink-0">
+        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl p-1 shrink-0">
           {(['all', 'completed', 'cancelled'] as const).map((sf) => (
             <button
               key={sf}
@@ -442,8 +442,8 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
               onClick={() => setStatusFilter(sf)}
               className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
                 statusFilter === sf
-                  ? 'bg-[#E2DFD2] text-stone-950 shadow-xs'
-                  : 'text-stone-400 hover:text-stone-200'
+                  ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               {sf === 'all' ? 'Semua Status' : sf === 'completed' ? 'Selesai' : 'Batal'}
@@ -456,7 +456,7 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
       <div className="w-full overflow-hidden">
         <table className="w-full text-left text-xs table-auto">
           <thead>
-            <tr className="border-b border-stone-800 text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-950/40">
+            <tr className="border-b border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-50 dark:bg-stone-950/40">
               <th className="py-2.5 px-2 font-semibold rounded-l-lg">No. Order</th>
               <th className="py-2.5 px-2 font-semibold">Waktu</th>
               <th className="py-2.5 px-2 font-semibold">Pelanggan / Meja</th>
@@ -467,38 +467,38 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
               <th className="py-2.5 px-2 font-semibold text-right rounded-r-lg">Aksi</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-800/60">
+          <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60">
             {filteredOrders.length === 0 ? (
               <tr>
-                <td colSpan={8} className="py-8 text-center text-stone-400">
+                <td colSpan={8} className="py-8 text-center text-stone-500 dark:text-stone-400">
                   Tidak ada transaksi yang sesuai dengan filter.
                 </td>
               </tr>
             ) : (
               filteredOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-stone-800/30 transition-colors group">
+                <tr key={order.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30 transition-colors group">
                   
                   {/* Order ID */}
-                  <td className="py-3 px-2 font-mono font-bold text-stone-100 whitespace-nowrap">
+                  <td className="py-3 px-2 font-mono font-bold text-stone-900 dark:text-stone-100 whitespace-nowrap">
                     {order.order_number}
                   </td>
 
                   {/* Time */}
-                  <td className="py-3 px-2 text-stone-400 font-mono text-[11px] whitespace-nowrap" title={order.created_at}>
+                  <td className="py-3 px-2 text-stone-500 dark:text-stone-400 font-mono text-[11px] whitespace-nowrap" title={order.created_at}>
                     {formatOrderTime(order.created_at)}
                   </td>
 
                   {/* Customer / Table */}
-                  <td className="py-3 px-2 text-stone-200 font-medium whitespace-nowrap">
+                  <td className="py-3 px-2 text-stone-800 dark:text-stone-200 font-medium whitespace-nowrap">
                     <span className="truncate max-w-30 block" title={order.customer_name}>
                       {order.customer_name}
-                      {order.table_number && <span className="text-stone-400 ml-1 font-mono">({order.table_number})</span>}
+                      {order.table_number && <span className="text-stone-500 dark:text-stone-400 ml-1 font-mono">({order.table_number})</span>}
                     </span>
                   </td>
 
                   {/* Order Type */}
                   <td className="py-3 px-2 text-center whitespace-nowrap">
-                    <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider uppercase border border-stone-800 bg-stone-950 text-stone-300 font-semibold">
+                    <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider uppercase border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 text-stone-700 dark:text-stone-300 font-semibold">
                       {order.order_type === 'dine_in' ? 'Dine In' : 'Takeaway'}
                     </span>
                   </td>
@@ -506,15 +506,15 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
                   {/* Payment Method */}
                   <td className="py-3 px-2 text-center whitespace-nowrap">
                     {order.payment_method === 'cash' ? (
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider uppercase border border-stone-800 bg-stone-950 text-stone-300 font-semibold">
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider uppercase border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 text-stone-700 dark:text-stone-300 font-semibold">
                         Tunai
                       </span>
                     ) : order.payment_method === 'split' ? (
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider uppercase border border-amber-900/60 bg-amber-950/40 text-amber-300 font-semibold" title={`Split: Tunai ${formatRupiah((order.total_amount || 0) - (order.qris_amount || 0))} + QRIS ${formatRupiah(order.qris_amount || 0)}`}>
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider uppercase border border-amber-300 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-semibold" title={`Split: Tunai ${formatRupiah((order.total_amount || 0) - (order.qris_amount || 0))} + QRIS ${formatRupiah(order.qris_amount || 0)}`}>
                         Split
                       </span>
                     ) : (
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider uppercase border border-stone-800 bg-stone-950 text-[#E2DFD2] font-semibold">
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono tracking-wider uppercase border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 text-stone-900 dark:text-[#E2DFD2] font-semibold">
                         QRIS
                       </span>
                     )}
@@ -522,7 +522,7 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
 
                   {/* Total Amount */}
                   <td className={`py-3 px-2 text-right font-mono tabular-nums font-bold whitespace-nowrap ${
-                    order.status === 'cancelled' ? 'line-through text-stone-500' : 'text-stone-100'
+                    order.status === 'cancelled' ? 'line-through text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'
                   }`}>
                     {formatRupiah(order.total_amount)}
                   </td>
@@ -530,11 +530,11 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
                   {/* Status */}
                   <td className="py-3 px-2 text-center whitespace-nowrap">
                     {order.status === 'cancelled' ? (
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border border-rose-900/60 bg-rose-950/40 text-rose-400">
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400">
                         Batal
                       </span>
                     ) : (
-                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border border-emerald-900/60 bg-emerald-950/40 text-emerald-400">
+                      <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
                         Selesai
                       </span>
                     )}
@@ -549,7 +549,7 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
                         setCancelConfirm(false)
                         setCancelError('')
                       }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border border-stone-800 bg-stone-950 hover:bg-stone-800 hover:border-stone-700 text-stone-300 hover:text-stone-100 transition-all cursor-pointer text-xs font-semibold shadow-xs active:scale-95"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl border border-stone-200 dark:border-stone-800 bg-white hover:bg-stone-100 dark:bg-stone-950 dark:hover:bg-stone-800 hover:border-stone-300 dark:hover:border-stone-700 text-stone-700 hover:text-stone-900 dark:text-stone-300 dark:hover:text-stone-100 transition-all cursor-pointer text-xs font-semibold shadow-xs active:scale-95"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Detail</span>
@@ -566,22 +566,22 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
       {/* Modal Detail Transaksi & Cetak Ulang Struk */}
       {/* Modal Detail Transaksi & Cetak Ulang Struk */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-stone-950 flex flex-col text-stone-100 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-50 bg-[#FBF9F5] dark:bg-stone-950 flex flex-col text-stone-900 dark:text-stone-100 animate-in fade-in duration-150">
           
           {/* Header Modal */}
-          <header className="px-6 py-4 border-b border-stone-800 bg-stone-900/60 flex items-center justify-between shrink-0">
+          <header className="px-6 py-4 border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-900/60 backdrop-blur-xs flex items-center justify-between shrink-0">
             <div>
-              <span className="text-[10px] font-mono uppercase text-[#E2DFD2] tracking-wider font-semibold">
+              <span className="text-[10px] font-mono uppercase text-amber-800 dark:text-[#E2DFD2] tracking-wider font-semibold">
                 Rincian Transaksi
               </span>
-              <h3 className="text-base font-bold font-mono text-stone-100">
+              <h3 className="text-base font-bold font-mono text-stone-900 dark:text-stone-100">
                 {selectedOrder.order_number}
               </h3>
             </div>
             <button
               type="button"
               onClick={() => setSelectedOrder(null)}
-              className="p-2 rounded-xl text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -593,67 +593,67 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
 
               {/* Status Notice if Cancelled */}
               {selectedOrder.status === 'cancelled' && (
-                <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-900/60 flex items-center gap-2 text-rose-300 text-xs">
-                  <Ban className="w-4 h-4 text-rose-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 dark:bg-rose-950/40 dark:border-rose-900/60 dark:text-rose-300 flex items-center gap-2 text-xs">
+                  <Ban className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
                   <span>Transaksi ini telah dibatalkan (void). Nominal tidak lagi dihitung pada pendapatan aktif.</span>
                 </div>
               )}
 
               {/* Info Grid */}
-              <div className="grid grid-cols-2 gap-2 text-xs p-3 bg-stone-950 border border-stone-800 rounded-xl">
+              <div className="grid grid-cols-2 gap-2 text-xs p-3 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl shadow-xs">
                 <div>
-                  <div className="flex items-center gap-1 text-stone-400 text-[11px] mb-0.5">
+                  <div className="flex items-center gap-1 text-stone-500 dark:text-stone-400 text-[11px] mb-0.5">
                     <Calendar className="w-3 h-3" />
                     <span>Waktu</span>
                   </div>
-                  <span className="font-mono text-stone-200">{selectedOrder.created_at} WIB</span>
+                  <span className="font-mono text-stone-800 dark:text-stone-200">{selectedOrder.created_at} WIB</span>
                 </div>
                 <div>
-                  <div className="flex items-center gap-1 text-stone-400 text-[11px] mb-0.5">
+                  <div className="flex items-center gap-1 text-stone-500 dark:text-stone-400 text-[11px] mb-0.5">
                     <User className="w-3 h-3" />
                     <span>Petugas Kasir</span>
                   </div>
-                  <span className="text-stone-200 font-semibold">{selectedOrder.cashier_name}</span>
+                  <span className="text-stone-800 dark:text-stone-200 font-semibold">{selectedOrder.cashier_name}</span>
                 </div>
                 <div>
-                  <span className="text-stone-400 block text-[11px] mb-0.5">Pelanggan / Tipe</span>
-                  <span className="text-stone-200">
+                  <span className="text-stone-500 dark:text-stone-400 block text-[11px] mb-0.5">Pelanggan / Tipe</span>
+                  <span className="text-stone-800 dark:text-stone-200">
                     {selectedOrder.customer_name} ({selectedOrder.order_type === 'dine_in' ? 'Dine In' : 'Takeaway'})
                   </span>
                 </div>
                 <div>
-                  <div className="flex items-center gap-1 text-stone-400 text-[11px] mb-0.5">
+                  <div className="flex items-center gap-1 text-stone-500 dark:text-stone-400 text-[11px] mb-0.5">
                     <CreditCard className="w-3 h-3" />
                     <span>Metode Bayar</span>
                   </div>
-                  <span className="font-mono uppercase text-[#E2DFD2] font-semibold">
-                    {selectedOrder.payment_method === 'cash' ? 'Tunai' : 'QRIS Statis'}
+                  <span className="font-mono uppercase text-amber-800 dark:text-[#E2DFD2] font-semibold">
+                    {selectedOrder.payment_method === 'cash' ? 'Tunai' : selectedOrder.payment_method === 'split' ? 'Split (Tunai + QRIS)' : 'QRIS Statis'}
                   </span>
                 </div>
               </div>
 
               {/* Items List */}
               <div className="space-y-2">
-                <span className="text-xs font-semibold text-stone-400 uppercase tracking-wide block mb-1 font-mono">
+                <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide block mb-1 font-mono">
                   Item Pesanan
                 </span>
                 {selectedOrder.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between text-xs py-2 border-b border-stone-800/60"
+                    className="flex items-center justify-between text-xs py-2 border-b border-stone-200 dark:border-stone-800/60"
                   >
                     <div>
-                      <div className="font-medium text-stone-100">{item.product_name}</div>
-                      <div className="text-stone-400 text-[11px] font-mono">
+                      <div className="font-medium text-stone-900 dark:text-stone-100">{item.product_name}</div>
+                      <div className="text-stone-500 dark:text-stone-400 text-[11px] font-mono">
                         {item.quantity} x {formatRupiah(item.price)}
                       </div>
                       {item.notes && (
-                        <div className="text-[11px] text-[#E2DFD2]/90 italic mt-0.5">
+                        <div className="text-[11px] text-amber-700 dark:text-[#E2DFD2]/90 italic mt-0.5">
                           Catatan: {item.notes}
                         </div>
                       )}
                     </div>
-                    <div className="font-mono tabular-nums font-bold text-stone-100">
+                    <div className="font-mono tabular-nums font-bold text-stone-900 dark:text-stone-100">
                       {formatRupiah(item.subtotal)}
                     </div>
                   </div>
@@ -661,29 +661,36 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
               </div>
 
               {/* Payment Summary */}
-              <div className="pt-2 border-t border-stone-800 space-y-1.5 text-xs">
-                <div className="flex justify-between text-stone-300">
+              <div className="pt-2 border-t border-stone-200 dark:border-stone-800 space-y-1.5 text-xs">
+                <div className="flex justify-between text-stone-700 dark:text-stone-300">
                   <span>Subtotal Item:</span>
-                  <span className="font-mono tabular-nums">{formatRupiah(selectedOrder.total_amount)}</span>
+                  <span className="font-mono tabular-nums">{formatRupiah(selectedOrder.total_amount + (selectedOrder.discount_amount || 0))}</span>
                 </div>
+
+                {selectedOrder.discount_amount && selectedOrder.discount_amount > 0 && (
+                  <div className="flex justify-between text-rose-600 dark:text-rose-400">
+                    <span>Diskon {selectedOrder.discount_reason ? `(${selectedOrder.discount_reason})` : ''}:</span>
+                    <span className="font-mono tabular-nums">-{formatRupiah(selectedOrder.discount_amount)}</span>
+                  </div>
+                )}
                 
                 {selectedOrder.payment_method === 'cash' && selectedOrder.cash_tendered !== undefined && (
                   <>
-                    <div className="flex justify-between text-stone-400 text-[11px]">
+                    <div className="flex justify-between text-stone-500 dark:text-stone-400 text-[11px]">
                       <span>Uang Diterima:</span>
                       <span className="font-mono tabular-nums">{formatRupiah(selectedOrder.cash_tendered)}</span>
                     </div>
-                    <div className="flex justify-between text-stone-400 text-[11px]">
+                    <div className="flex justify-between text-stone-500 dark:text-stone-400 text-[11px]">
                       <span>Kembalian:</span>
-                      <span className="font-mono tabular-nums text-emerald-400 font-bold">{formatRupiah(selectedOrder.change_amount || 0)}</span>
+                      <span className="font-mono tabular-nums text-emerald-600 dark:text-emerald-400 font-bold">{formatRupiah(selectedOrder.change_amount || 0)}</span>
                     </div>
                   </>
                 )}
 
-                <div className="flex justify-between text-sm font-bold text-stone-100 pt-2 border-t border-stone-800">
+                <div className="flex justify-between text-sm font-bold text-stone-900 dark:text-stone-100 pt-2 border-t border-stone-200 dark:border-stone-800">
                   <span>Total Bayar:</span>
                   <span className={`font-mono tabular-nums text-base ${
-                    selectedOrder.status === 'cancelled' ? 'line-through text-stone-500' : 'text-[#E2DFD2]'
+                    selectedOrder.status === 'cancelled' ? 'line-through text-stone-400 dark:text-stone-500' : 'text-amber-900 dark:text-[#E2DFD2]'
                   }`}>
                     {formatRupiah(selectedOrder.total_amount)}
                   </span>
@@ -697,25 +704,25 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
                     <button
                       type="button"
                       onClick={() => setCancelConfirm(true)}
-                      className="text-[11px] font-mono text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer transition-colors"
+                      className="text-[11px] font-mono text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 flex items-center gap-1 cursor-pointer transition-colors"
                     >
                       <AlertTriangle className="w-3.5 h-3.5" />
                       <span>Batalkan Transaksi Ini (Void)</span>
                     </button>
                   ) : (
-                    <div className="p-3 rounded-xl bg-rose-950/50 border border-rose-900/60 space-y-2">
-                      <p className="text-xs text-rose-200 font-medium">
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 dark:bg-rose-950/50 dark:border-rose-900/60 space-y-2">
+                      <p className="text-xs text-rose-900 dark:text-rose-200 font-medium">
                         Yakin ingin membatalkan transaksi {selectedOrder.order_number}?
                       </p>
-                      <p className="text-[11px] text-rose-300/80">
+                      <p className="text-[11px] text-rose-700 dark:text-rose-300/80">
                         Nominal {formatRupiah(selectedOrder.total_amount)} akan dikurangkan dari shift dan omzet penjualan.
                       </p>
-                      {cancelError && <p className="text-[11px] text-rose-400 font-bold">{cancelError}</p>}
+                      {cancelError && <p className="text-[11px] text-rose-600 dark:text-rose-400 font-bold">{cancelError}</p>}
                       <div className="flex items-center gap-2 pt-1">
                         <button
                           type="button"
                           onClick={() => setCancelConfirm(false)}
-                          className="px-3 py-1 rounded-lg bg-stone-900 text-stone-300 text-xs font-semibold"
+                          className="px-3 py-1 rounded-lg bg-stone-200 dark:bg-stone-900 text-stone-800 dark:text-stone-300 text-xs font-semibold cursor-pointer"
                         >
                           Jangan Batalkan
                         </button>
@@ -734,14 +741,14 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
               )}
 
               {/* View Mode Switcher in Modal */}
-              <div className="flex items-center gap-1.5 p-1 bg-stone-950 rounded-xl border border-stone-800">
+              <div className="flex items-center gap-1.5 p-1 bg-stone-100 dark:bg-stone-950 rounded-xl border border-stone-200 dark:border-stone-800">
                 <button
                   type="button"
                   onClick={() => setPrintType('receipt')}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     printType === 'receipt'
-                      ? 'bg-stone-850 text-stone-100 border border-stone-700 shadow-xs'
-                      : 'text-stone-400 hover:text-stone-200'
+                      ? 'bg-white text-stone-900 border border-stone-300 shadow-xs dark:bg-stone-850 dark:text-stone-100 dark:border-stone-700'
+                      : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200'
                   }`}
                 >
                   <Receipt className="w-3.5 h-3.5" />
@@ -752,8 +759,8 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
                   onClick={() => setPrintType('kitchen')}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     printType === 'kitchen'
-                      ? 'bg-[#E2DFD2]/10 text-[#E2DFD2] border border-[#E2DFD2]/50 shadow-xs'
-                      : 'text-stone-400 hover:text-stone-200'
+                      ? 'bg-amber-100/70 text-amber-900 border border-amber-300/80 shadow-xs dark:bg-[#E2DFD2]/10 dark:text-[#E2DFD2] dark:border-[#E2DFD2]/50'
+                      : 'text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200'
                   }`}
                 >
                   <UtensilsCrossed className="w-3.5 h-3.5" />
@@ -961,27 +968,27 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
           </div>
 
           {/* Sticky Bottom Footer Buttons */}
-          <footer className="border-t border-stone-800 bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex flex-col sm:flex-row items-center justify-end gap-3 shrink-0">
+          <footer className="border-t border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex flex-col sm:flex-row items-center justify-end gap-3 shrink-0">
             <button
               type="button"
               onClick={handlePrintReceipt}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2] text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-stone-400 dark:hover:border-[#E2DFD2] text-stone-800 dark:text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
             >
-              <Printer className="w-3.5 h-3.5 text-[#E2DFD2]" />
+              <Printer className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2]" />
               <span>Cetak Struk Kasir</span>
             </button>
             <button
               type="button"
               onClick={handlePrintKitchen}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-900 border border-stone-800 hover:border-[#E2DFD2]/60 hover:bg-[#E2DFD2]/10 text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100/70 dark:bg-stone-900 border border-amber-200 dark:border-stone-800 hover:border-amber-300 dark:hover:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
             >
-              <UtensilsCrossed className="w-3.5 h-3.5 text-[#E2DFD2]" />
+              <UtensilsCrossed className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2]" />
               <span>Cetak Tiket Dapur</span>
             </button>
             <button
               type="button"
               onClick={() => setSelectedOrder(null)}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-750 text-stone-200 text-xs font-semibold transition-all cursor-pointer border border-stone-700"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-stone-800 dark:hover:bg-stone-750 dark:text-stone-200 text-xs font-semibold transition-all cursor-pointer border border-stone-800 dark:border-stone-700 shadow-xs"
             >
               Tutup
             </button>
