@@ -11,6 +11,7 @@ import {
 import type { RawMaterial, StockMovementType, StockMovement } from '../../types'
 import { SearchableSelect } from '../ui/SearchableSelect'
 import { NumericInput } from '../ui/NumericInput'
+import { apiFetch } from '../../utils/api'
 
 interface RecordMovementModalProps {
   isOpen: boolean
@@ -61,9 +62,8 @@ export const RecordMovementModal = ({
     setErrorMessage('')
 
     try {
-      const res = await fetch('/api/inventory/movement', {
+      const res = await apiFetch('/api/inventory/movement', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           material_id: selectedMaterialId,
           type,

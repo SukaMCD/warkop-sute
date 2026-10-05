@@ -7,9 +7,10 @@ import {
   AlertCircle
 } from 'lucide-react'
 import type { RawMaterial } from '../../types'
-import { formatRupiah } from '../../utils/formatters'
 import { SearchableSelect } from '../ui/SearchableSelect'
 import { NumericInput } from '../ui/NumericInput'
+import { formatRupiah } from '../../utils/formatters'
+import { apiFetch } from '../../utils/api'
 
 interface MaterialFormModalProps {
   isOpen: boolean
@@ -93,9 +94,8 @@ export const MaterialFormModal = ({
       const url = isEditing ? `/api/inventory/${materialToEdit.id}` : '/api/inventory'
       const method = isEditing ? 'PUT' : 'POST'
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
 

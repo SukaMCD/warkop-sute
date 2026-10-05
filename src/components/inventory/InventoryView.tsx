@@ -18,6 +18,7 @@ import { RecordMovementModal } from './RecordMovementModal'
 import { MaterialFormModal } from './MaterialFormModal'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { SearchableSelect } from '../ui/SearchableSelect'
+import { apiFetch } from '../../utils/api'
 
 interface InventoryViewProps {
   currentUser: User
@@ -56,8 +57,8 @@ export const InventoryView = ({ currentUser }: InventoryViewProps) => {
       const headers = { 'x-user-role': currentUser.role }
 
       const [resMat, resMov] = await Promise.all([
-        fetch(`/api/inventory?role=${currentUser.role}`, { headers }),
-        fetch('/api/inventory/movements', { headers })
+        apiFetch(`/api/inventory?role=${currentUser.role}`, { headers }),
+        apiFetch('/api/inventory/movements', { headers })
       ])
 
       if (resMat.ok) {
@@ -152,7 +153,7 @@ export const InventoryView = ({ currentUser }: InventoryViewProps) => {
   const handleDeleteMaterial = async () => {
     if (!materialToDelete) return
     try {
-      await fetch(`/api/inventory/${materialToDelete.id}`, { method: 'DELETE' })
+      await apiFetch(`/api/inventory/${materialToDelete.id}`, { method: 'DELETE' })
       setMaterials(prev => prev.filter(m => m.id !== materialToDelete.id))
     } catch {
       setMaterials(prev => prev.filter(m => m.id !== materialToDelete.id))

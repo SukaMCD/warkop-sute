@@ -10,10 +10,15 @@ import {
   Users,
   Printer,
   CalendarRange,
-  Package
+  Package,
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  Check
 } from 'lucide-react'
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
+import { subscribeToQueue, syncPendingOrders, getPendingCount } from '../../utils/offlineQueue'
 
 interface HeaderProps {
   activeTab: TabType
@@ -22,14 +27,71 @@ interface HeaderProps {
   onToggleSidebar?: () => void
   onOpenMobileSidebar?: () => void
   isSidebarCollapsed?: boolean
+  onOrdersSynced?: () => void
 }
 
 export const Header = ({
   activeTab,
   onToggleSidebar,
   onOpenMobileSidebar,
-  isSidebarCollapsed
+  isSidebarCollapsed,
+  onOrdersSynced
 }: HeaderProps) => {
+
+  const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true)
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(() => getPendingCount())
+  const [isSyncing, setIsSyncing] = useState<boolean>(false)
+  const [justSynced, setJustSynced] = useState<boolean>(false)
+
+  // Listen to network status and offline queue
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true)
+      // Auto-trigger sync when back online
+      triggerSync()
+    }
+    const handleOffline = () => {
+      setIsOnline(false)
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    const unsubscribe = subscribeToQueue((count) => {
+      setPendingSyncCount(count)
+    })
+
+    // Periodic sync check every 25 seconds if online and there are pending items
+    const interval = setInterval(() => {
+      if (navigator.onLine && getPendingCount() > 0) {
+        triggerSync()
+      }
+    }, 25000)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+      unsubscribe()
+      clearInterval(interval)
+    }
+  }, [])
+
+  const triggerSync = async () => {
+    if (isSyncing || getPendingCount() === 0) return
+    setIsSyncing(true)
+    try {
+      const res = await syncPendingOrders()
+      if (res.syncedCount > 0) {
+        setJustSynced(true)
+        setTimeout(() => setJustSynced(false), 3000)
+        if (onOrdersSynced) onOrdersSynced()
+      }
+    } catch (err) {
+      console.error('Failed to sync offline orders:', err)
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   const [currentDate] = useState(() => {
     return new Intl.DateTimeFormat('id-ID', {
@@ -158,8 +220,45 @@ export const Header = ({
             </div>
           </div>
 
-          {/* Right: Realtime Clock, Date & Status */}
+          {/* Right: Network Status, Offline Queue Badge & Realtime Clock */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Sync Queue Button / Status */}
+            {pendingSyncCount > 0 ? (
+              <button
+                type="button"
+                onClick={triggerSync}
+                disabled={isSyncing || !isOnline}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/70 text-amber-800 dark:text-amber-300 text-xs font-medium cursor-pointer shadow-xs active:scale-95 transition-all"
+                title={isOnline ? "Klik untuk sinkronkan ke database sekarang" : "Koneksi offline: Menunggu internet pulih"}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span className="font-mono font-bold">{pendingSyncCount}</span>
+                <span className="hidden sm:inline">{isSyncing ? 'Sinkronisasi...' : 'Tertunda'}</span>
+              </button>
+            ) : justSynced ? (
+              <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800/70 text-emerald-800 dark:text-emerald-300 text-xs font-medium">
+                <Check className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Tersinkron</span>
+              </div>
+            ) : !isOnline ? (
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-400 text-xs font-medium"
+                title="Koneksi terputus. Kasir tetap dapat input pesanan & cetak struk offline."
+              >
+                <WifiOff className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Offline</span>
+              </div>
+            ) : (
+              <div
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-stone-100/70 dark:bg-stone-900/40 text-stone-500 dark:text-stone-400 text-xs font-mono"
+                title="Terhubung ke Cloudflare Edge & D1"
+              >
+                <Wifi className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-[11px]">Online</span>
+              </div>
+            )}
+
+            {/* Realtime Clock & Date */}
             <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800/80 font-mono text-xs shadow-xs">
               <div className="flex items-center gap-1.5 text-stone-900 dark:text-stone-200 font-bold tabular-nums">
                 <span>{currentTime}</span>

@@ -13,6 +13,7 @@ import type { Shift } from '../../types'
 import { formatRupiah } from '../../utils/formatters'
 import { formatShiftSchedule } from '../../utils/shiftHelpers'
 import { NumericInput } from '../ui/NumericInput'
+import { apiFetch } from '../../utils/api'
 
 interface CloseShiftModalProps {
   shift: Shift
@@ -55,7 +56,7 @@ export const CloseShiftModal = ({
     setErrorMsg('')
 
     try {
-      const res = await fetch(`/api/shifts/${shift.id}/close`, {
+      const res = await apiFetch(`/api/shifts/${shift.id}/close`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

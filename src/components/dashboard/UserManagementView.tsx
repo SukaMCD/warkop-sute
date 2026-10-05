@@ -11,6 +11,7 @@ import {
   X
 } from 'lucide-react'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { apiFetch } from '../../utils/api'
 
 interface DbUser {
   id: string
@@ -46,11 +47,11 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
   const [isDeletingUser, setIsDeletingUser] = useState(false)
   const [isOwnerAlertOpen, setIsOwnerAlertOpen] = useState(false)
 
-  // Fetch users
+  // Load users from D1
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      const res = await fetch('/api/users')
+      const res = await apiFetch('/api/users')
       if (res.ok) {
         const json: any = await res.json()
         if (json.success && Array.isArray(json.data)) {
@@ -92,9 +93,8 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
     setSuccessMessage('')
 
     try {
-      const res = await fetch('/api/users', {
+      const res = await apiFetch('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newName.trim(),
           username: autoUsername,
@@ -136,9 +136,8 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
     setSuccessMessage('')
 
     try {
-      const res = await fetch(`/api/users/${selectedUserForPin.id}/pin`, {
+      const res = await apiFetch(`/api/users/${selectedUserForPin.id}/pin`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin: editPin })
       })
 
@@ -171,7 +170,7 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
     setIsDeletingUser(true)
 
     try {
-      const res = await fetch(`/api/users/${userToDelete.id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/users/${userToDelete.id}`, { method: 'DELETE' })
       if (res.ok) {
         setUsers(prev => prev.filter(u => u.id !== userToDelete.id))
         setSuccessMessage(`Petugas ${userToDelete.name} berhasil dihapus.`)
@@ -377,6 +376,8 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
                   <input
                     type="password"
                     inputMode="numeric"
+                    pattern="[0-9]*"
+                    autoComplete="off"
                     maxLength={6}
                     required
                     placeholder="Contoh: 123456"
@@ -443,6 +444,8 @@ export const UserManagementView = ({ currentUser }: UserManagementViewProps) => 
                   <input
                     type="password"
                     inputMode="numeric"
+                    pattern="[0-9]*"
+                    autoComplete="off"
                     maxLength={6}
                     required
                     placeholder="******"

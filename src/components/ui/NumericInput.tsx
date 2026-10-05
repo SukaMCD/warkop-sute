@@ -147,8 +147,10 @@ export const NumericInput: React.FC<NumericInputProps> = ({
       )}
       <input
         id={id}
-        type="text"
+        type="tel"
         inputMode={allowDecimals ? 'decimal' : 'numeric'}
+        pattern={allowDecimals ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'}
+        autoComplete="off"
         value={displayValue}
         onChange={handleInputChange}
         onBlur={handleBlur}

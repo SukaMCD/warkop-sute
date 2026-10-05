@@ -314,7 +314,9 @@ export const ReceiptSettingsView = ({
                     </label>
                   </div>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="tel"
+                    pattern="[0-9+ -]*"
                     value={formData.phone}
                     onChange={(e) => handleChange('phone', e.target.value)}
                     placeholder="0812-3456-7890"

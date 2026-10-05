@@ -3,6 +3,7 @@ import { PlayCircle, Clock, ShieldCheck, Loader2 } from 'lucide-react'
 import type { User, Shift } from '../../types'
 import { NumericInput } from '../ui/NumericInput'
 import { SearchableSelect } from '../ui/SearchableSelect'
+import { apiFetch } from '../../utils/api'
 
 interface StartShiftModalProps {
   currentUser: User
@@ -22,7 +23,7 @@ export const StartShiftModal = ({
   const [errorMsg, setErrorMsg] = useState<string>('')
 
   useEffect(() => {
-    fetch('/api/users?role=cashier')
+    apiFetch('/api/users?role=cashier')
       .then(r => (r.ok ? r.json() : null))
       .then((data: any) => {
         if (data?.success && Array.isArray(data.data) && data.data.length > 0) {
@@ -53,7 +54,7 @@ export const StartShiftModal = ({
     setErrorMsg('')
 
     try {
-      const res = await fetch('/api/shifts/start', {
+      const res = await apiFetch('/api/shifts/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

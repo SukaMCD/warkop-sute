@@ -28,6 +28,8 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { calculateShiftDuration } from '../../utils/shiftHelpers'
+import { apiFetch } from '../../utils/api'
+import { saveOrderToQueue } from '../../utils/offlineQueue'
 import { RecordExpenseModal } from './RecordExpenseModal'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { NumericInput } from '../ui/NumericInput'
@@ -349,14 +351,13 @@ export const POSView = ({
         cost_price: item.product.cost_price || Math.round(item.product.price * 0.48),
         quantity: item.quantity,
         subtotal: item.product.price * item.quantity,
-        notes: item.notes || null
+        notes: item.notes || undefined
       }))
     }
 
     try {
-      const res = await fetch('/api/orders', {
+      const res = await apiFetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload)
       })
 
@@ -371,7 +372,8 @@ export const POSView = ({
         setCompletedOrder(savedOrder)
         if (onOrderCompleted) onOrderCompleted(savedOrder)
       } else {
-        // Fallback offline mock order
+        // Fallback offline queue persistence
+        saveOrderToQueue(orderPayload)
         const mockOrder: Order = {
           id: `ord_${Date.now()}`,
           order_number: orderNumber,
@@ -407,8 +409,9 @@ export const POSView = ({
       setShowReceiptModal(true)
       handleResetCart()
     } catch (err) {
-      console.error('Error saving order:', err)
-      // Save offline mock
+      console.warn('[POSView] Network error during checkout, saved to offline queue:', err)
+      // Save to persistent offline queue
+      saveOrderToQueue(orderPayload)
       const mockOrder: Order = {
         id: `ord_${Date.now()}`,
         order_number: orderNumber,

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { User } from '../../types'
 import { Delete, ArrowRight, ShieldAlert, Loader2, RotateCcw, Clock, MapPin, ShieldCheck, UserCheck } from 'lucide-react'
+import { setToken } from '../../utils/api'
 import { SearchableSelect } from '../ui/SearchableSelect'
 
 interface LoginPageProps {
@@ -95,6 +96,9 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
       })
       const data: any = await res.json()
       if (res.ok && data.success && data.user) {
+        if (data.token) {
+          setToken(data.token)
+        }
         localStorage.setItem('sute_session_user', JSON.stringify(data.user))
         localStorage.removeItem('sute_is_locked')
         onLoginSuccess(data.user)

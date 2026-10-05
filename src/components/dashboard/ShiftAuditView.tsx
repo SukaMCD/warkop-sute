@@ -5,6 +5,7 @@ import { formatShiftSchedule, calculateShiftDuration } from '../../utils/shiftHe
 import { Clock, PowerOff, RefreshCw, Plus, Pencil, Trash2 } from 'lucide-react'
 import { ShiftFormModal } from './ShiftFormModal'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { apiFetch } from '../../utils/api'
 
 interface ShiftAuditViewProps {
   currentShift: Shift
@@ -56,7 +57,7 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
   const fetchShifts = async () => {
     setIsLoading(true)
     try {
-      const res = await fetch('/api/shifts')
+      const res = await apiFetch('/api/shifts')
       if (res.ok) {
         const json: any = await res.json()
         if (json.success && json.data?.length > 0) {
@@ -86,7 +87,7 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
     if (!shiftToDeleteId) return
     setIsDeletingShift(true)
     try {
-      const res = await fetch(`/api/shifts/${shiftToDeleteId}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/shifts/${shiftToDeleteId}`, { method: 'DELETE' })
       if (res.ok) {
         setHistoricalShifts(prev => prev.filter(s => s.id !== shiftToDeleteId))
       }
@@ -345,7 +346,7 @@ export const ShiftAuditView = ({ currentShift, onEndShift, onShiftUpdated }: Shi
             setModalShift(undefined)
             fetchShifts()
             if (modalShift?.id === currentShift.id && onShiftUpdated) {
-              fetch('/api/shifts/current')
+              apiFetch('/api/shifts/current')
                 .then(r => r.json())
                 .then((d: any) => { if (d?.success && d?.data) onShiftUpdated(d.data) })
                 .catch(() => {})

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import type { Product } from '../../types'
+import type { Product, RawMaterial } from '../../types'
 import { formatRupiah } from '../../utils/formatters'
 import { NumericInput } from '../ui/NumericInput'
 import { SearchableSelect } from '../ui/SearchableSelect'
+import { apiFetch } from '../../utils/api'
 import {
   Search,
   Coffee,
@@ -48,6 +49,23 @@ export const ProductsCatalogView = ({
   const [formIsFavorite, setFormIsFavorite] = useState(false)
   const [formStock, setFormStock] = useState<number | ''>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Recipe & Ingredients States (Auto-Deduct)
+  const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>([])
+  const [recipeItems, setRecipeItems] = useState<Array<{ material_id: string; quantity_required: number }>>([])
+  const [isLoadingRecipe, setIsLoadingRecipe] = useState(false)
+
+  // Fetch raw materials for recipe dropdown
+  useEffect(() => {
+    apiFetch('/api/inventory?role=owner')
+      .then(res => res.json())
+      .then((json: any) => {
+        if (json.success && Array.isArray(json.data)) {
+          setRawMaterials(json.data)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const dropdownRef = useRef<HTMLDivElement | null>(null)
 
@@ -96,12 +114,13 @@ export const ProductsCatalogView = ({
     setFormIsAvailable(true)
     setFormIsFavorite(false)
     setFormStock('')
+    setRecipeItems([])
     setIsFormModalOpen(true)
     setActiveDropdownId(null)
   }
 
   // Open modal to edit existing menu item
-  const handleOpenEditModal = (product: Product) => {
+  const handleOpenEditModal = async (product: Product) => {
     setEditingProduct(product)
     setFormName(product.name)
     setFormCategory(product.category_id)
@@ -110,8 +129,26 @@ export const ProductsCatalogView = ({
     setFormIsAvailable(Boolean(product.is_available))
     setFormIsFavorite(Boolean(product.is_favorite))
     setFormStock(product.stock !== undefined && product.stock !== null ? product.stock : '')
+    setRecipeItems([])
     setIsFormModalOpen(true)
     setActiveDropdownId(null)
+
+    // Load existing recipes for this product
+    setIsLoadingRecipe(true)
+    try {
+      const res = await apiFetch(`/api/products/${product.id}/recipes`)
+      const json: any = await res.json()
+      if (json.success && Array.isArray(json.data)) {
+        setRecipeItems(json.data.map((r: any) => ({
+          material_id: r.material_id,
+          quantity_required: r.quantity_required
+        })))
+      }
+    } catch {
+      // Handled
+    } finally {
+      setIsLoadingRecipe(false)
+    }
   }
 
   // Toggle availability (Habis / Tersedia)
@@ -125,7 +162,7 @@ export const ProductsCatalogView = ({
     onProductsChange?.(updatedList)
 
     try {
-      await fetch(`/api/products/${product.id}/toggle`, { method: 'PATCH' })
+      await apiFetch(`/api/products/${product.id}/toggle`, { method: 'PATCH' })
     } catch {
       // Offline / local state fallback handled
     }
@@ -140,7 +177,9 @@ export const ProductsCatalogView = ({
     const parsedStock = formStock === '' ? null : Math.max(0, parseInt(String(formStock), 10) || 0)
 
     try {
+      let savedId = ''
       if (editingProduct) {
+        savedId = editingProduct.id
         // UPDATE Existing
         const updatedItem: Product = {
           ...editingProduct,
@@ -158,9 +197,8 @@ export const ProductsCatalogView = ({
         setProducts(nextList)
         onProductsChange?.(nextList)
 
-        await fetch(`/api/products/${editingProduct.id}`, {
+        await apiFetch(`/api/products/${editingProduct.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: updatedItem.name,
             category_id: updatedItem.category_id,
@@ -174,6 +212,7 @@ export const ProductsCatalogView = ({
       } else {
         // CREATE New
         const newId = `prod_${Date.now()}`
+        savedId = newId
         const newItem: Product = {
           id: newId,
           name: formName.trim(),
@@ -191,9 +230,8 @@ export const ProductsCatalogView = ({
         setProducts(nextList)
         onProductsChange?.(nextList)
 
-        await fetch('/api/products', {
+        await apiFetch('/api/products', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: newItem.name,
             category_id: newItem.category_id,
@@ -204,6 +242,15 @@ export const ProductsCatalogView = ({
             stock: parsedStock
           })
         })
+      }
+
+      // Save Recipe Ingredients
+      if (savedId) {
+        const validRecipeItems = recipeItems.filter(r => r.material_id && Number(r.quantity_required) > 0)
+        await apiFetch(`/api/products/${savedId}/recipes`, {
+          method: 'PUT',
+          body: JSON.stringify({ items: validRecipeItems })
+        }).catch(() => {})
       }
 
       setIsFormModalOpen(false)
@@ -221,7 +268,7 @@ export const ProductsCatalogView = ({
     onProductsChange?.(nextList)
 
     try {
-      await fetch(`/api/products/${deletingProduct.id}`, { method: 'DELETE' })
+      await apiFetch(`/api/products/${deletingProduct.id}`, { method: 'DELETE' })
     } catch {
       // Handled
     }
@@ -560,6 +607,88 @@ export const ProductsCatalogView = ({
                   <span className="text-xs text-stone-500 font-mono block mt-1.5">
                     Sistem otomatis memberi peringatan &quot;Menipis&quot; pada kasir jika sisa &le; 5 porsi.
                   </span>
+                </div>
+
+                {/* Resep & Bahan Baku (Auto-Deduct Stok) */}
+                <div className="p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-stone-900 dark:text-stone-200">
+                        Resep & Pengurangan Stok Otomatis
+                      </h4>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                        Bahan baku akan berkurang otomatis dari inventori saat pesanan menu ini selesai dibayar.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setRecipeItems(prev => [...prev, { material_id: rawMaterials[0]?.id || '', quantity_required: 1 }])}
+                      className="px-2.5 py-1.5 text-xs font-mono font-semibold rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/70 text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Tambah Bahan</span>
+                    </button>
+                  </div>
+
+                  {isLoadingRecipe ? (
+                    <div className="py-4 text-center text-xs text-stone-500 font-mono">
+                      Memuat resep menu...
+                    </div>
+                  ) : recipeItems.length === 0 ? (
+                    <div className="py-3 text-center text-xs text-stone-500 dark:text-stone-400 font-mono border border-dashed border-stone-200 dark:border-stone-800 rounded-xl">
+                      Belum ada bahan baku yang dihubungkan ke menu ini (klik &quot;Tambah Bahan&quot; untuk menghubungkan).
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {recipeItems.map((item, idx) => {
+                        const mat = rawMaterials.find(m => m.id === item.material_id)
+                        return (
+                          <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-stone-950/80 border border-stone-200 dark:border-stone-800">
+                            <div className="flex-1 min-w-0">
+                              <SearchableSelect
+                                value={item.material_id}
+                                onChange={(val) => {
+                                  const copy = [...recipeItems]
+                                  copy[idx].material_id = val
+                                  setRecipeItems(copy)
+                                }}
+                                options={rawMaterials.map(m => ({
+                                  value: m.id,
+                                  label: `${m.name} (${m.unit})`
+                                }))}
+                                placeholder="Pilih bahan baku..."
+                                searchPlaceholder="Cari bahan..."
+                              />
+                            </div>
+                            <div className="w-full sm:w-36 shrink-0 flex items-center gap-2">
+                              <div className="flex-1">
+                                <NumericInput
+                                  value={item.quantity_required}
+                                  onChange={(val) => {
+                                    const copy = [...recipeItems]
+                                    copy[idx].quantity_required = val
+                                    setRecipeItems(copy)
+                                  }}
+                                  allowDecimals={true}
+                                  min={0.001}
+                                  step={mat?.unit === 'kg' ? 0.01 : 1}
+                                  suffix={mat?.unit || 'unit'}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setRecipeItems(recipeItems.filter((_, i) => i !== idx))}
+                                className="p-2 text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer shrink-0"
+                                title="Hapus bahan dari resep"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Toggles */}

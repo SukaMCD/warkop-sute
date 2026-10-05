@@ -20,6 +20,7 @@ import { ShiftHandoverModal } from './components/pos/ShiftHandoverModal'
 import type { Product, Order, Shift, User, ShiftExpense, DailySalesMetric, ReceiptConfig } from './types'
 import { DEFAULT_RECEIPT_CONFIG, loadReceiptConfig } from './utils/receiptConfig'
 import { type TabType, TAB_TO_PATH, getTabFromPath } from './utils/navigation'
+import { apiFetch } from './utils/api'
 import {
   mockProducts,
   mockWeeklySales,
@@ -150,7 +151,7 @@ export function App() {
       // Ambil data shift aktif terkini langsung dari server
       let activeShift: Shift | null = currentShift
       try {
-        const res = await fetch('/api/shifts/current')
+        const res = await apiFetch('/api/shifts/current')
         if (res.ok) {
           const json: any = await res.json()
           if (json.success) {
@@ -309,7 +310,7 @@ export function App() {
     try {
       // 1. Fetch current active shift from D1
       try {
-        const shiftRes = await fetch('/api/shifts/current')
+        const shiftRes = await apiFetch('/api/shifts/current')
         if (shiftRes.ok) {
           const shiftJson: any = await shiftRes.json()
           if (shiftJson.success) {
@@ -325,7 +326,7 @@ export function App() {
       }
 
       // 2. Fetch dashboard stats
-      const statsRes = await fetch('/api/dashboard/stats')
+      const statsRes = await apiFetch('/api/dashboard/stats')
       if (statsRes.ok) {
         const statsJson: any = await statsRes.json()
         if (statsJson.success && statsJson.data) {
@@ -349,7 +350,7 @@ export function App() {
       }
 
       // 2. Fetch products
-      const prodRes = await fetch('/api/products')
+      const prodRes = await apiFetch('/api/products')
       if (prodRes.ok) {
         const prodJson: any = await prodRes.json()
         if (prodJson.success && prodJson.data?.length > 0) {
@@ -358,7 +359,7 @@ export function App() {
       }
 
       // 3. Fetch orders
-      const ordersRes = await fetch('/api/orders')
+      const ordersRes = await apiFetch('/api/orders')
       if (ordersRes.ok) {
         const ordersJson: any = await ordersRes.json()
         if (ordersJson.success && ordersJson.data?.length > 0) {
@@ -433,6 +434,7 @@ export function App() {
           onToggleSidebar={handleToggleSidebar}
           onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
           isSidebarCollapsed={isSidebarCollapsed}
+          onOrdersSynced={fetchD1Data}
         />
 
         {/* Content Body */}

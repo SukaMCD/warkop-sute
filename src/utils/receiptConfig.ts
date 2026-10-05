@@ -1,4 +1,5 @@
 import type { ReceiptConfig } from '../types'
+import { apiFetch } from './api'
 
 export const DEFAULT_RECEIPT_CONFIG: ReceiptConfig = {
   storeName: 'WARKOP SUDUT TEMU',
@@ -39,7 +40,7 @@ export const loadReceiptConfig = async (): Promise<ReceiptConfig> => {
   } catch {}
 
   try {
-    const res = await fetch('/api/settings/receipt')
+    const res = await apiFetch('/api/settings/receipt')
     if (res.ok) {
       const data: any = await res.json()
       if (data && data.success && data.config) {
@@ -63,9 +64,8 @@ export const saveReceiptConfig = async (config: ReceiptConfig): Promise<boolean>
   } catch {}
 
   try {
-    const res = await fetch('/api/settings/receipt', {
+    const res = await apiFetch('/api/settings/receipt', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ config })
     })
     return res.ok

@@ -1,14 +1,62 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { secureHeaders } from 'hono/secure-headers'
+import { sign, verify } from 'hono/jwt'
 
 type Bindings = {
   DB: D1Database
   ASSETS?: Fetcher
+  JWT_SECRET?: string
 }
 
-const app = new Hono<{ Bindings: Bindings }>()
+type Variables = {
+  user?: {
+    id: string
+    username: string
+    name: string
+    role: string
+  }
+}
 
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
+
+app.use('*', secureHeaders())
 app.use('*', cors())
+
+const DEFAULT_JWT_SECRET = 'rahasia-warkop-sudut-temu-2026'
+
+// JWT Auth Middleware
+async function authMiddleware(c: any, next: any) {
+  const authHeader = c.req.header('Authorization')
+  const secret = c.env?.JWT_SECRET || DEFAULT_JWT_SECRET
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7)
+    try {
+      const payload = await verify(token, secret, 'HS256')
+      c.set('user', payload)
+      return await next()
+    } catch {
+      return c.json({ success: false, message: 'Sesi login telah kedaluwarsa atau tidak valid.' }, 401)
+    }
+  }
+
+  // If DB is not available (mock local dev), pass through as mock user
+  if (!c.env?.DB) {
+    c.set('user', { id: 'usr_dev', role: 'owner', name: 'Dev Owner', username: 'owner' })
+    return await next()
+  }
+
+  return c.json({ success: false, message: 'Autentikasi dibutuhkan. Silakan login kembali.' }, 401)
+}
+
+// Require Owner Role Middleware
+async function requireOwner(c: any, next: any) {
+  const user = c.get('user')
+  if (!user || user.role !== 'owner') {
+    return c.json({ success: false, message: 'Akses ditolak. Fitur ini hanya untuk Owner.' }, 403)
+  }
+  return await next()
+}
 
 // Health check
 app.get('/api/health', (c) => {
@@ -28,6 +76,7 @@ async function hashPin(pin: string): Promise<string> {
 app.post('/api/auth/login', async (c) => {
   const body = await c.req.json()
   const { pin, username } = body
+  const secret = c.env?.JWT_SECRET || DEFAULT_JWT_SECRET
 
   if (c.env?.DB && pin) {
     const pinStr = String(pin).trim()
@@ -37,9 +86,19 @@ app.post('/api/auth/login', async (c) => {
         ? c.env.DB.prepare('SELECT id, username, name, role FROM users WHERE username = ? AND (pin = ? OR pin = ?)').bind(username, hashedPin, pinStr)
         : c.env.DB.prepare('SELECT id, username, name, role FROM users WHERE pin = ? OR pin = ?').bind(hashedPin, pinStr)
       
-      const user = await query.first()
+      const user: any = await query.first()
       if (user) {
-        return c.json({ success: true, user })
+        const token = await sign(
+          {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            role: user.role,
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7) // 7 days
+          },
+          secret
+        )
+        return c.json({ success: true, user, token })
       }
       return c.json({ success: false, message: 'PIN tidak sesuai untuk petugas yang dipilih.' }, 401)
     } catch (err: any) {
@@ -48,7 +107,16 @@ app.post('/api/auth/login', async (c) => {
     }
   }
 
-  return c.json({ success: false, message: 'Database D1 tidak terhubung atau PIN kosong.' }, 500)
+  // Fallback for dev without DB
+  const fallbackUser = { id: 'usr_dev', username: username || 'kasir', name: 'Petugas Warkop', role: username === 'owner' ? 'owner' : 'cashier' }
+  const token = await sign(
+    {
+      ...fallbackUser,
+      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7)
+    },
+    secret
+  )
+  return c.json({ success: true, user: fallbackUser, token })
 })
 
 // Categories
@@ -101,8 +169,8 @@ app.patch('/api/products/:id/toggle', async (c) => {
   return c.json({ success: true, message: 'Updated locally' })
 })
 
-// Create new product
-app.post('/api/products', async (c) => {
+// Create new product (Owner Only)
+app.post('/api/products', authMiddleware, requireOwner, async (c) => {
   const body = await c.req.json()
   const { category_id, name, price, cost_price = 0, is_available = 1, is_favorite = 0 } = body
   const id = `prod_${Date.now()}`
@@ -123,8 +191,8 @@ app.post('/api/products', async (c) => {
   return c.json({ success: true, data: { id, category_id, name, price, cost_price, is_available, is_favorite } })
 })
 
-// Update existing product
-app.put('/api/products/:id', async (c) => {
+// Update existing product (Owner Only)
+app.put('/api/products/:id', authMiddleware, requireOwner, async (c) => {
   const id = c.req.param('id')
   const body = await c.req.json()
   const { category_id, name, price, cost_price = 0, is_available = 1, is_favorite = 0 } = body
@@ -146,14 +214,67 @@ app.put('/api/products/:id', async (c) => {
   return c.json({ success: true, data: { id, ...body } })
 })
 
-// Delete product
-app.delete('/api/products/:id', async (c) => {
+// Delete product (Owner Only)
+app.delete('/api/products/:id', authMiddleware, requireOwner, async (c) => {
   const id = c.req.param('id')
   if (c.env?.DB) {
     await c.env.DB.prepare('DELETE FROM products WHERE id = ?').bind(id).run()
+    await c.env.DB.prepare('DELETE FROM product_recipes WHERE product_id = ?').bind(id).run().catch(() => null)
     return c.json({ success: true, message: 'Deleted' })
   }
   return c.json({ success: true, message: 'Deleted' })
+})
+
+// GET /api/products/:id/recipes - Get ingredients required for a product
+app.get('/api/products/:id/recipes', async (c) => {
+  const productId = c.req.param('id')
+  if (c.env?.DB) {
+    await ensureInventoryTables(c.env.DB)
+    const { results } = await c.env.DB.prepare(`
+      SELECT pr.*, rm.name as material_name, rm.unit
+      FROM product_recipes pr
+      JOIN raw_materials rm ON pr.material_id = rm.id
+      WHERE pr.product_id = ?
+      ORDER BY rm.name ASC
+    `).bind(productId).all()
+    return c.json({ success: true, data: results || [] })
+  }
+  return c.json({ success: true, data: [] })
+})
+
+// PUT /api/products/:id/recipes - Save recipe ingredients for a product (Owner Only)
+app.put('/api/products/:id/recipes', authMiddleware, requireOwner, async (c) => {
+  const productId = c.req.param('id')
+  const body = await c.req.json()
+  const { items = [] } = body // [{ material_id: string, quantity_required: number }]
+
+  if (c.env?.DB) {
+    await ensureInventoryTables(c.env.DB)
+    // Clear old recipe items for this product
+    await c.env.DB.prepare('DELETE FROM product_recipes WHERE product_id = ?').bind(productId).run()
+
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i]
+      if (!it.material_id || Number(it.quantity_required) <= 0) continue
+      const recId = `rec_${Date.now()}_${i}`
+      await c.env.DB.prepare(`
+        INSERT INTO product_recipes (id, product_id, material_id, quantity_required)
+        VALUES (?, ?, ?, ?)
+      `).bind(recId, productId, it.material_id, Number(it.quantity_required)).run()
+    }
+
+    const { results } = await c.env.DB.prepare(`
+      SELECT pr.*, rm.name as material_name, rm.unit
+      FROM product_recipes pr
+      JOIN raw_materials rm ON pr.material_id = rm.id
+      WHERE pr.product_id = ?
+      ORDER BY rm.name ASC
+    `).bind(productId).all()
+
+    return c.json({ success: true, data: results || [] })
+  }
+
+  return c.json({ success: true, data: items })
 })
 
 // Orders & Order Items
@@ -209,8 +330,8 @@ app.get('/api/orders', async (c) => {
   return c.json({ success: true, data: [] })
 })
 
-// Cancel / Void Order
-app.post('/api/orders/:id/cancel', async (c) => {
+// Cancel / Void Order (Owner Only)
+app.post('/api/orders/:id/cancel', authMiddleware, requireOwner, async (c) => {
   const orderId = c.req.param('id')
   if (c.env?.DB) {
     const order: any = await c.env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first()
@@ -243,8 +364,8 @@ app.post('/api/orders/:id/cancel', async (c) => {
   return c.json({ success: true, message: 'Pesanan dibatalkan' })
 })
 
-// Create New Order
-app.post('/api/orders', async (c) => {
+// Create New Order (Authenticated Cashier / Owner)
+app.post('/api/orders', authMiddleware, async (c) => {
   const body = await c.req.json()
   const {
     order_number,
@@ -266,6 +387,19 @@ app.post('/api/orders', async (c) => {
 
   if (c.env?.DB) {
     try {
+      // 0. Idempotency Check: if order_number already exists, return existing order (prevents duplicate on offline sync retry)
+      if (order_number) {
+        const existing: any = await c.env.DB.prepare('SELECT * FROM orders WHERE order_number = ?').bind(order_number).first()
+        if (existing) {
+          return c.json({
+            success: true,
+            is_duplicate: true,
+            message: 'Pesanan sudah tersimpan sebelumnya (sinkronisasi aman)',
+            order: existing
+          })
+        }
+      }
+
       // 1. Insert order
       let finalMethod = payment_method
       let finalNotes = notes || null
@@ -275,6 +409,11 @@ app.post('/api/orders', async (c) => {
         const splitTag = `[Split: Tunai Rp ${cashPart.toLocaleString('id-ID')}, QRIS Rp ${qrisPart.toLocaleString('id-ID')}]`
         finalNotes = finalNotes ? `${splitTag} ${finalNotes}` : splitTag
       }
+
+      const cleanCustomerName = String(customer_name || 'Pelanggan').trim().slice(0, 100)
+      const cleanTableNumber = table_number ? String(table_number).trim().slice(0, 50) : null
+      const cleanOrderType = order_type === 'takeaway' ? 'takeaway' : 'dine_in'
+      const cleanNotes = finalNotes ? String(finalNotes).trim().slice(0, 500) : null
 
       try {
         await c.env.DB.prepare(`
@@ -288,15 +427,15 @@ app.post('/api/orders', async (c) => {
           order_number,
           shift_id || null,
           cashier_id,
-          customer_name || 'Pelanggan',
-          order_type || 'dine_in',
-          table_number || null,
+          cleanCustomerName,
+          cleanOrderType,
+          cleanTableNumber,
           finalMethod,
           total_amount,
           cash_tendered || total_amount,
           change_amount || 0,
           status,
-          finalNotes
+          cleanNotes
         ).run()
       } catch (insertErr: any) {
         if (insertErr?.message?.includes('CHECK') && finalMethod === 'split') {
@@ -311,15 +450,15 @@ app.post('/api/orders', async (c) => {
             order_number,
             shift_id || null,
             cashier_id,
-            customer_name || 'Pelanggan',
-            order_type || 'dine_in',
-            table_number || null,
+            cleanCustomerName,
+            cleanOrderType,
+            cleanTableNumber,
             'cash',
             total_amount,
             cash_tendered || total_amount,
             change_amount || 0,
             status,
-            finalNotes
+            cleanNotes
           ).run()
         } else {
           throw insertErr
@@ -330,6 +469,7 @@ app.post('/api/orders', async (c) => {
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
         const itemId = `item_${Date.now()}_${i}`
+        const cleanItemNotes = item.notes ? String(item.notes).trim().slice(0, 200) : null
         await c.env.DB.prepare(`
           INSERT INTO order_items (
             id, order_id, product_id, product_name, price, quantity, subtotal, notes
@@ -338,11 +478,11 @@ app.post('/api/orders', async (c) => {
           itemId,
           orderId,
           item.product_id,
-          item.product_name,
+          String(item.product_name).slice(0, 100),
           item.price,
           item.quantity,
           item.subtotal,
-          item.notes || null
+          cleanItemNotes
         ).run()
       }
 
@@ -363,6 +503,47 @@ app.post('/api/orders', async (c) => {
             UPDATE shifts SET total_cash_sales = total_cash_sales + ?, total_qris_sales = total_qris_sales + ? WHERE id = ?
           `).bind(cashPart, qrisPart, shift_id).run()
         }
+      }
+
+      // 4. Auto-deduct raw materials based on recipes
+      try {
+        await ensureInventoryTables(c.env.DB)
+        for (const it of items) {
+          if (!it.product_id) continue
+          const { results: recipes } = await c.env.DB.prepare(`
+            SELECT pr.*, rm.name as material_name, rm.unit
+            FROM product_recipes pr
+            JOIN raw_materials rm ON pr.material_id = rm.id
+            WHERE pr.product_id = ?
+          `).bind(it.product_id).all()
+
+          if (recipes && recipes.length > 0) {
+            for (const r of (recipes as any[])) {
+              const qtyToDeduct = Number(r.quantity_required || 0) * Number(it.quantity || 1)
+              if (qtyToDeduct > 0) {
+                await c.env.DB.prepare(`
+                  UPDATE raw_materials
+                  SET current_stock = MAX(0, current_stock - ?)
+                  WHERE id = ?
+                `).bind(qtyToDeduct, r.material_id).run()
+
+                const moveId = `move_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
+                await c.env.DB.prepare(`
+                  INSERT INTO stock_movements (id, material_id, type, quantity, notes, created_by_name, created_at)
+                  VALUES (?, ?, 'out', ?, ?, ?, datetime('now', 'localtime'))
+                `).bind(
+                  moveId,
+                  r.material_id,
+                  qtyToDeduct,
+                  `Otomatis Order #${order_number} (${it.product_name} x${it.quantity})`,
+                  customer_name ? `Kasir (Pelanggan: ${customer_name})` : 'Kasir'
+                ).run()
+              }
+            }
+          }
+        }
+      } catch (recipeErr) {
+        console.error('Failed to auto-deduct recipe materials:', recipeErr)
       }
 
       return c.json({
@@ -434,17 +615,21 @@ app.get('/api/users', async (c) => {
 })
 
 // Create New Cashier (Owner only)
-app.post('/api/users', async (c) => {
+app.post('/api/users', authMiddleware, requireOwner, async (c) => {
   const body = await c.req.json()
   let { username, name, pin, role = 'cashier' } = body
   if (!name || !pin) {
     return c.json({ success: false, message: 'Nama petugas dan PIN wajib diisi' }, 400)
   }
+  const pinStr = String(pin).trim()
+  if (pinStr.length !== 6 || !/^\d{6}$/.test(pinStr)) {
+    return c.json({ success: false, message: 'PIN harus berupa 6-digit angka numerik' }, 400)
+  }
+  const cleanName = String(name).trim().slice(0, 100)
   if (!username || !username.trim()) {
-    username = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30)
+    username = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30)
   }
   const id = `usr_${Date.now()}`
-  const pinStr = String(pin).trim()
   const hashedPin = await hashPin(pinStr)
 
   if (c.env?.DB) {
@@ -466,7 +651,7 @@ app.post('/api/users', async (c) => {
 })
 
 // Update Cashier PIN (Owner only)
-app.put('/api/users/:id/pin', async (c) => {
+app.put('/api/users/:id/pin', authMiddleware, requireOwner, async (c) => {
   const id = c.req.param('id')
   const body = await c.req.json()
   const { pin } = body
@@ -488,7 +673,7 @@ app.put('/api/users/:id/pin', async (c) => {
 })
 
 // Delete Cashier (Owner only)
-app.delete('/api/users/:id', async (c) => {
+app.delete('/api/users/:id', authMiddleware, requireOwner, async (c) => {
   const id = c.req.param('id')
   if (c.env?.DB) {
     const user: any = await c.env.DB.prepare('SELECT role FROM users WHERE id = ?').bind(id).first()
@@ -570,8 +755,8 @@ app.get('/api/shifts/:id/expenses', async (c) => {
   return c.json({ success: true, data: [] })
 })
 
-// Add expense / income for a shift (Petty cash & Cash In)
-app.post('/api/shifts/:id/expenses', async (c) => {
+// Add expense / income for a shift (Petty cash & Cash In - Cashier & Owner)
+app.post('/api/shifts/:id/expenses', authMiddleware, async (c) => {
   const shiftId = c.req.param('id')
   const body = await c.req.json()
   const { cashier_id, amount, description, type } = body
@@ -607,8 +792,8 @@ app.post('/api/shifts/:id/expenses', async (c) => {
   })
 })
 
-// Create Shift (Manual — by Owner)
-app.post('/api/shifts', async (c) => {
+// Create Shift (Manual — by Owner Only)
+app.post('/api/shifts', authMiddleware, requireOwner, async (c) => {
   try {
     const body = await c.req.json()
     const {
@@ -665,8 +850,8 @@ app.post('/api/shifts', async (c) => {
   }
 })
 
-// Update Shift (Owner edit)
-app.put('/api/shifts/:id', async (c) => {
+// Update Shift (Owner edit only)
+app.put('/api/shifts/:id', authMiddleware, requireOwner, async (c) => {
   try {
     const shiftId = c.req.param('id')
     const body = await c.req.json()
@@ -717,8 +902,8 @@ app.put('/api/shifts/:id', async (c) => {
   }
 })
 
-// Delete Shift (Owner)
-app.delete('/api/shifts/:id', async (c) => {
+// Delete Shift (Owner only)
+app.delete('/api/shifts/:id', authMiddleware, requireOwner, async (c) => {
   try {
     const shiftId = c.req.param('id')
     if (c.env?.DB) {
@@ -730,8 +915,8 @@ app.delete('/api/shifts/:id', async (c) => {
   }
 })
 
-// Start Shift Baru
-app.post('/api/shifts/start', async (c) => {
+// Start Shift Baru (Cashier & Owner)
+app.post('/api/shifts/start', authMiddleware, async (c) => {
   try {
     const body = await c.req.json()
     const { cashier_id, initial_cash, notes } = body
@@ -780,8 +965,8 @@ app.post('/api/shifts/start', async (c) => {
   }
 })
 
-// Akhiri Shift (Close Shift)
-app.post('/api/shifts/:id/close', async (c) => {
+// Akhiri Shift (Close Shift - Cashier & Owner)
+app.post('/api/shifts/:id/close', authMiddleware, async (c) => {
   try {
     const shiftId = c.req.param('id')
     const body = await c.req.json()
@@ -1210,7 +1395,7 @@ app.get('/api/settings/receipt', async (c) => {
   return c.json({ success: true, config: null })
 })
 
-app.post('/api/settings/receipt', async (c) => {
+app.post('/api/settings/receipt', authMiddleware, requireOwner, async (c) => {
   const body = await c.req.json()
   const { config } = body
   if (!config) {
@@ -1302,6 +1487,39 @@ async function ensureInventoryTables(db: any) {
         ).run()
       }
     }
+
+    // Ensure product_recipes table exists
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS product_recipes (
+        id TEXT PRIMARY KEY,
+        product_id TEXT NOT NULL,
+        material_id TEXT NOT NULL,
+        quantity_required REAL NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(product_id, material_id)
+      );
+    `).run()
+
+    const recCountRow: any = await db.prepare('SELECT COUNT(id) as count FROM product_recipes').first()
+    if (recCountRow && recCountRow.count === 0) {
+      const defaultRecipes = [
+        { id: 'rec_1', product_id: 'prod_1', material_id: 'raw_kopi_robusta', quantity_required: 0.015 },
+        { id: 'rec_2_a', product_id: 'prod_2', material_id: 'raw_kopi_robusta', quantity_required: 0.015 },
+        { id: 'rec_2_b', product_id: 'prod_2', material_id: 'raw_susu_skm', quantity_required: 0.1 },
+        { id: 'rec_4_a', product_id: 'prod_4', material_id: 'raw_teh_celup', quantity_required: 0.05 },
+        { id: 'rec_4_b', product_id: 'prod_4', material_id: 'raw_gula_pasir', quantity_required: 0.02 },
+        { id: 'rec_7_a', product_id: 'prod_7', material_id: 'raw_indomie_goreng', quantity_required: 1 },
+        { id: 'rec_7_b', product_id: 'prod_7', material_id: 'raw_telur_ayam', quantity_required: 1 },
+        { id: 'rec_8_a', product_id: 'prod_8', material_id: 'raw_indomie_kuah', quantity_required: 1 },
+        { id: 'rec_8_b', product_id: 'prod_8', material_id: 'raw_telur_ayam', quantity_required: 1 }
+      ]
+      for (const rec of defaultRecipes) {
+        await db.prepare(`
+          INSERT OR IGNORE INTO product_recipes (id, product_id, material_id, quantity_required)
+          VALUES (?, ?, ?, ?)
+        `).bind(rec.id, rec.product_id, rec.material_id, rec.quantity_required).run()
+      }
+    }
   } catch (err: any) {
     console.error('Error ensuring inventory tables:', err)
   }
@@ -1354,7 +1572,7 @@ app.get('/api/inventory', async (c) => {
 })
 
 // POST /api/inventory - Add new raw material (Owner only)
-app.post('/api/inventory', async (c) => {
+app.post('/api/inventory', authMiddleware, requireOwner, async (c) => {
   const body = await c.req.json()
   const { name, category, current_stock, unit, min_stock_alert, cost_per_unit, supplier } = body
   const id = `raw_${Date.now()}`
@@ -1388,8 +1606,8 @@ app.post('/api/inventory', async (c) => {
   })
 })
 
-// PUT /api/inventory/:id - Update raw material details (Owner)
-app.put('/api/inventory/:id', async (c) => {
+// PUT /api/inventory/:id - Update raw material details (Owner Only)
+app.put('/api/inventory/:id', authMiddleware, requireOwner, async (c) => {
   const id = c.req.param('id')
   const body = await c.req.json()
   const { name, category, current_stock, unit, min_stock_alert, cost_per_unit, supplier } = body
@@ -1424,19 +1642,20 @@ app.put('/api/inventory/:id', async (c) => {
   return c.json({ success: true, data: { id, ...body } })
 })
 
-// DELETE /api/inventory/:id - Delete raw material (Owner)
-app.delete('/api/inventory/:id', async (c) => {
+// DELETE /api/inventory/:id - Delete raw material (Owner Only)
+app.delete('/api/inventory/:id', authMiddleware, requireOwner, async (c) => {
   const id = c.req.param('id')
   if (c.env?.DB) {
     await ensureInventoryTables(c.env.DB)
     await c.env.DB.prepare('DELETE FROM raw_materials WHERE id = ?').bind(id).run()
     await c.env.DB.prepare('DELETE FROM stock_movements WHERE material_id = ?').bind(id).run()
+    await c.env.DB.prepare('DELETE FROM product_recipes WHERE material_id = ?').bind(id).run().catch(() => null)
   }
   return c.json({ success: true, message: 'Bahan baku berhasil dihapus' })
 })
 
 // POST /api/inventory/movement - Record stock in/out/waste/opname (Cashier & Owner)
-app.post('/api/inventory/movement', async (c) => {
+app.post('/api/inventory/movement', authMiddleware, async (c) => {
   const body = await c.req.json()
   const { material_id, type, quantity, notes, created_by_name } = body
   const qty = Number(quantity) || 0

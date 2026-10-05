@@ -3,6 +3,7 @@ import { X, Loader2, Save, Plus } from 'lucide-react'
 import type { Shift } from '../../types'
 import { NumericInput } from '../ui/NumericInput'
 import { SearchableSelect } from '../ui/SearchableSelect'
+import { apiFetch } from '../../utils/api'
 
 interface ShiftFormModalProps {
   editShift?: Shift | null
@@ -48,7 +49,7 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
-    fetch('/api/users?role=cashier')
+    apiFetch('/api/users?role=cashier')
       .then(r => (r.ok ? r.json() : null))
       .then((json: any) => {
         if (json?.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -94,13 +95,13 @@ export const ShiftFormModal = ({ editShift, onClose, onSaved }: ShiftFormModalPr
     try {
       let res: Response
       if (isEditing && editShift) {
-        res = await fetch(`/api/shifts/${editShift.id}`, {
+        res = await apiFetch(`/api/shifts/${editShift.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
       } else {
-        res = await fetch('/api/shifts', {
+        res = await apiFetch('/api/shifts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),

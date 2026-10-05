@@ -17,6 +17,7 @@ import type { MonthlyReportData, User } from '../../types'
 import { formatRupiah, formatNumber } from '../../utils/formatters'
 import * as XLSX from 'xlsx'
 import { SearchableSelect } from '../ui/SearchableSelect'
+import { apiFetch } from '../../utils/api'
 
 interface MonthlyReportViewProps {
   currentUser?: User | null
@@ -53,7 +54,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/reports/monthly?year=${year}&month=${month}`)
+      const res = await apiFetch(`/api/reports/monthly?year=${year}&month=${month}`)
       if (!res.ok) {
         throw new Error(`Gagal mengambil laporan (${res.status})`)
       }

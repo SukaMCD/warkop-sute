@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import type { ReceiptConfig } from '../../types'
 import * as XLSX from 'xlsx'
+import { apiFetch } from '../../utils/api'
 
 interface RecentOrdersProps {
   orders: Order[]
@@ -304,7 +305,7 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
     setIsCancelling(true)
     setCancelError('')
     try {
-      const res = await fetch(`/api/orders/${orderId}/cancel`, { method: 'POST' })
+      const res = await apiFetch(`/api/orders/${orderId}/cancel`, { method: 'POST' })
       const data: any = await res.json()
       if (res.ok && data.success) {
         if (selectedOrder && selectedOrder.id === orderId) {

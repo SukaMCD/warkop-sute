@@ -184,3 +184,12 @@ export interface StockMovement {
   created_by_name: string
   created_at: string
 }
+
+export interface ProductRecipe {
+  id: string
+  product_id: string
+  material_id: string
+  material_name?: string
+  unit?: string
+  quantity_required: number
+}

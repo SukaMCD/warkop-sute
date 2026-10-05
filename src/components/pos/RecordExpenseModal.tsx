@@ -11,6 +11,7 @@ import {
 import { formatRupiah } from '../../utils/formatters'
 import type { ShiftExpense } from '../../types'
 import { NumericInput } from '../ui/NumericInput'
+import { apiFetch } from '../../utils/api'
 
 interface RecordExpenseModalProps {
   isOpen: boolean
@@ -85,7 +86,7 @@ export const RecordExpenseModal = ({
     setErrorMessage('')
 
     try {
-      const res = await fetch(`/api/shifts/${shiftId}/expenses`, {
+      const res = await apiFetch(`/api/shifts/${shiftId}/expenses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
