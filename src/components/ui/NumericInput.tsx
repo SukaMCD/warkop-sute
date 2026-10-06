@@ -177,7 +177,7 @@ export const NumericInput: React.FC<NumericInputProps> = ({
         className="w-full min-w-0 bg-transparent px-3 py-2 text-stone-900 dark:text-stone-100 font-mono font-bold text-sm focus:outline-none placeholder-stone-400 dark:placeholder-stone-600 tracking-wide"
       />
       {suffix && (
-        <span className="pr-3 text-xs font-mono text-stone-500 select-none shrink-0 max-w-[90px] truncate" title={suffix}>
+        <span className="pr-3 text-xs font-mono text-stone-500 select-none shrink-0 max-w-22.5 truncate" title={suffix}>
           {suffix}
         </span>
       )}

@@ -6,7 +6,7 @@ import {
   Clock,
   UtensilsCrossed,
   Users,
-  Lock,
+  LogOut,
   Maximize2,
   Minimize2,
   ChevronRight,
@@ -300,24 +300,27 @@ export const Sidebar = ({
                 >
                   {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
                 </button>
-                {onLogout && (
-                  <button
-                    type="button"
-                    onClick={onLogout}
-                    title="Kunci Terminal (PIN)"
-                    className="p-1.5 rounded-lg text-stone-500 hover:text-rose-600 dark:text-stone-400 dark:hover:text-rose-400 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                  >
-                    <Lock className="w-3.5 h-3.5" />
-                  </button>
-                )}
               </div>
             )}
           </div>
         )}
 
+        {/* Dedicated Prominent Logout Button (Expanded) */}
+        {!isCollapsed && onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="w-full mt-2 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100/90 text-rose-700 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 dark:text-rose-300 border border-rose-200/90 dark:border-rose-900/60 text-xs font-mono font-bold transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+            title="Keluar dari akun (Kunci Terminal)"
+          >
+            <LogOut className="w-4 h-4 stroke-[2.2]" />
+            <span>Keluar / Logout</span>
+          </button>
+        )}
+
         {/* Collapsed actions */}
         {isCollapsed && (
-          <div className="flex flex-col items-center gap-1 pt-1">
+          <div className="flex flex-col items-center gap-1.5 pt-1">
             <button
               type="button"
               onClick={toggleTheme}
@@ -338,10 +341,10 @@ export const Sidebar = ({
               <button
                 type="button"
                 onClick={onLogout}
-                title="Kunci Terminal (PIN)"
-                className="w-full py-2 flex items-center justify-center rounded-lg text-stone-500 hover:text-rose-600 dark:text-stone-400 dark:hover:text-rose-400 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
+                title="Keluar / Logout"
+                className="w-full py-2.5 flex items-center justify-center rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 dark:text-rose-400 border border-rose-200 dark:border-rose-900/70 transition-all cursor-pointer shadow-xs mt-1"
               >
-                <Lock className="w-4 h-4" />
+                <LogOut className="w-4 h-4 stroke-[2.2]" />
               </button>
             )}
           </div>

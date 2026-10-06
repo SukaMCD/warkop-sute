@@ -17,7 +17,8 @@ import {
   Check,
   Download,
   Sparkles,
-  Smartphone
+  Smartphone,
+  LogOut
 } from 'lucide-react'
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
@@ -36,6 +37,8 @@ interface HeaderProps {
 
 export const Header = ({
   activeTab,
+  currentUser,
+  onLogout,
   onToggleSidebar,
   onOpenMobileSidebar,
   isSidebarCollapsed,
@@ -321,6 +324,27 @@ export const Header = ({
               <span className="text-stone-300 dark:text-stone-700 hidden sm:inline">•</span>
               <span className="text-stone-600 dark:text-stone-400 font-sans text-[11px] hidden sm:inline">{currentDate}</span>
             </div>
+
+            {/* User Badge */}
+            {currentUser && (
+              <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-xs font-mono">
+                <span className="font-bold text-stone-900 dark:text-[#E2DFD2] truncate max-w-28">{currentUser.name}</span>
+                <span className="text-[10px] text-stone-500 uppercase font-sans">({currentUser.role})</span>
+              </div>
+            )}
+
+            {/* Quick Logout Button */}
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100/90 text-rose-700 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 dark:text-rose-300 border border-rose-200/90 dark:border-rose-900/70 text-xs font-mono font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Keluar / Kunci Terminal"
+              >
+                <LogOut className="w-3.5 h-3.5 stroke-[2.2]" />
+                <span className="hidden sm:inline">Keluar</span>
+              </button>
+            )}
           </div>
 
         </div>
