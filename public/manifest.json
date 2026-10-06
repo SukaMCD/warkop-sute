@@ -5,7 +5,7 @@
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "landscape",
   "background_color": "#1c1917",
   "theme_color": "#1c1917",
   "categories": ["business", "food", "productivity"],

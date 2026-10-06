@@ -58,6 +58,22 @@ export const applyPwaUpdate = () => {
 export const initPwa = () => {
   if (typeof window === 'undefined') return
 
+  // Lock screen orientation to landscape if supported (PWA/Standalone/Webview)
+  const tryLockLandscape = () => {
+    try {
+      if (typeof screen !== 'undefined' && 'orientation' in screen && (screen.orientation as any).lock) {
+        (screen.orientation as any).lock('landscape').catch(() => {
+          // Browsers require fullscreen or standalone mode to lock orientation
+        })
+      }
+    } catch {
+      // Ignore unsupported platforms
+    }
+  }
+
+  tryLockLandscape()
+  window.addEventListener('click', tryLockLandscape, { once: true })
+
   // 1. Listen for install prompt from browser
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault()

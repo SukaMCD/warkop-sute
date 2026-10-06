@@ -16,7 +16,8 @@ import {
   RefreshCw,
   Check,
   Download,
-  Sparkles
+  Sparkles,
+  Smartphone
 } from 'lucide-react'
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
@@ -299,6 +300,17 @@ export const Header = ({
                 <span className="hidden md:inline">Install POS</span>
               </button>
             )}
+
+            {/* Android APK Download Button */}
+            <a
+              href="/warkop-pos.apk"
+              download="warkop-pos.apk"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/70 dark:bg-stone-900 dark:hover:bg-stone-850 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95 no-underline"
+              title="Unduh paket aplikasi Android (.APK) untuk smartphone atau tablet"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
+              <span className="hidden lg:inline">Unduh APK</span>
+            </a>
 
             {/* Realtime Clock & Date */}
             <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800/80 font-mono text-xs shadow-xs">
