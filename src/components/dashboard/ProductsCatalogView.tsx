@@ -660,10 +660,10 @@ export const ProductsCatalogView = ({
                                 searchPlaceholder="Cari bahan..."
                               />
                             </div>
-                            <div className="w-full sm:w-36 shrink-0 flex items-center gap-2">
-                              <div className="flex-1">
+                            <div className="w-full sm:w-60 shrink-0 flex items-center gap-2">
+                              <div className="flex-1 min-w-0">
                                 <NumericInput
-                                  value={item.quantity_required}
+                                  value={item.quantity_required ?? 1}
                                   onChange={(val) => {
                                     const copy = [...recipeItems]
                                     copy[idx].quantity_required = val

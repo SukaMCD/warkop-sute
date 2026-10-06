@@ -51,10 +51,13 @@ export const NumericInput: React.FC<NumericInputProps> = ({
   }
 
   const [displayValue, setDisplayValue] = useState<string>(() => formatWithDots(value))
+  const [isFocused, setIsFocused] = useState(false)
 
   useEffect(() => {
-    setDisplayValue(formatWithDots(value))
-  }, [value, allowDecimals])
+    if (!isFocused) {
+      setDisplayValue(formatWithDots(value))
+    }
+  }, [value, allowDecimals, isFocused])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value
@@ -66,19 +69,23 @@ export const NumericInput: React.FC<NumericInputProps> = ({
     }
 
     if (allowDecimals) {
-      // Allow digits and single comma or dot
-      const clean = raw.replace(/[^0-9,.]/g, '').replace(/,/g, '.')
-      const num = parseFloat(clean)
-      if (isNaN(num)) {
-        setDisplayValue('')
-        onChange(0)
+      // Allow numbers, single comma or single dot
+      const clean = raw.replace(/[^0-9,.]/g, '')
+      const separators = (clean.match(/[,.]/g) || []).length
+      if (separators > 1) {
         return
       }
-      let finalNum = num
-      if (max !== undefined && finalNum > max) finalNum = max
-      if (min !== undefined && finalNum < min) finalNum = min
-      setDisplayValue(raw)
-      onChange(finalNum)
+
+      setDisplayValue(clean)
+      const normalized = clean.replace(',', '.')
+      const num = parseFloat(normalized)
+      if (!isNaN(num)) {
+        let finalNum = num
+        if (max !== undefined && finalNum > max) finalNum = max
+        onChange(finalNum)
+      } else {
+        onChange(0)
+      }
       return
     }
 
@@ -98,7 +105,6 @@ export const NumericInput: React.FC<NumericInputProps> = ({
     }
 
     if (max !== undefined && num > max) num = max
-    if (min !== undefined && num < min) num = min
 
     setDisplayValue(num.toLocaleString('id-ID'))
     onChange(num)
@@ -122,14 +128,25 @@ export const NumericInput: React.FC<NumericInputProps> = ({
     onChange(next)
   }
 
+  const handleFocus = () => {
+    setIsFocused(true)
+  }
+
   const handleBlur = () => {
-    if (displayValue === '') {
-      if (required) {
-        setDisplayValue(formatWithDots(min))
-        onChange(min)
-      }
+    setIsFocused(false)
+    let current = typeof value === 'number' ? value : 0
+    if (min !== undefined && current < min && (required || current > 0)) {
+      current = min
+      onChange(current)
+    }
+    if (max !== undefined && current > max) {
+      current = max
+      onChange(current)
+    }
+    if (displayValue === '' && required) {
+      setDisplayValue(formatWithDots(min))
+      onChange(min)
     } else {
-      const current = typeof value === 'number' ? value : 0
       setDisplayValue(formatWithDots(current))
     }
   }
@@ -141,26 +158,26 @@ export const NumericInput: React.FC<NumericInputProps> = ({
       } ${className}`}
     >
       {prefix && (
-        <span className="pl-3 pr-1 text-xs font-mono font-bold text-stone-500 dark:text-stone-400 select-none">
+        <span className="pl-3 pr-1 text-xs font-mono font-bold text-stone-500 dark:text-stone-400 select-none shrink-0">
           {prefix}
         </span>
       )}
       <input
         id={id}
-        type="tel"
+        type="text"
         inputMode={allowDecimals ? 'decimal' : 'numeric'}
-        pattern={allowDecimals ? '[0-9]*[.,]?[0-9]*' : '[0-9]*'}
         autoComplete="off"
         value={displayValue}
         onChange={handleInputChange}
+        onFocus={handleFocus}
         onBlur={handleBlur}
         placeholder={placeholder}
         required={required}
         disabled={disabled}
-        className="w-full bg-transparent px-3 py-2 text-stone-900 dark:text-stone-100 font-mono font-bold text-sm focus:outline-none placeholder-stone-400 dark:placeholder-stone-600 tracking-wide"
+        className="w-full min-w-0 bg-transparent px-3 py-2 text-stone-900 dark:text-stone-100 font-mono font-bold text-sm focus:outline-none placeholder-stone-400 dark:placeholder-stone-600 tracking-wide"
       />
       {suffix && (
-        <span className="pr-3 text-xs font-mono text-stone-500 select-none">
+        <span className="pr-3 text-xs font-mono text-stone-500 select-none shrink-0 max-w-[90px] truncate" title={suffix}>
           {suffix}
         </span>
       )}
