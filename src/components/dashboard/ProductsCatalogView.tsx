@@ -11,7 +11,7 @@ import {
   Utensils,
   UtensilsCrossed,
   Cookie,
-  Sparkles,
+  Flame,
   X,
   MoreVertical,
   Plus,
@@ -92,7 +92,7 @@ export const ProductsCatalogView = ({
     { id: 'cat_mie', label: 'Permie-an', icon: Utensils },
     { id: 'cat_nasi', label: 'Pernasi-an', icon: UtensilsCrossed },
     { id: 'cat_cemilan', label: 'Cemal-Cemil', icon: Cookie },
-    { id: 'cat_spesial', label: 'Spesial', icon: Sparkles }
+    { id: 'cat_spesial', label: 'Spesial', icon: Flame }
   ]
 
   const categoryNameMap: Record<string, string> = {
@@ -372,8 +372,36 @@ export const ProductsCatalogView = ({
             <tbody className="divide-y divide-stone-200 dark:divide-stone-800/60">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-stone-400 dark:text-stone-500">
-                    Tidak ada menu pada kategori ini.
+                  <td colSpan={8} className="py-12 text-center">
+                    <div className="max-w-xs mx-auto flex flex-col items-center justify-center space-y-2">
+                      <p className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                        {searchQuery.trim()
+                          ? `Tidak ada menu dengan kata kunci "${searchQuery}"`
+                          : `Belum ada menu di kategori ${categoryNameMap[selectedCategory] || selectedCategory}`}
+                      </p>
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                        {searchQuery.trim()
+                          ? 'Periksa ejaan atau bersihkan kata kunci pencarian.'
+                          : 'Tambahkan menu baru untuk mulai menjual di kategori ini.'}
+                      </p>
+                      {searchQuery.trim() ? (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery('')}
+                          className="mt-2 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-950 text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 text-xs font-medium transition-colors cursor-pointer"
+                        >
+                          Reset Pencarian
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleOpenCreateModal}
+                          className="mt-2 px-3.5 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+                        >
+                          + Tambah Menu Baru
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -444,7 +472,7 @@ export const ProductsCatalogView = ({
                               e.stopPropagation()
                               setActiveDropdownId(isMenuDropdownOpen ? null : p.id)
                             }}
-                            className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 ${
+                            className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-xs active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-700 dark:focus-visible:ring-[#E2DFD2] ${
                               isMenuDropdownOpen
                                 ? 'bg-stone-100 border-stone-400 text-stone-900 dark:bg-stone-800 dark:border-[#E2DFD2] dark:text-[#E2DFD2]'
                                 : 'bg-stone-50 border-stone-200 hover:bg-stone-100 hover:border-stone-300 text-stone-500 hover:text-stone-900 dark:bg-stone-950 dark:border-stone-800 dark:hover:bg-stone-850 dark:hover:border-stone-700 dark:text-stone-400 dark:hover:text-stone-100'
@@ -456,7 +484,7 @@ export const ProductsCatalogView = ({
 
                           {/* 3-Dots Dropdown Menu */}
                           {isMenuDropdownOpen && (
-                            <div className="absolute right-0 top-9 z-30 w-44 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-xl dark:shadow-2xl py-1 text-left text-xs animate-in fade-in zoom-in-95 duration-100">
+                            <div className="absolute right-0 top-9 z-30 w-44 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 shadow-lg py-1 text-left text-xs animate-in fade-in zoom-in-95 duration-100">
                               <button
                                 type="button"
                                 onClick={() => handleOpenEditModal(p)}

@@ -18,7 +18,7 @@ import {
   Utensils,
   UtensilsCrossed,
   Cookie,
-  Sparkles,
+  Flame,
   FileText,
   RotateCcw,
   PowerOff,
@@ -62,6 +62,7 @@ export const POSView = ({
   // Search & Category Filter (Default to first category: Perkopian)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('cat_kopi')
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([])
@@ -101,6 +102,22 @@ export const POSView = ({
   const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(null)
   const [tempNoteText, setTempNoteText] = useState('')
 
+  // Global Keyboard shortcut: '/' untuk langsung fokus cari menu
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isPaymentModalOpen || isDiscountModalOpen || isExpenseModalOpen || editingNoteIndex !== null) return
+      const target = e.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
+
+      if (e.key === '/') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isPaymentModalOpen, isDiscountModalOpen, isExpenseModalOpen, editingNoteIndex])
+
   // Authentic Categories list from Database
   const categories = [
     { id: 'cat_kopi', label: 'Perkopian', icon: Coffee },
@@ -108,7 +125,7 @@ export const POSView = ({
     { id: 'cat_mie', label: 'Permie-an', icon: Utensils },
     { id: 'cat_nasi', label: 'Pernasi-an', icon: UtensilsCrossed },
     { id: 'cat_cemilan', label: 'Cemal-Cemil', icon: Cookie },
-    { id: 'cat_spesial', label: 'Spesial', icon: Sparkles }
+    { id: 'cat_spesial', label: 'Spesial', icon: Flame }
   ]
 
   // Category name mapping for card badge
@@ -480,20 +497,25 @@ export const POSView = ({
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Cari menu warkop (misal: kopi, indomie, nutrisari)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl pl-10 pr-9 py-2.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2] transition-colors"
+                className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl pl-10 pr-12 py-2.5 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2] transition-colors"
               />
-              {searchQuery && (
+              {searchQuery ? (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
+              ) : (
+                <kbd className="hidden sm:inline-block absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-[10px] font-mono text-stone-400 border border-stone-200 dark:border-stone-800 rounded bg-stone-50 dark:bg-stone-900 pointer-events-none" title="Tekan / untuk fokus pencarian">
+                  /
+                </kbd>
               )}
             </div>
 
@@ -592,9 +614,34 @@ export const POSView = ({
         {/* Product Cards Grid */}
         <div className="flex-1 overflow-y-auto p-4">
           {filteredProducts.length === 0 ? (
-            <div className="h-64 flex flex-col items-center justify-center text-center">
-              <p className="text-sm font-medium text-stone-800 dark:text-stone-300">Menu tidak ditemukan</p>
-              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Coba kata kunci lain atau pilih tab kategori lain</p>
+            <div className="h-64 flex flex-col items-center justify-center text-center space-y-2 p-6">
+              <p className="text-sm font-semibold text-stone-800 dark:text-stone-300">
+                {searchQuery.trim()
+                  ? `Menu "${searchQuery}" tidak ditemukan`
+                  : `Kategori ${categoryNameMap[selectedCategory] || selectedCategory} belum ada menu`}
+              </p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 max-w-sm">
+                {searchQuery.trim()
+                  ? 'Periksa kembali ejaan nama menu atau bersihkan kotak pencarian untuk melihat semua menu.'
+                  : 'Pilih tab kategori lain di atas untuk menambahkan pesanan pelanggan.'}
+              </p>
+              {searchQuery.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="mt-2 px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 font-bold text-xs transition-all cursor-pointer shadow-xs active:scale-95"
+                >
+                  Bersihkan Pencarian
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory('cat_kopi')}
+                  className="mt-2 px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200/80 dark:bg-stone-900 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-200 font-semibold text-xs transition-all cursor-pointer shadow-xs active:scale-95"
+                >
+                  Kembali ke Perkopian
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -666,7 +713,7 @@ export const POSView = ({
       </div>
 
       {/* RIGHT SECTION: Cart & Billing */}
-      <div className="w-full md:w-87.5 lg:w-97.5 xl:w-105 bg-[#FAF8F5] dark:bg-stone-900/95 border-t md:border-t-0 md:border-l border-stone-200 dark:border-stone-800 flex flex-col h-100 md:h-full shrink-0 shadow-lg dark:shadow-2xl">
+      <div className="w-full md:w-87.5 lg:w-97.5 xl:w-105 bg-[#FAF8F5] dark:bg-stone-900/95 border-t md:border-t-0 md:border-l border-stone-200 dark:border-stone-800 flex flex-col h-100 md:h-full shrink-0 shadow-lg dark:shadow-xl">
         
         {/* Cart Header */}
         <div className="p-4 border-b border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-900/80 space-y-3 shrink-0">
@@ -1036,7 +1083,7 @@ export const POSView = ({
                 {/* VIEW 1: QRIS STATIS (Large, Scannable & Clear) */}
                 {paymentMethod === 'qris' && (
                   <div className="flex flex-col items-center text-center space-y-4 py-2 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="w-72 h-72 sm:w-80 sm:h-80 bg-white p-4 rounded-3xl shadow-xl border-2 border-stone-200 dark:border-stone-400/80 flex items-center justify-center">
+                    <div className="w-72 h-72 sm:w-80 sm:h-80 bg-white p-4 rounded-2xl shadow-md border-2 border-stone-200 dark:border-stone-700 flex items-center justify-center">
                       <img
                         src="/images/qris-clean.png"
                         alt="QRIS Warkop Sudut Temu"
@@ -1417,7 +1464,7 @@ export const POSView = ({
       {/* MODAL 2: Note Editor Modal */}
       {editingNoteIndex !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
-          <div className="w-full max-w-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-2xl space-y-4">
+          <div className="w-full max-w-xs bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-lg space-y-4">
             <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100">
               Catatan Pesanan: {cart[editingNoteIndex]?.product.name}
             </h4>

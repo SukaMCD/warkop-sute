@@ -141,6 +141,19 @@ export interface MonthlyTopProduct {
   revenue: number
 }
 
+export type OverheadCategory = 'rent' | 'electricity' | 'water' | 'internet' | 'salary' | 'maintenance' | 'other'
+
+export interface OverheadExpense {
+  id: string
+  category: OverheadCategory
+  amount: number
+  description?: string
+  paid_date: string
+  payment_source: 'cash_drawer' | 'owner_funds' | 'bank_transfer'
+  recorded_by?: string
+  created_at?: string
+}
+
 export interface MonthlyReportData {
   year: number
   month: number
@@ -155,6 +168,9 @@ export interface MonthlyReportData {
   netProfit: number
   dailyBreakdown: DailyBreakdownItem[]
   topProducts: MonthlyTopProduct[]
+  overheadExpenses?: OverheadExpense[]
+  totalOverhead?: number
+  totalShiftExpenses?: number
 }
 
 export interface RawMaterial {

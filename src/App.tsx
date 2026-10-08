@@ -21,12 +21,45 @@ import type { Product, Order, Shift, User, ShiftExpense, DailySalesMetric, Recei
 import { DEFAULT_RECEIPT_CONFIG, loadReceiptConfig } from './utils/receiptConfig'
 import { type TabType, TAB_TO_PATH, getTabFromPath } from './utils/navigation'
 import { apiFetch } from './utils/api'
+import { OverheadExpenseModal } from './components/dashboard/OverheadExpenseModal'
 import {
-  mockProducts,
-  mockWeeklySales,
-  mockCurrentShift,
-  mockRecentOrders
+  mockProducts
 } from './data/mockData'
+
+// Shift awal berstatus closed untuk mencegah kedipan tombol merah 'Akhiri Shift'
+const initialEmptyShift: Shift = {
+  id: '',
+  cashier_id: '',
+  cashier_name: 'Belum Ada Shift',
+  start_time: '',
+  initial_cash: 0,
+  total_cash_sales: 0,
+  total_qris_sales: 0,
+  total_expenses: 0,
+  total_incomes: 0,
+  status: 'closed',
+  notes: ''
+}
+
+// Generate 7 hari terakhir dengan nilai awal 0 untuk mencegah kedipan mock data palsu
+const getInitialEmptyWeeklySales = (): DailySalesMetric[] => {
+  const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
+  const days: DailySalesMetric[] = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const dateStr = d.toISOString().split('T')[0]
+    days.push({
+      date: dateStr,
+      day_name: dayNames[d.getDay()],
+      revenue: 0,
+      transactions: 0,
+      cash_amount: 0,
+      qris_amount: 0
+    })
+  }
+  return days
+}
 
 export function App() {
   // Authentication & Lockscreen state
@@ -90,11 +123,11 @@ export function App() {
   // Custom Receipt Configuration
   const [receiptConfig, setReceiptConfig] = useState<ReceiptConfig>(DEFAULT_RECEIPT_CONFIG)
   
-  // Live state from backend
+  // Live state from backend (Inisialisasi bersih tanpa data dummy palsu)
   const [products, setProducts] = useState<Product[]>(mockProducts)
-  const [orders, setOrders] = useState<Order[]>(mockRecentOrders)
-  const [currentShift, setCurrentShift] = useState<Shift>(mockCurrentShift)
-  const [weeklySales, setWeeklySales] = useState<DailySalesMetric[]>(mockWeeklySales)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [currentShift, setCurrentShift] = useState<Shift>(initialEmptyShift)
+  const [weeklySales, setWeeklySales] = useState<DailySalesMetric[]>(getInitialEmptyWeeklySales)
   const [bestSellers, setBestSellers] = useState<Product[]>([])
 
   // Sidebar Layout State
@@ -122,13 +155,14 @@ export function App() {
   const [isCloseShiftModalOpen, setIsCloseShiftModalOpen] = useState<boolean>(false)
   const [isHandoverModalOpen, setIsHandoverModalOpen] = useState<boolean>(false)
   const [isHandoverTransition, setIsHandoverTransition] = useState<boolean>(false)
+  const [isGlobalOverheadModalOpen, setIsGlobalOverheadModalOpen] = useState<boolean>(false)
 
-  // High-level metrics
-  const [revenueToday, setRevenueToday] = useState<number>(mockWeeklySales[mockWeeklySales.length - 1].revenue)
-  const [transactionsToday, setTransactionsToday] = useState<number>(mockWeeklySales[mockWeeklySales.length - 1].transactions)
-  const [cashAmount, setCashAmount] = useState<number>(mockWeeklySales[mockWeeklySales.length - 1].cash_amount)
-  const [qrisAmount, setQrisAmount] = useState<number>(mockWeeklySales[mockWeeklySales.length - 1].qris_amount)
-  const [estimatedProfit, setEstimatedProfit] = useState<number>(Math.round(revenueToday * 0.51))
+  // High-level metrics (Awal 0 sebelum data live D1 tiba)
+  const [revenueToday, setRevenueToday] = useState<number>(0)
+  const [transactionsToday, setTransactionsToday] = useState<number>(0)
+  const [cashAmount, setCashAmount] = useState<number>(0)
+  const [qrisAmount, setQrisAmount] = useState<number>(0)
+  const [estimatedProfit, setEstimatedProfit] = useState<number>(0)
 
   // Handle Login / Unlock
   const handleLoginSuccess = async (user: User) => {
@@ -203,11 +237,13 @@ export function App() {
   const handleShiftStarted = (newShift: Shift) => {
     setCurrentShift(newShift)
     setIsStartShiftModalOpen(false)
+    void fetchD1Data()
   }
 
   const handleShiftClosed = (closedShift: Shift) => {
     setCurrentShift(closedShift)
     setIsCloseShiftModalOpen(false)
+    void fetchD1Data()
 
     if (isHandoverTransition) {
       // Alur serah terima: setelah shift kasir lama ditutup, langsung buka modal shift baru untuk kasir baru
@@ -248,6 +284,8 @@ export function App() {
         total_qris_sales: (prev.total_qris_sales || 0) + newOrder.total_amount
       }))
     }
+    // Sinkronisasi data D1 (weekly sales, best sellers, stats) secara live
+    void fetchD1Data()
   }
 
   // Handle cancelled order
@@ -382,26 +420,39 @@ export function App() {
   useEffect(() => {
     void fetchD1Data()
 
-    // Sync otomatis saat tablet kasir disentuh/aktif kembali (window focus)
-    const handleFocus = () => {
-      loadReceiptConfig().then(cfg => {
-        if (cfg) setReceiptConfig(cfg)
-      })
+    // Sync otomatis saat kasir/owner kembali ke tab atau layar aktif
+    const handleSync = () => {
+      if (document.visibilityState === 'visible') {
+        void fetchD1Data()
+        loadReceiptConfig().then(cfg => {
+          if (cfg) setReceiptConfig(cfg)
+        })
+      }
     }
-    window.addEventListener('focus', handleFocus)
 
-    // Sync berkala setiap 60 detik di latar belakang
+    window.addEventListener('focus', handleSync)
+    document.addEventListener('visibilitychange', handleSync)
+
+    // Realtime polling otomatis setiap 8 detik agar dashboard & kasir selalu live tanpa manual refresh
     const pollInterval = window.setInterval(() => {
-      loadReceiptConfig().then(cfg => {
-        if (cfg) setReceiptConfig(cfg)
-      })
-    }, 60000)
+      if (document.visibilityState === 'visible') {
+        void fetchD1Data()
+      }
+    }, 8000)
 
     return () => {
-      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('focus', handleSync)
+      document.removeEventListener('visibilitychange', handleSync)
       window.clearInterval(pollInterval)
     }
   }, [])
+
+  // Auto-refresh data saat user berpindah menu navigasi
+  useEffect(() => {
+    if (currentUser && !isLocked) {
+      void fetchD1Data()
+    }
+  }, [effectiveTab])
 
   // If not logged in or screen is locked, display PIN Lockscreen / Login Page
   if (!currentUser || isLocked) {
@@ -435,6 +486,7 @@ export function App() {
           onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
           isSidebarCollapsed={isSidebarCollapsed}
           onOrdersSynced={fetchD1Data}
+          onOpenOverheadExpense={() => setIsGlobalOverheadModalOpen(true)}
         />
 
         {/* Content Body */}
@@ -476,6 +528,8 @@ export function App() {
                         orders={orders}
                         receiptConfig={receiptConfig}
                         onOrderCancelled={handleOrderCancelled}
+                        isDashboardWidget={true}
+                        onViewAll={() => setActiveTab('orders')}
                       />
                     </div>
 
@@ -583,6 +637,13 @@ export function App() {
           isHandover={isHandoverTransition}
         />
       )}
+
+      {/* Modal Global Catat Beban Overhead (Owner) */}
+      <OverheadExpenseModal
+        isOpen={isGlobalOverheadModalOpen}
+        onClose={() => setIsGlobalOverheadModalOpen(false)}
+        onSuccess={() => fetchD1Data()}
+      />
 
     </div>
   )

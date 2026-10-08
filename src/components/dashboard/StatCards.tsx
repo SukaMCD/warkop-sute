@@ -1,4 +1,4 @@
-import { Wallet, QrCode, ShoppingBag, Coins, ArrowUpRight } from 'lucide-react'
+import { Wallet, QrCode, ShoppingBag, Coins } from 'lucide-react'
 import { formatRupiah, formatNumber } from '../../utils/formatters'
 
 interface StatCardsProps {
@@ -19,7 +19,7 @@ export const StatCards = ({
 }: StatCardsProps) => {
   const averageTicket = transactionsToday > 0 ? Math.round(revenueToday / transactionsToday) : 0
   const cashPercent = revenueToday > 0 ? Math.round((cashAmount / revenueToday) * 100) : 0
-  const qrisPercent = 100 - cashPercent
+  const qrisPercent = revenueToday > 0 ? 100 - cashPercent : 0
   const totalDrawerCash = initialCash + cashAmount
 
   return (
@@ -39,10 +39,9 @@ export const StatCards = ({
           </span>
         </div>
         <div className="mt-2.5 pt-2.5 border-t border-stone-200 dark:border-stone-800/60 flex items-center justify-between text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Total omzet hari ini</span>
-          <span className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 font-mono text-[11px] font-medium">
-            <ArrowUpRight className="w-3 h-3" />
-            +11.2%
+          <span className="text-stone-500 dark:text-stone-400">Total omzet tercatat</span>
+          <span className="font-mono tabular-nums text-stone-700 dark:text-stone-300 font-medium text-[11px]">
+            {transactionsToday} transaksi selesai
           </span>
         </div>
       </div>
@@ -73,20 +72,38 @@ export const StatCards = ({
       <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 hover:border-stone-300 dark:hover:border-stone-700/80 rounded-2xl p-4 transition-all shadow-xs">
         <div className="flex items-center justify-between text-stone-500 dark:text-stone-400 mb-2">
           <span className="text-xs font-medium tracking-wide uppercase">Metode Bayar</span>
-          <div className="w-8 h-8 rounded-xl bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-800 dark:text-[#E2DFD2] shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-stone-700 dark:text-stone-300 shadow-xs">
             <QrCode className="w-4 h-4 stroke-2" />
           </div>
         </div>
         
-        {/* Breakdown bar using amber and cyan */}
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <div className="h-2 rounded-xs bg-amber-600 dark:bg-[#E2DFD2] transition-all" style={{ width: `${cashPercent}%` }} />
-          <div className="h-2 rounded-xs bg-cyan-600 transition-all" style={{ width: `${qrisPercent}%` }} />
+        {/* Breakdown bar: Minimalist Monochrome (Tunai = Charcoal, QRIS = Sand/Taupe) */}
+        <div className="flex items-center gap-1.5 mb-1.5 h-2 rounded-xs overflow-hidden bg-stone-100 dark:bg-stone-800/60">
+          {revenueToday > 0 ? (
+            <>
+              {cashPercent > 0 && (
+                <div 
+                  className="h-full bg-stone-800 dark:bg-stone-200 transition-all duration-300" 
+                  style={{ width: `${cashPercent}%` }} 
+                  title={`Tunai: ${cashPercent}%`}
+                />
+              )}
+              {qrisPercent > 0 && (
+                <div 
+                  className="h-full bg-stone-400 dark:bg-stone-500 transition-all duration-300" 
+                  style={{ width: `${qrisPercent}%` }} 
+                  title={`QRIS: ${qrisPercent}%`}
+                />
+              )}
+            </>
+          ) : (
+            <div className="h-full w-full bg-stone-200/70 dark:bg-stone-800/60" title="Belum ada transaksi hari ini" />
+          )}
         </div>
 
         <div className="mt-2.5 pt-2 border-t border-stone-200 dark:border-stone-800/60 flex items-center justify-between text-xs">
           <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
-            <span className="w-2.5 h-2 rounded-xs bg-amber-600 dark:bg-[#E2DFD2]" />
+            <span className="w-2.5 h-2 rounded-xs bg-stone-800 dark:bg-stone-200 shrink-0" />
             <span>Tunai ({cashPercent}%)</span>
           </div>
           <span className="font-mono tabular-nums text-stone-800 dark:text-stone-200 font-medium">
@@ -95,7 +112,7 @@ export const StatCards = ({
         </div>
         <div className="flex items-center justify-between text-xs mt-1">
           <div className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300">
-            <span className="w-2.5 h-2 rounded-xs bg-cyan-600" />
+            <span className="w-2.5 h-2 rounded-xs bg-stone-400 dark:bg-stone-500 shrink-0" />
             <span>QRIS ({qrisPercent}%)</span>
           </div>
           <span className="font-mono tabular-nums text-stone-800 dark:text-stone-200 font-medium">

@@ -18,7 +18,8 @@ import {
   Download,
   Sparkles,
   Smartphone,
-  LogOut
+  LogOut,
+  Plus
 } from 'lucide-react'
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
@@ -33,6 +34,7 @@ interface HeaderProps {
   onOpenMobileSidebar?: () => void
   isSidebarCollapsed?: boolean
   onOrdersSynced?: () => void
+  onOpenOverheadExpense?: () => void
 }
 
 export const Header = ({
@@ -42,7 +44,8 @@ export const Header = ({
   onToggleSidebar,
   onOpenMobileSidebar,
   isSidebarCollapsed,
-  onOrdersSynced
+  onOrdersSynced,
+  onOpenOverheadExpense
 }: HeaderProps) => {
 
   const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true)
@@ -301,6 +304,19 @@ export const Header = ({
               >
                 <Download className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
                 <span className="hidden md:inline">Install POS</span>
+              </button>
+            )}
+
+            {/* Catat Beban Overhead (Owner Only) */}
+            {currentUser?.role === 'owner' && onOpenOverheadExpense && (
+              <button
+                type="button"
+                onClick={onOpenOverheadExpense}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-850 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c4] dark:text-stone-950 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+                title="Catat beban operasional toko (sewa, listrik, air, wifi, gaji, servis)"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span className="hidden sm:inline">Catat Beban</span>
               </button>
             )}
 

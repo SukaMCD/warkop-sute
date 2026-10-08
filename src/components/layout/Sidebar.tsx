@@ -192,7 +192,8 @@ export const Sidebar = ({
                     type="button"
                     onClick={() => handleNavClick(item.id)}
                     title={isCollapsed ? item.label : undefined}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer group ${
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 dark:focus-visible:ring-[#E2DFD2] ${
                       isActive
                         ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
                         : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-stone-900/80'
@@ -233,7 +234,8 @@ export const Sidebar = ({
                       type="button"
                       onClick={() => handleNavClick(item.id)}
                       title={isCollapsed ? item.label : undefined}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer group ${
+                      aria-current={isActive ? 'page' : undefined}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 dark:focus-visible:ring-[#E2DFD2] ${
                         isActive
                           ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
                           : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-stone-900/80'
@@ -314,7 +316,7 @@ export const Sidebar = ({
             title="Keluar dari akun (Kunci Terminal)"
           >
             <LogOut className="w-4 h-4 stroke-[2.2]" />
-            <span>Keluar / Logout</span>
+            <span>Keluar</span>
           </button>
         )}
 
@@ -341,7 +343,7 @@ export const Sidebar = ({
               <button
                 type="button"
                 onClick={onLogout}
-                title="Keluar / Logout"
+                title="Keluar"
                 className="w-full py-2.5 flex items-center justify-center rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 dark:text-rose-400 border border-rose-200 dark:border-rose-900/70 transition-all cursor-pointer shadow-xs mt-1"
               >
                 <LogOut className="w-4 h-4 stroke-[2.2]" />

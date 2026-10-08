@@ -367,13 +367,13 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                 type="button"
                 onClick={() => handleNumberClick(num)}
                 disabled={isSubmitting}
-                className="h-14 sm:h-16 rounded-xl bg-white hover:bg-stone-50 active:bg-stone-100 dark:bg-stone-950 dark:hover:bg-stone-850 dark:active:bg-stone-800 active:scale-[0.97] border border-stone-200 hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700 transition-all flex flex-col items-center justify-center cursor-pointer shadow-xs group"
+                className="h-14 sm:h-16 rounded-xl bg-white hover:bg-stone-100 active:bg-stone-200 dark:bg-stone-900/90 dark:hover:bg-stone-800 dark:active:bg-stone-700 active:scale-[0.97] border border-stone-200 hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700 transition-all flex flex-col items-center justify-center cursor-pointer shadow-xs group"
               >
-                <span className="font-mono text-xl sm:text-2xl font-bold text-stone-900 group-hover:text-stone-950 dark:text-stone-100 dark:group-hover:text-white leading-none">
+                <span className="font-mono text-xl sm:text-2xl font-bold text-stone-900 group-hover:text-stone-950 dark:text-stone-100 dark:group-hover:text-[#E2DFD2] leading-none">
                   {num}
                 </span>
                 {letters ? (
-                  <span className="font-mono text-[10px] text-stone-400 group-hover:text-stone-600 dark:text-stone-500 dark:group-hover:text-stone-400 tracking-widest mt-1">
+                  <span className="font-mono text-[10px] text-stone-400 group-hover:text-stone-600 dark:text-stone-500 dark:group-hover:text-stone-300 tracking-widest mt-1">
                     {letters}
                   </span>
                 ) : (
@@ -387,7 +387,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
               type="button"
               onClick={handleClear}
               disabled={isSubmitting || pin.length === 0}
-              className="h-14 sm:h-16 rounded-xl bg-white/80 hover:bg-stone-50 dark:bg-stone-950/80 dark:hover:bg-stone-850 active:scale-[0.97] border border-stone-200 hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700 text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-all flex flex-col items-center justify-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shadow-xs"
+              className="h-14 sm:h-16 rounded-xl bg-white/80 hover:bg-stone-100 active:bg-stone-200 dark:bg-stone-900/80 dark:hover:bg-stone-800 dark:active:bg-stone-700 active:scale-[0.97] border border-stone-200 hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700 text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-all flex flex-col items-center justify-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shadow-xs"
               title="Reset PIN"
             >
               <RotateCcw className="w-5 h-5 mb-0.5" />
@@ -401,12 +401,12 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
               type="button"
               onClick={() => handleNumberClick('0')}
               disabled={isSubmitting}
-              className="h-14 sm:h-16 rounded-xl bg-white hover:bg-stone-50 active:bg-stone-100 dark:bg-stone-950 dark:hover:bg-stone-850 dark:active:bg-stone-800 active:scale-[0.97] border border-stone-200 hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700 transition-all flex flex-col items-center justify-center cursor-pointer shadow-xs group"
+              className="h-14 sm:h-16 rounded-xl bg-white hover:bg-stone-100 active:bg-stone-200 dark:bg-stone-900/90 dark:hover:bg-stone-800 dark:active:bg-stone-700 active:scale-[0.97] border border-stone-200 hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700 transition-all flex flex-col items-center justify-center cursor-pointer shadow-xs group"
             >
-              <span className="font-mono text-xl sm:text-2xl font-bold text-stone-900 group-hover:text-stone-950 dark:text-stone-100 dark:group-hover:text-white leading-none">
+              <span className="font-mono text-xl sm:text-2xl font-bold text-stone-900 group-hover:text-stone-950 dark:text-stone-100 dark:group-hover:text-[#E2DFD2] leading-none">
                 0
               </span>
-              <span className="font-mono text-[10px] text-stone-400 group-hover:text-stone-600 dark:text-stone-500 tracking-widest mt-1">
+              <span className="font-mono text-[10px] text-stone-400 group-hover:text-stone-600 dark:text-stone-500 dark:group-hover:text-stone-300 tracking-widest mt-1">
                 OPER
               </span>
             </button>
@@ -416,7 +416,7 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
               type="button"
               onClick={handleDelete}
               disabled={isSubmitting || pin.length === 0}
-              className="h-14 sm:h-16 rounded-xl bg-white/80 hover:bg-stone-50 dark:bg-stone-950/80 dark:hover:bg-stone-850 active:scale-[0.97] border border-stone-200 hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700 text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-all flex flex-col items-center justify-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shadow-xs"
+              className="h-14 sm:h-16 rounded-xl bg-white/80 hover:bg-stone-100 active:bg-stone-200 dark:bg-stone-900/80 dark:hover:bg-stone-800 dark:active:bg-stone-700 active:scale-[0.97] border border-stone-200 hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700 text-stone-500 hover:text-stone-800 dark:text-stone-400 dark:hover:text-stone-200 transition-all flex flex-col items-center justify-center cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shadow-xs"
               title="Hapus Satu Angka"
             >
               <Delete className="w-5 h-5 mb-0.5" />

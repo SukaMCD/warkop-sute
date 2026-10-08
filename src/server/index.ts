@@ -792,6 +792,115 @@ app.post('/api/shifts/:id/expenses', authMiddleware, async (c) => {
   })
 })
 
+// Overhead Expenses API (Beban Operasional Tetap Toko - Sewa, Listrik, Air, Wifi, Gaji, dll)
+app.get('/api/expenses/overhead', authMiddleware, async (c) => {
+  const yearQuery = c.req.query('year')
+  const monthQuery = c.req.query('month')
+
+  if (c.env?.DB) {
+    try {
+      let query = `
+        SELECT id, category, amount, description, paid_date, payment_source, recorded_by, created_at
+        FROM overhead_expenses
+      `
+      const params: any[] = []
+      if (yearQuery && monthQuery) {
+        const paddedMonth = String(monthQuery).padStart(2, '0')
+        query += ` WHERE strftime('%Y-%m', paid_date) = ?`
+        params.push(`${yearQuery}-${paddedMonth}`)
+      } else if (yearQuery) {
+        query += ` WHERE strftime('%Y', paid_date) = ?`
+        params.push(String(yearQuery))
+      }
+      query += ` ORDER BY paid_date DESC, created_at DESC`
+
+      const stmt = c.env.DB.prepare(query)
+      const { results } = params.length > 0 ? await stmt.bind(...params).all() : await stmt.all()
+      return c.json({ success: true, data: results || [] })
+    } catch (err: any) {
+      console.error('Error fetching overhead expenses:', err)
+      return c.json({ success: false, message: err.message || 'Gagal mengambil data beban operasional' }, 500)
+    }
+  }
+
+  return c.json({ success: true, data: [] })
+})
+
+app.post('/api/expenses/overhead', authMiddleware, requireOwner, async (c) => {
+  try {
+    const user = c.get('user')
+    const body = await c.req.json()
+    const { category, amount, description, paid_date, payment_source } = body
+
+    const numAmount = Number(amount)
+    if (!category || !numAmount || numAmount <= 0) {
+      return c.json({ success: false, message: 'Kategori dan nominal beban harus diisi dengan benar' }, 400)
+    }
+
+    const validCategories = ['rent', 'electricity', 'water', 'internet', 'salary', 'maintenance', 'other']
+    if (!validCategories.includes(category)) {
+      return c.json({ success: false, message: 'Kategori beban operasional tidak valid' }, 400)
+    }
+
+    const validSources = ['cash_drawer', 'owner_funds', 'bank_transfer']
+    const safeSource = validSources.includes(payment_source) ? payment_source : 'owner_funds'
+    const safePaidDate = paid_date || new Date().toISOString().slice(0, 10)
+    const id = `ovh_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
+    const recordedBy = user?.name || user?.username || 'Owner'
+
+    const defaultCategoryLabels: Record<string, string> = {
+      rent: 'Sewa Ruko / Tempat',
+      electricity: 'Listrik PLN',
+      water: 'Air PDAM & Galon',
+      internet: 'WiFi & Internet',
+      salary: 'Gaji / Upah Karyawan',
+      maintenance: 'Servis & Perbaikan',
+      other: 'Operasional Lainnya'
+    }
+    const safeDescription = description?.trim() || defaultCategoryLabels[category] || 'Beban Operasional'
+
+    if (c.env?.DB) {
+      await c.env.DB.prepare(`
+        INSERT INTO overhead_expenses (id, category, amount, description, paid_date, payment_source, recorded_by, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))
+      `).bind(id, category, numAmount, safeDescription, safePaidDate, safeSource, recordedBy).run()
+
+      const created: any = await c.env.DB.prepare('SELECT * FROM overhead_expenses WHERE id = ?').bind(id).first()
+      return c.json({ success: true, data: created })
+    }
+
+    return c.json({
+      success: true,
+      data: {
+        id,
+        category,
+        amount: numAmount,
+        description: safeDescription,
+        paid_date: safePaidDate,
+        payment_source: safeSource,
+        recorded_by: recordedBy,
+        created_at: new Date().toISOString()
+      }
+    })
+  } catch (err: any) {
+    console.error('Error creating overhead expense:', err)
+    return c.json({ success: false, message: err.message || 'Gagal mencatat beban operasional' }, 500)
+  }
+})
+
+app.delete('/api/expenses/overhead/:id', authMiddleware, requireOwner, async (c) => {
+  const id = c.req.param('id')
+  if (c.env?.DB) {
+    try {
+      await c.env.DB.prepare('DELETE FROM overhead_expenses WHERE id = ?').bind(id).run()
+      return c.json({ success: true, message: 'Beban operasional berhasil dihapus' })
+    } catch (err: any) {
+      return c.json({ success: false, message: err.message || 'Gagal menghapus data' }, 500)
+    }
+  }
+  return c.json({ success: true, message: 'Deleted (mock)' })
+})
+
 // Create Shift (Manual — by Owner Only)
 app.post('/api/shifts', authMiddleware, requireOwner, async (c) => {
   try {
@@ -1180,13 +1289,27 @@ app.get('/api/reports/monthly', async (c) => {
         costMap.set(oc.order_id, Number(oc.cost) || 0)
       }
 
-      // 2. Get all shift expenses in this month
+      // 2. Get all shift expenses in this month (exclude cash-in / kas masuk)
       const { results: expenses } = await c.env.DB.prepare(`
         SELECT id, amount, description, created_at
         FROM shift_expenses
-        WHERE strftime('%Y-%m', created_at) = ?
+        WHERE strftime('%Y-%m', created_at) = ? AND description NOT LIKE '[Kas Masuk]%'
         ORDER BY created_at ASC
       `).bind(monthYearKey).all()
+
+      // 2b. Get all overhead expenses in this month (sewa, listrik, air, wifi, gaji, dll)
+      let overheadList: any[] = []
+      try {
+        const { results: overheadRes } = await c.env.DB.prepare(`
+          SELECT id, category, amount, description, paid_date, payment_source, recorded_by, created_at
+          FROM overhead_expenses
+          WHERE strftime('%Y-%m', paid_date) = ?
+          ORDER BY paid_date ASC, created_at ASC
+        `).bind(monthYearKey).all()
+        overheadList = overheadRes || []
+      } catch (errOverhead) {
+        console.warn('Could not query overhead_expenses:', errOverhead)
+      }
 
       // 3. Top selling products in this month
       const { results: topProducts } = await c.env.DB.prepare(`
@@ -1212,7 +1335,8 @@ app.get('/api/reports/monthly', async (c) => {
       let totalCash = 0
       let totalQris = 0
       let totalCost = 0
-      let totalExpenses = 0
+      let totalShiftExpenses = 0
+      let totalOverhead = 0
 
       // Map daily breakdown
       const dailyMap: Record<number, { transactions: number; cash: number; qris: number; revenue: number; cost: number; expenses: number }> = {}
@@ -1254,12 +1378,25 @@ app.get('/api/reports/monthly', async (c) => {
         const dObj = new Date(exp.created_at)
         const dayNum = dObj.getDate()
         const expAmount = Number(exp.amount) || 0
-        totalExpenses += expAmount
+        totalShiftExpenses += expAmount
         if (dailyMap[dayNum]) {
           dailyMap[dayNum].expenses += expAmount
         }
       }
 
+      for (const ov of overheadList) {
+        const ovAmount = Number(ov.amount) || 0
+        totalOverhead += ovAmount
+        if (ov.paid_date) {
+          const parts = ov.paid_date.split('-')
+          const dayNum = parseInt(parts[2], 10)
+          if (dayNum && dailyMap[dayNum]) {
+            dailyMap[dayNum].expenses += ovAmount
+          }
+        }
+      }
+
+      const totalExpenses = totalShiftExpenses + totalOverhead
       const grossProfit = totalRevenue - totalCost
       const netProfit = grossProfit - totalExpenses
 
@@ -1296,11 +1433,14 @@ app.get('/api/reports/monthly', async (c) => {
           totalCash,
           totalQris,
           totalExpenses,
+          totalShiftExpenses,
+          totalOverhead,
           totalCost,
           grossProfit,
           netProfit,
           dailyBreakdown,
-          topProducts: topProducts || []
+          topProducts: topProducts || [],
+          overheadExpenses: overheadList
         }
       })
     } catch (err: any) {
@@ -1365,10 +1505,13 @@ app.get('/api/reports/monthly', async (c) => {
       totalCash: mockCash,
       totalQris: mockQris,
       totalExpenses: mockExpenses,
+      totalShiftExpenses: mockExpenses,
+      totalOverhead: 0,
       totalCost: mockCost,
       grossProfit: mockGross,
       netProfit: mockNet,
       dailyBreakdown: mockDailyBreakdown,
+      overheadExpenses: [],
       topProducts: [
         { id: 'p1', name: 'Kopi Susu Gula Aren Sudut Temu', category_name: 'Signature Coffee', quantity: 245, revenue: 4410000 },
         { id: 'p2', name: 'Mie Instan Goreng Dok Dok', category_name: 'Makanan Berat', quantity: 180, revenue: 2700000 },

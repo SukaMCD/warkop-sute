@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useLayoutEffect } from 'react'
 import type { Order } from '../../types'
 import { formatRupiah } from '../../utils/formatters'
 import {
@@ -13,26 +13,142 @@ import {
   Search,
   AlertTriangle,
   Ban,
-  Filter,
   UtensilsCrossed,
-  FileSpreadsheet
+  FileSpreadsheet,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import type { ReceiptConfig } from '../../types'
 import * as XLSX from 'xlsx'
 import { apiFetch } from '../../utils/api'
 
+interface SegmentedOption<T extends string> {
+  value: T
+  label: string
+}
+
+interface SegmentedControlProps<T extends string> {
+  options: readonly SegmentedOption<T>[]
+  value: T
+  onChange: (val: T) => void
+}
+
+function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange
+}: SegmentedControlProps<T>) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number }>({ left: 4, width: 0 })
+  const [isReady, setIsReady] = useState(false)
+
+  const updatePosition = () => {
+    if (!containerRef.current) return
+    const activeBtn = containerRef.current.querySelector<HTMLButtonElement>(`[data-val="${value}"]`)
+    if (activeBtn) {
+      setIndicatorStyle({
+        left: activeBtn.offsetLeft,
+        width: activeBtn.offsetWidth
+      })
+    }
+  }
+
+  useLayoutEffect(() => {
+    updatePosition()
+    const timer = setTimeout(() => setIsReady(true), 40)
+    return () => clearTimeout(timer)
+  }, [value])
+
+  useEffect(() => {
+    window.addEventListener('resize', updatePosition)
+    return () => window.removeEventListener('resize', updatePosition)
+  }, [value])
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative flex items-center p-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl shrink-0 select-none"
+    >
+      {/* Sliding Active Pill Indicator */}
+      {indicatorStyle.width > 0 && (
+        <span
+          className={`absolute top-1 bottom-1 rounded-lg bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs pointer-events-none ${
+            isReady ? 'transition-all duration-200 ease-out' : ''
+          }`}
+          style={{
+            left: `${indicatorStyle.left}px`,
+            width: `${indicatorStyle.width}px`
+          }}
+        />
+      )}
+
+      {options.map((opt) => {
+        const isActive = opt.value === value
+        return (
+          <button
+            key={opt.value}
+            data-val={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={`relative z-10 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors duration-150 cursor-pointer ${
+              isActive
+                ? 'text-stone-50 dark:text-stone-950 font-bold'
+                : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
+            }`}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+type DateFilterType = 'all' | 'today' | 'yesterday' | '7days'
+type PaymentFilterType = 'all' | 'cash' | 'qris'
+type StatusFilterType = 'all' | 'completed' | 'cancelled'
+
+const DATE_OPTIONS: readonly SegmentedOption<DateFilterType>[] = [
+  { value: 'all', label: 'Semua' },
+  { value: 'today', label: 'Hari Ini' },
+  { value: 'yesterday', label: 'Kemarin' },
+  { value: '7days', label: '7 Hari' }
+]
+
+const PAYMENT_OPTIONS: readonly SegmentedOption<PaymentFilterType>[] = [
+  { value: 'all', label: 'Semua Bayar' },
+  { value: 'cash', label: 'Tunai' },
+  { value: 'qris', label: 'QRIS' }
+]
+
+const STATUS_OPTIONS: readonly SegmentedOption<StatusFilterType>[] = [
+  { value: 'all', label: 'Semua Status' },
+  { value: 'completed', label: 'Selesai' },
+  { value: 'cancelled', label: 'Batal' }
+]
+
 interface RecentOrdersProps {
   orders: Order[]
   receiptConfig?: ReceiptConfig
   onOrderCancelled?: (orderId: string) => void
+  isDashboardWidget?: boolean
+  onViewAll?: () => void
 }
 
-export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: RecentOrdersProps) => {
+export const RecentOrders = ({
+  orders,
+  receiptConfig,
+  onOrderCancelled,
+  isDashboardWidget = false,
+  onViewAll
+}: RecentOrdersProps) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'cash' | 'qris'>('all')
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'yesterday' | '7days'>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'completed' | 'cancelled'>('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState<number>(isDashboardWidget ? 6 : 10)
 
   // Cancel order state
   const [isCancelling, setIsCancelling] = useState(false)
@@ -99,6 +215,17 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
       return true
     })
   }, [orders, searchQuery, paymentFilter, statusFilter, dateFilter])
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, paymentFilter, statusFilter, dateFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize))
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredOrders.slice(start, start + pageSize)
+  }, [filteredOrders, currentPage, pageSize])
 
   // Export CSV
   const handleExportCSV = () => {
@@ -397,60 +524,25 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
         </div>
 
         {/* Date Filter */}
-        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl p-1 shrink-0">
-          <Calendar className="w-3.5 h-3.5 text-stone-400 ml-1.5" />
-          {(['all', 'today', 'yesterday', '7days'] as const).map((df) => (
-            <button
-              key={df}
-              type="button"
-              onClick={() => setDateFilter(df)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-                dateFilter === df
-                  ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
-              }`}
-            >
-              {df === 'all' ? 'Semua' : df === 'today' ? 'Hari Ini' : df === 'yesterday' ? 'Kemarin' : '7 Hari'}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={DATE_OPTIONS}
+          value={dateFilter}
+          onChange={(val) => setDateFilter(val)}
+        />
 
         {/* Payment Filter */}
-        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl p-1 shrink-0">
-          <Filter className="w-3.5 h-3.5 text-stone-400 ml-1.5" />
-          {(['all', 'cash', 'qris'] as const).map((pf) => (
-            <button
-              key={pf}
-              type="button"
-              onClick={() => setPaymentFilter(pf)}
-              className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-                paymentFilter === pf
-                  ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
-              }`}
-            >
-              {pf === 'all' ? 'Semua Bayar' : pf === 'cash' ? 'Tunai' : 'QRIS'}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={PAYMENT_OPTIONS}
+          value={paymentFilter}
+          onChange={(val) => setPaymentFilter(val)}
+        />
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl p-1 shrink-0">
-          {(['all', 'completed', 'cancelled'] as const).map((sf) => (
-            <button
-              key={sf}
-              type="button"
-              onClick={() => setStatusFilter(sf)}
-              className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
-                statusFilter === sf
-                  ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
-              }`}
-            >
-              {sf === 'all' ? 'Semua Status' : sf === 'completed' ? 'Selesai' : 'Batal'}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          options={STATUS_OPTIONS}
+          value={statusFilter}
+          onChange={(val) => setStatusFilter(val)}
+        />
       </div>
 
       {/* Table */}
@@ -469,14 +561,14 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100 dark:divide-stone-800/60">
-            {filteredOrders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-8 text-center text-stone-500 dark:text-stone-400">
                   Tidak ada transaksi yang sesuai dengan filter.
                 </td>
               </tr>
             ) : (
-              filteredOrders.map((order) => (
+              paginatedOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30 transition-colors group">
                   
                   {/* Order ID */}
@@ -563,6 +655,71 @@ export const RecentOrders = ({ orders, receiptConfig, onOrderCancelled }: Recent
           </tbody>
         </table>
       </div>
+
+      {/* Pagination & View All Footer */}
+      {filteredOrders.length > 0 && (
+        <div className="mt-4 pt-3.5 border-t border-stone-200 dark:border-stone-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="text-stone-500 dark:text-stone-400 font-mono text-[11px]">
+            Menampilkan <span className="font-bold text-stone-900 dark:text-stone-100">{(currentPage - 1) * pageSize + 1}</span>–<span className="font-bold text-stone-900 dark:text-stone-100">{Math.min(currentPage * pageSize, filteredOrders.length)}</span> dari <span className="font-bold text-stone-900 dark:text-stone-100">{filteredOrders.length}</span> transaksi
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isDashboardWidget && onViewAll && (
+              <button
+                type="button"
+                onClick={onViewAll}
+                className="px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 hover:border-stone-300 dark:hover:border-stone-700 text-stone-700 dark:text-stone-300 font-semibold text-[11px] transition-all cursor-pointer shadow-xs active:scale-95 mr-1"
+              >
+                Lihat Semua Transaksi ({orders.length}) →
+              </button>
+            )}
+
+            {!isDashboardWidget && (
+              <div className="flex items-center gap-1.5 mr-2 text-stone-500 dark:text-stone-400 font-mono text-[11px]">
+                <span>Baris:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value))
+                    setCurrentPage(1)
+                  }}
+                  className="bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-lg px-2 py-1 text-stone-800 dark:text-stone-200 text-xs font-mono outline-none"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+            )}
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage <= 1}
+                className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer active:scale-95"
+                title="Halaman sebelumnya"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <span className="px-2 font-mono text-[11px] text-stone-600 dark:text-stone-400">
+                {currentPage} / {totalPages}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                className="p-1.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer active:scale-95"
+                title="Halaman selanjutnya"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal Detail Transaksi & Cetak Ulang Struk */}
       {/* Modal Detail Transaksi & Cetak Ulang Struk */}

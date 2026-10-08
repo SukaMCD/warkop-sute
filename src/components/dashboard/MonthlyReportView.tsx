@@ -11,13 +11,23 @@ import {
   Award,
   Wallet,
   Layers,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Plus,
+  Trash2,
+  Building2,
+  Zap,
+  Droplets,
+  Wifi,
+  Users,
+  Wrench,
+  Package
 } from 'lucide-react'
-import type { MonthlyReportData, User } from '../../types'
+import type { MonthlyReportData, User, OverheadExpense } from '../../types'
 import { formatRupiah, formatNumber } from '../../utils/formatters'
 import * as XLSX from 'xlsx'
 import { SearchableSelect } from '../ui/SearchableSelect'
 import { apiFetch } from '../../utils/api'
+import { OverheadExpenseModal } from './OverheadExpenseModal'
 
 interface MonthlyReportViewProps {
   currentUser?: User | null
@@ -27,6 +37,27 @@ const MONTH_NAMES = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ]
+
+const OVERHEAD_CATEGORY_CONFIG: Record<string, { label: string; icon: React.ElementType }> = {
+  rent: { label: 'Sewa Ruko / Tempat', icon: Building2 },
+  electricity: { label: 'Listrik PLN', icon: Zap },
+  water: { label: 'Air PDAM & Galon', icon: Droplets },
+  internet: { label: 'WiFi & Internet', icon: Wifi },
+  salary: { label: 'Gaji / Upah Tim', icon: Users },
+  maintenance: { label: 'Servis & Perbaikan', icon: Wrench },
+  other: { label: 'Operasional Lainnya', icon: Package }
+}
+
+const getPaymentSourceText = (src: string) => {
+  switch (src) {
+    case 'cash_drawer':
+      return 'Laci Kas Toko'
+    case 'bank_transfer':
+      return 'Transfer Bank'
+    default:
+      return 'Dana Pribadi Owner'
+  }
+}
 
 export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportViewProps) => {
   const now = new Date()
@@ -40,6 +71,8 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
   const [error, setError] = useState<string | null>(null)
   const [activeSubTab, setActiveSubTab] = useState<'daily' | 'products' | 'cashflow'>('daily')
   const [showOnlyActiveDays, setShowOnlyActiveDays] = useState<boolean>(false)
+  const [isOverheadModalOpen, setIsOverheadModalOpen] = useState<boolean>(false)
+  const [deletingOverheadId, setDeletingOverheadId] = useState<string | null>(null)
 
   // Generate Year Options (e.g. currentYear - 2 to currentYear + 1)
   const yearOptions = useMemo(() => {
@@ -68,6 +101,27 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
       setError(err.message || 'Terjadi kesalahan saat memuat rekapan bulanan.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleDeleteOverhead = async (id: string, desc: string) => {
+    if (!window.confirm(`Yakin ingin menghapus catatan beban "${desc || 'Beban ini'}"?`)) {
+      return
+    }
+
+    setDeletingOverheadId(id)
+    try {
+      const res = await apiFetch(`/api/expenses/overhead/${id}`, { method: 'DELETE' })
+      const json: any = await res.json()
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Gagal menghapus beban operasional.')
+      }
+      // Refresh report
+      fetchMonthlyReport(selectedYear, selectedMonth)
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan saat menghapus.')
+    } finally {
+      setDeletingOverheadId(null)
     }
   }
 
@@ -106,7 +160,9 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
       ['Total Omzet Kotor (Gross Sales)', reportData.totalRevenue],
       ['  - Pembayaran Tunai (Laci)', reportData.totalCash],
       ['  - Pembayaran QRIS (Bank)', reportData.totalQris],
-      ['Total Pengeluaran Kas (Petty Cash)', -reportData.totalExpenses],
+      ['Total Beban Operasional Toko', -reportData.totalExpenses],
+      ['  - Pengeluaran Shift (Petty Kasir)', -(reportData.totalShiftExpenses || 0)],
+      ['  - Beban Tetap Toko (Overhead Owner)', -(reportData.totalOverhead || 0)],
       ['Total Estimasi HPP (Modal Bahan)', reportData.totalCost],
       ['Estimasi Laba Bersih (Net Profit)', reportData.netProfit],
       ['Total Pesanan / Transaksi Selesai', `${reportData.totalTransactions} transaksi`],
@@ -177,6 +233,35 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
         { wch: 20 }
       ]
       XLSX.utils.book_append_sheet(wb, wsTop, 'Menu Terlaris')
+    }
+
+    // 3. Sheet 3: Beban Overhead & Biaya Tetap
+    if (reportData.overheadExpenses && reportData.overheadExpenses.length > 0) {
+      const overheadData: any[][] = [
+        ['WARKOP SUDUT TEMU - RINCIAN BEBAN OPERASIONAL & OVERHEAD'],
+        [`Periode: ${reportData.monthName}`],
+        [],
+        ['Tanggal Bayar', 'Kategori', 'Keterangan', 'Sumber Dana', 'Dicatat Oleh', 'Nominal (Rp)'],
+        ...reportData.overheadExpenses.map(o => [
+          o.paid_date,
+          OVERHEAD_CATEGORY_CONFIG[o.category]?.label || o.category,
+          o.description || '-',
+          getPaymentSourceText(o.payment_source),
+          o.recorded_by || 'Owner',
+          o.amount
+        ]),
+        ['TOTAL BEBAN OVERHEAD', '', '', '', '', reportData.totalOverhead || 0]
+      ]
+      const wsOverhead = XLSX.utils.aoa_to_sheet(overheadData)
+      wsOverhead['!cols'] = [
+        { wch: 15 },
+        { wch: 22 },
+        { wch: 35 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 18 }
+      ]
+      XLSX.utils.book_append_sheet(wb, wsOverhead, 'Beban Overhead')
     }
 
     XLSX.writeFile(wb, `Rekap_Bulanan_SUTE_${reportData.year}_${String(reportData.month).padStart(2, '0')}.xlsx`)
@@ -297,11 +382,23 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
 
           {/* Export Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+            {(!_currentUser || _currentUser.role === 'owner') && (
+              <button
+                type="button"
+                onClick={() => setIsOverheadModalOpen(true)}
+                className="px-3.5 py-2 rounded-xl bg-stone-900 hover:bg-stone-850 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c4] dark:text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                title="Catat beban tetap operasional toko (sewa, listrik, air, wifi, gaji, servis)"
+              >
+                <Plus className="w-4 h-4 stroke-2" />
+                <span>+ Catat Beban</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={handleExportExcel}
               disabled={isLoading || !reportData || reportData.totalTransactions === 0}
-              className="px-3.5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c4] dark:text-stone-950 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-xs"
+              className="px-3.5 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white dark:bg-stone-800 dark:hover:bg-stone-700 dark:text-stone-200 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 shadow-xs border border-transparent dark:border-stone-700"
               title="Download format Spreadsheet Microsoft Excel (.xlsx) resmi tanpa peringatan"
             >
               <FileSpreadsheet className="w-4 h-4" />
@@ -460,10 +557,10 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
           </div>
         </div>
 
-        {/* Card 2: Pengeluaran Kas Operasional */}
+        {/* Card 2: Pengeluaran Kas Operasional & Beban Overhead */}
         <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
-            <span className="text-xs font-medium uppercase tracking-wider">Pengeluaran Kas / Petty</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Total Beban Operasional</span>
             <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-stone-950 border border-rose-200 dark:border-stone-800 flex items-center justify-center text-rose-600 dark:text-rose-400">
               <Wallet className="w-4 h-4 stroke-2" />
             </div>
@@ -473,13 +570,9 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               {reportData ? formatRupiah(reportData.totalExpenses) : '...'}
             </span>
           </div>
-          <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
-            <span>Operasional shift & kas kecil</span>
-            <span className="font-mono text-stone-700 dark:text-stone-300">
-              {reportData && reportData.totalRevenue > 0
-                ? `${((reportData.totalExpenses / reportData.totalRevenue) * 100).toFixed(1)}% omzet`
-                : '0%'}
-            </span>
+          <div className="pt-2 border-t border-stone-200 dark:border-stone-800/80 flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 font-mono">
+            <span>Petty: {reportData ? formatRupiah(reportData.totalShiftExpenses || 0) : '0'}</span>
+            <span>Overhead: {reportData ? formatRupiah(reportData.totalOverhead || 0) : '0'}</span>
           </div>
         </div>
 
@@ -862,10 +955,20 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
               <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
                 <div className="flex items-center gap-2">
                   <Receipt className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                  <span className="text-stone-700 dark:text-stone-300">Pengeluaran Kas / Petty Cash</span>
+                  <span className="text-stone-700 dark:text-stone-300">Pengeluaran Shift (Petty Kasir)</span>
                 </div>
                 <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
-                  {reportData ? formatRupiah(reportData.totalExpenses) : '0'}
+                  {reportData ? formatRupiah(reportData.totalShiftExpenses || 0) : '0'}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2]" />
+                  <span className="text-stone-700 dark:text-stone-300">Beban Tetap Toko (Overhead)</span>
+                </div>
+                <span className="font-mono font-bold text-amber-800 dark:text-[#E2DFD2]">
+                  {reportData ? formatRupiah(reportData.totalOverhead || 0) : '0'}
                 </span>
               </div>
 
@@ -890,8 +993,140 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
             </div>
           </div>
 
+          {/* Section: Daftar Rincian Beban Operasional / Overhead */}
+          <div className="md:col-span-2 bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-4 sm:p-5 border-b border-stone-200 dark:border-stone-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                  <span>Daftar Beban Operasional / Overhead Bulan Ini</span>
+                  <span className="text-xs font-mono text-stone-500 dark:text-stone-400 font-normal">
+                    ({reportData?.overheadExpenses?.length || 0} transaksi)
+                  </span>
+                </h3>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+                  Rincian pengeluaran sewa ruko, tagihan listrik PLN, air PAM, WiFi, gaji tim, serta perawatan mesin
+                </p>
+              </div>
+
+              {(!_currentUser || _currentUser.role === 'owner') && (
+                <button
+                  type="button"
+                  onClick={() => setIsOverheadModalOpen(true)}
+                  className="px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-850 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#d6d3c4] dark:text-stone-950 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs self-start sm:self-auto"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-2" />
+                  <span>+ Catat Beban Overhead</span>
+                </button>
+              )}
+            </div>
+
+            {reportData?.overheadExpenses && reportData.overheadExpenses.length > 0 ? (
+              <div className="divide-y divide-stone-100 dark:divide-stone-800/60 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-stone-50 dark:bg-stone-950/60 text-[11px] text-stone-500 dark:text-stone-400 font-mono uppercase tracking-wider">
+                    <tr>
+                      <th className="py-2.5 px-4">Kategori & Keterangan</th>
+                      <th className="py-2.5 px-3">Tgl Bayar</th>
+                      <th className="py-2.5 px-3">Sumber Dana</th>
+                      <th className="py-2.5 px-3">Dicatat Oleh</th>
+                      <th className="py-2.5 px-4 text-right">Nominal</th>
+                      <th className="py-2.5 px-3 text-center w-12">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 dark:divide-stone-800/50">
+                    {reportData.overheadExpenses.map((ovh: OverheadExpense) => {
+                      const catConfig = OVERHEAD_CATEGORY_CONFIG[ovh.category] || OVERHEAD_CATEGORY_CONFIG.other
+                      const CatIcon = catConfig.icon
+                      const isDeleting = deletingOverheadId === ovh.id
+
+                      return (
+                        <tr key={ovh.id} className="hover:bg-stone-50/60 dark:hover:bg-stone-850/40 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-600 dark:text-stone-300 shrink-0">
+                                <CatIcon className="w-3.5 h-3.5" />
+                              </div>
+                              <div>
+                                <span className="font-semibold text-stone-900 dark:text-stone-100">
+                                  {catConfig.label}
+                                </span>
+                                {ovh.description && (
+                                  <p className="text-[11px] text-stone-500 dark:text-stone-400 line-clamp-1">
+                                    {ovh.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3 font-mono text-stone-600 dark:text-stone-400 whitespace-nowrap">
+                            {ovh.paid_date}
+                          </td>
+                          <td className="py-3 px-3">
+                            <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-medium bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700 whitespace-nowrap">
+                              {getPaymentSourceText(ovh.payment_source)}
+                            </span>
+                          </td>
+                          <td className="py-3 px-3 text-stone-600 dark:text-stone-400">
+                            {ovh.recorded_by || 'Owner'}
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                            {formatRupiah(ovh.amount)}
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            {(!_currentUser || _currentUser.role === 'owner') && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteOverhead(ovh.id, ovh.description || catConfig.label)}
+                                disabled={isDeleting}
+                                className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-stone-800 transition-colors cursor-pointer disabled:opacity-40"
+                                title="Hapus catatan beban ini"
+                              >
+                                <Trash2 className={`w-3.5 h-3.5 ${isDeleting ? 'animate-spin' : ''}`} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="p-8 text-center space-y-3">
+                <div className="w-10 h-10 rounded-2xl bg-stone-100 dark:bg-stone-800 text-stone-400 flex items-center justify-center mx-auto">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-semibold text-stone-700 dark:text-stone-300">
+                    Belum ada beban operasional overhead bulan ini
+                  </h4>
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400 max-w-sm mx-auto mt-0.5">
+                    Catat beban seperti sewa ruko, token listrik PLN, internet, gaji kru, atau servis mesin agar laba bersih toko tercatat akurat.
+                  </p>
+                </div>
+                {(!_currentUser || _currentUser.role === 'owner') && (
+                  <button
+                    type="button"
+                    onClick={() => setIsOverheadModalOpen(true)}
+                    className="px-3.5 py-1.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-800 dark:text-stone-200 text-xs font-medium transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Catat Beban Sekarang</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
       )}
+
+      {/* Modal Catat Beban Operasional / Overhead */}
+      <OverheadExpenseModal
+        isOpen={isOverheadModalOpen}
+        onClose={() => setIsOverheadModalOpen(false)}
+        onSuccess={() => fetchMonthlyReport(selectedYear, selectedMonth)}
+      />
 
     </div>
   )

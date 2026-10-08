@@ -3,6 +3,8 @@
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
 
 @theme {
+  --color-stone-850: #221f1d;
+
   --color-amber-50: #fdfaf3;
   --color-amber-100: #f7eed8;
   --color-amber-200: #eedab2;
