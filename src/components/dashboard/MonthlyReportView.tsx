@@ -26,6 +26,7 @@ import type { MonthlyReportData, User, OverheadExpense } from '../../types'
 import { formatRupiah, formatNumber } from '../../utils/formatters'
 import * as XLSX from 'xlsx'
 import { SearchableSelect } from '../ui/SearchableSelect'
+import { InfoTooltip } from '../ui/InfoTooltip'
 import { apiFetch } from '../../utils/api'
 import { OverheadExpenseModal } from './OverheadExpenseModal'
 
@@ -579,7 +580,15 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
         {/* Card 3: Estimasi Laba Bersih */}
         <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
-            <span className="text-xs font-medium uppercase tracking-wider">Estimasi Laba Bersih</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-medium uppercase tracking-wider">Estimasi Laba Bersih</span>
+              <InfoTooltip
+                title="Estimasi Laba Bersih"
+                content="Laba Kotor Penjualan dikurangi seluruh pengeluaran kasir (petty cash) dan beban tetap (overhead) warkop."
+                placement="top"
+                align="left"
+              />
+            </div>
             <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-stone-950 border border-emerald-200 dark:border-stone-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <TrendingUp className="w-4 h-4 stroke-2" />
             </div>
@@ -966,6 +975,12 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                 <div className="flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-amber-700 dark:text-[#E2DFD2]" />
                   <span className="text-stone-700 dark:text-stone-300">Beban Tetap Toko (Overhead)</span>
+                  <InfoTooltip
+                    title="Beban Tetap (Overhead)"
+                    content="Pengeluaran operasional di luar kasir seperti sewa ruko, tagihan listrik PLN, air PAM, WiFi, dan gaji karyawan."
+                    placement="top"
+                    align="left"
+                  />
                 </div>
                 <span className="font-mono font-bold text-amber-800 dark:text-[#E2DFD2]">
                   {reportData ? formatRupiah(reportData.totalOverhead || 0) : '0'}
@@ -976,6 +991,12 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                 <div className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                   <span className="text-stone-700 dark:text-stone-300">Estimasi HPP (Modal Menu)</span>
+                  <InfoTooltip
+                    title="Estimasi HPP Menu"
+                    content="Total biaya modal bahan baku dari seluruh porsi menu yang terjual sepanjang periode ini."
+                    placement="top"
+                    align="left"
+                  />
                 </div>
                 <span className="font-mono font-bold text-stone-600 dark:text-stone-400">
                   {reportData ? formatRupiah(reportData.totalCost) : '0'}

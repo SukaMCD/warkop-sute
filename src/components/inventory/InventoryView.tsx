@@ -18,6 +18,7 @@ import { RecordMovementModal } from './RecordMovementModal'
 import { MaterialFormModal } from './MaterialFormModal'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { SearchableSelect } from '../ui/SearchableSelect'
+import { InfoTooltip } from '../ui/InfoTooltip'
 import { apiFetch } from '../../utils/api'
 
 interface InventoryViewProps {
@@ -286,7 +287,15 @@ export const InventoryView = ({ currentUser }: InventoryViewProps) => {
         {isOwner ? (
           <div className="p-4 rounded-2xl bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 shadow-xs flex items-center justify-between">
             <div>
-              <span className="text-xs text-stone-500 dark:text-stone-400 block font-mono">Estimasi Nilai Aset Stok</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-stone-500 dark:text-stone-400 block font-mono">Estimasi Nilai Aset Stok</span>
+                <InfoTooltip
+                  title="Estimasi Nilai Aset Stok"
+                  content="Total nilai rupiah dari seluruh stok bahan fisik yang ada di warkop saat ini (Stok Fisik × Harga Beli HPP)."
+                  placement="top"
+                  align="left"
+                />
+              </div>
               <span className="font-mono tabular-nums text-lg sm:text-xl font-bold text-emerald-700 dark:text-emerald-400 mt-0.5 block truncate max-w-40">
                 {formatRupiah(totalAssetValuation)}
               </span>
@@ -405,11 +414,41 @@ export const InventoryView = ({ currentUser }: InventoryViewProps) => {
                     <th className="py-3 px-3.5 font-semibold">Kategori</th>
                     <th className="py-3 px-3.5 font-semibold text-center">Status</th>
                     <th className="py-3 px-3.5 font-semibold text-right">Stok Fisik</th>
-                    <th className="py-3 px-3.5 font-semibold text-right">Batas Min</th>
+                    <th className="py-3 px-3.5 font-semibold text-right">
+                      <span className="inline-flex items-center justify-end gap-1">
+                        <span>Batas Min</span>
+                        <InfoTooltip
+                          title="Batas Minimum Stok"
+                          content="Jika stok fisik menyentuh angka ini atau lebih rendah, sistem otomatis menandai status 'Menipis' agar segera belanja ulang."
+                          placement="top"
+                          align="right"
+                        />
+                      </span>
+                    </th>
                     {isOwner && (
                       <>
-                        <th className="py-3 px-3.5 font-semibold text-right">Harga Modal</th>
-                        <th className="py-3 px-3.5 font-semibold text-right">Nilai Aset</th>
+                        <th className="py-3 px-3.5 font-semibold text-right">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            <span>Harga Modal</span>
+                            <InfoTooltip
+                              title="Harga Modal (HPP)"
+                              content="Harga beli netto per satuan bahan baku saat kulakan/belanja."
+                              placement="top"
+                              align="right"
+                            />
+                          </span>
+                        </th>
+                        <th className="py-3 px-3.5 font-semibold text-right">
+                          <span className="inline-flex items-center justify-end gap-1">
+                            <span>Nilai Aset</span>
+                            <InfoTooltip
+                              title="Nilai Aset Bahan"
+                              content="Akumulasi modal bahan ini: Stok Fisik × Harga Modal Beli (HPP)."
+                              placement="top"
+                              align="right"
+                            />
+                          </span>
+                        </th>
                       </>
                     )}
                     <th className="py-3 px-3.5 font-semibold">Supplier</th>

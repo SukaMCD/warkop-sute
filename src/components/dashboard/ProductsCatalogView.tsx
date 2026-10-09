@@ -3,6 +3,7 @@ import type { Product, RawMaterial } from '../../types'
 import { formatRupiah } from '../../utils/formatters'
 import { NumericInput } from '../ui/NumericInput'
 import { SearchableSelect } from '../ui/SearchableSelect'
+import { InfoTooltip } from '../ui/InfoTooltip'
 import { apiFetch } from '../../utils/api'
 import {
   Search,
@@ -362,8 +363,28 @@ export const ProductsCatalogView = ({
                 <th className="py-3 px-3.5 font-semibold rounded-l-lg">Nama Menu</th>
                 <th className="py-3 px-3.5 font-semibold">Kategori</th>
                 <th className="py-3 px-3.5 font-semibold text-right">Harga Jual</th>
-                <th className="py-3 px-3.5 font-semibold text-right">Modal (HPP)</th>
-                <th className="py-3 px-3.5 font-semibold text-right">Margin Laba</th>
+                <th className="py-3 px-3.5 font-semibold text-right">
+                  <span className="inline-flex items-center justify-end gap-1">
+                    <span>Modal (HPP)</span>
+                    <InfoTooltip
+                      title="Modal Menu (HPP)"
+                      content="Biaya modal bahan baku per porsi (tidak perlu ditambah biaya overhead listrik atau sewa)."
+                      placement="top"
+                      align="right"
+                    />
+                  </span>
+                </th>
+                <th className="py-3 px-3.5 font-semibold text-right">
+                  <span className="inline-flex items-center justify-end gap-1">
+                    <span>Margin Laba</span>
+                    <InfoTooltip
+                      title="Estimasi Margin Laba"
+                      content="Selisih antara Harga Jual dikurangi Modal (HPP). Persentase dihitung dari harga jual menu."
+                      placement="top"
+                      align="right"
+                    />
+                  </span>
+                </th>
                 <th className="py-3 px-3.5 font-semibold text-center">Stok</th>
                 <th className="py-3 px-3.5 font-semibold text-center">Ketersediaan</th>
                 <th className="py-3 px-3.5 font-semibold text-center rounded-r-lg w-16">Aksi</th>
@@ -605,9 +626,17 @@ export const ProductsCatalogView = ({
                   </div>
 
                   <div>
-                    <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
-                      Modal / HPP
-                    </label>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block">
+                        Modal / HPP
+                      </label>
+                      <InfoTooltip
+                        title="Modal / HPP Menu"
+                        content="Biaya modal bahan baku per porsi (tidak perlu ditambah biaya overhead listrik atau sewa ruko)."
+                        placement="top"
+                        align="left"
+                      />
+                    </div>
                     <NumericInput
                       value={formCostPrice}
                       onChange={setFormCostPrice}
@@ -621,9 +650,17 @@ export const ProductsCatalogView = ({
 
                 {/* Stok Bahan / Porsi */}
                 <div>
-                  <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block mb-1.5">
-                    Stok Porsi / Bahan (Opsional)
-                  </label>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <label className="text-xs font-mono text-stone-700 dark:text-stone-300 uppercase tracking-wider font-semibold block">
+                      Stok Porsi / Bahan (Opsional)
+                    </label>
+                    <InfoTooltip
+                      title="Batas Porsi Menu"
+                      content="Porsi menu yang tersedia saat ini. Kasir akan melihat status 'Menipis' jika sisa ≤ 5 porsi."
+                      placement="top"
+                      align="left"
+                    />
+                  </div>
                   <NumericInput
                     value={formStock}
                     onChange={(val) => setFormStock(val === 0 ? '' : val)}

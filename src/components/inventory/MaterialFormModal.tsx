@@ -9,6 +9,7 @@ import {
 import type { RawMaterial } from '../../types'
 import { SearchableSelect } from '../ui/SearchableSelect'
 import { NumericInput } from '../ui/NumericInput'
+import { InfoTooltip } from '../ui/InfoTooltip'
 import { formatRupiah } from '../../utils/formatters'
 import { apiFetch } from '../../utils/api'
 
@@ -247,9 +248,17 @@ export const MaterialFormModal = ({
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-stone-700 dark:text-stone-400 uppercase tracking-wider mb-1.5 font-semibold">
-                  Batas Minimum Alert ({unit || 'satuan'})
-                </label>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <label className="block text-xs font-mono text-stone-700 dark:text-stone-400 uppercase tracking-wider font-semibold">
+                    Batas Minimum Alert ({unit || 'satuan'})
+                  </label>
+                  <InfoTooltip
+                    title="Batas Minimum Stok"
+                    content="Jika stok fisik menyentuh angka ini atau lebih rendah, sistem akan menandai status 'Menipis' agar segera belanja ulang."
+                    placement="top"
+                    align="left"
+                  />
+                </div>
                 <NumericInput
                   value={minStockAlert}
                   onChange={(val) => setMinStockAlert(val)}
@@ -268,9 +277,17 @@ export const MaterialFormModal = ({
             {/* Harga Beli Modal (HPP) - Khusus Owner */}
             <div className="p-4 rounded-2xl bg-white dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 space-y-2 shadow-xs">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-mono text-amber-800 dark:text-[#E2DFD2] uppercase tracking-wider font-semibold block">
-                  Harga Modal / Beli per {unit || 'satuan'} (Rp)
-                </label>
+                <div className="flex items-center gap-1.5">
+                  <label className="text-xs font-mono text-amber-800 dark:text-[#E2DFD2] uppercase tracking-wider font-semibold block">
+                    Harga Modal / Beli per {unit || 'satuan'} (Rp)
+                  </label>
+                  <InfoTooltip
+                    title="Harga Modal Bahan (HPP)"
+                    content="Biaya modal bahan baku per satuan fisik saat belanja (tidak digabung dengan biaya listrik atau sewa ruko)."
+                    placement="top"
+                    align="left"
+                  />
+                </div>
                 <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400">Kerahasiaan Owner</span>
               </div>
               <NumericInput
