@@ -173,13 +173,6 @@ export const InventoryView = ({ currentUser }: InventoryViewProps) => {
             <h1 className="text-xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
               Pengelolaan Stok & Bahan Baku
             </h1>
-            <span className={`text-[10px] font-mono uppercase px-2 py-0.5 rounded border font-semibold ${
-              isOwner
-                ? 'border-amber-300 bg-amber-50 text-amber-900 dark:border-[#E2DFD2]/40 dark:bg-[#E2DFD2]/10 dark:text-[#E2DFD2]'
-                : 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-400'
-            }`}>
-              {isOwner ? 'Kontrol Owner (HPP Aktif)' : 'Mode Petugas Kasir'}
-            </span>
           </div>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
             {isOwner
@@ -406,7 +399,8 @@ export const InventoryView = ({ currentUser }: InventoryViewProps) => {
 
           {/* Table Container */}
           <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
+            {/* Desktop / Tablet Table View */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-50/60 dark:bg-stone-950/60">
@@ -596,6 +590,122 @@ export const InventoryView = ({ currentUser }: InventoryViewProps) => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card View (< 640px) */}
+            <div className="block sm:hidden divide-y divide-stone-200 dark:divide-stone-800/80">
+              {filteredMaterials.length === 0 ? (
+                <div className="py-10 text-center text-stone-400 dark:text-stone-500 font-mono text-xs">
+                  Tidak ada bahan baku yang cocok dengan pencarian / filter.
+                </div>
+              ) : (
+                filteredMaterials.map((mat) => {
+                  const isOutOfStock = mat.current_stock <= 0
+                  const isLowStock = !isOutOfStock && mat.current_stock <= mat.min_stock_alert
+                  const assetValue = (mat.current_stock || 0) * (mat.cost_per_unit || 0)
+
+                  return (
+                    <div key={mat.id} className="p-4 space-y-3">
+                      {/* Top: Name, Category, Status */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-stone-900 dark:text-stone-100 text-sm leading-snug">
+                            {mat.name}
+                          </h4>
+                          <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                            {mat.category} {mat.supplier ? `• ${mat.supplier}` : ''}
+                          </span>
+                        </div>
+                        <div>
+                          {isOutOfStock ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/60 dark:border-rose-900/80 dark:text-rose-400">
+                              Habis
+                            </span>
+                          ) : isLowStock ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-950/60 dark:border-amber-900/80 dark:text-amber-400">
+                              Menipis
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400">
+                              Aman
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Metric Grid */}
+                      <div className={`grid ${isOwner ? 'grid-cols-3' : 'grid-cols-2'} gap-2 p-2.5 rounded-xl bg-stone-50 dark:bg-stone-950/60 border border-stone-200/80 dark:border-stone-800/80 text-xs font-mono`}>
+                        <div>
+                          <span className="text-[10px] text-stone-400 dark:text-stone-500 block">Stok Fisik</span>
+                          <span className={`font-bold text-sm tabular-nums ${
+                            isOutOfStock ? 'text-rose-600 dark:text-rose-400' : isLowStock ? 'text-amber-700 dark:text-amber-400' : 'text-stone-900 dark:text-[#E2DFD2]'
+                          }`}>
+                            {mat.current_stock} <span className="text-[10px] font-sans font-normal text-stone-500">{mat.unit}</span>
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-stone-400 dark:text-stone-500 block">Batas Min</span>
+                          <span className="font-semibold text-stone-600 dark:text-stone-400 tabular-nums">
+                            {mat.min_stock_alert} <span className="text-[10px] font-sans font-normal">{mat.unit}</span>
+                          </span>
+                        </div>
+                        {isOwner && (
+                          <div>
+                            <span className="text-[10px] text-stone-400 dark:text-stone-500 block">Nilai Aset</span>
+                            <span className="font-bold text-emerald-700 dark:text-emerald-400 tabular-nums text-[11px] truncate block">
+                              {assetValue > 0 ? formatRupiah(assetValue) : '-'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <div className="flex items-center gap-1.5 flex-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenMovement(mat.id, 'in')}
+                            className="flex-1 py-1.5 px-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 hover:bg-emerald-100 text-emerald-800 dark:text-emerald-400 text-xs font-mono font-bold transition-all text-center cursor-pointer active:scale-95"
+                          >
+                            + Masuk
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenMovement(mat.id, 'out')}
+                            className="flex-1 py-1.5 px-2 rounded-lg bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 text-xs font-mono font-bold transition-all text-center cursor-pointer active:scale-95"
+                          >
+                            - Pakai
+                          </button>
+                        </div>
+
+                        {isOwner && (
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setMaterialToEdit(mat)
+                                setIsFormModalOpen(true)
+                              }}
+                              className="p-2 rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+                              title="Edit Bahan"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setMaterialToDelete(mat)}
+                              className="p-2 rounded-lg text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                              title="Hapus Bahan"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
           </div>
 

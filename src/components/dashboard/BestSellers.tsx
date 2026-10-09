@@ -33,9 +33,6 @@ export const BestSellers = ({ products }: BestSellersProps) => {
             </p>
           </div>
         </div>
-        <span className="text-[11px] font-mono text-stone-600 dark:text-stone-400 px-2.5 py-1 rounded-lg bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
-          Top 5 Produk
-        </span>
       </div>
 
       {/* List */}

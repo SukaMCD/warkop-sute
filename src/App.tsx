@@ -487,6 +487,11 @@ export function App() {
           isSidebarCollapsed={isSidebarCollapsed}
           onOrdersSynced={fetchD1Data}
           onOpenOverheadExpense={() => setIsGlobalOverheadModalOpen(true)}
+          onEnterFullscreen={() => {
+            if (effectiveTab === 'pos') {
+              setIsSidebarCollapsed(true)
+            }
+          }}
         />
 
         {/* Content Body */}

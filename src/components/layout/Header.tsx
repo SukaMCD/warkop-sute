@@ -19,12 +19,15 @@ import {
   Sparkles,
   Smartphone,
   LogOut,
-  Plus
+  Plus,
+  Maximize2,
+  Minimize2
 } from 'lucide-react'
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
 import { subscribeToQueue, syncPendingOrders, getPendingCount } from '../../utils/offlineQueue'
 import { subscribePwaInstall, subscribePwaUpdate, promptPwaInstall, applyPwaUpdate } from '../../utils/pwa'
+import { useFullscreen } from '../../utils/fullscreen'
 
 interface HeaderProps {
   activeTab: TabType
@@ -35,6 +38,7 @@ interface HeaderProps {
   isSidebarCollapsed?: boolean
   onOrdersSynced?: () => void
   onOpenOverheadExpense?: () => void
+  onEnterFullscreen?: () => void
 }
 
 export const Header = ({
@@ -45,8 +49,18 @@ export const Header = ({
   onOpenMobileSidebar,
   isSidebarCollapsed,
   onOrdersSynced,
-  onOpenOverheadExpense
+  onOpenOverheadExpense,
+  onEnterFullscreen
 }: HeaderProps) => {
+
+  const { isFullscreen, toggleFullscreen } = useFullscreen()
+
+  const handleFullscreenClick = async () => {
+    const entered = await toggleFullscreen()
+    if (entered && onEnterFullscreen) {
+      onEnterFullscreen()
+    }
+  }
 
   const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true)
   const [pendingSyncCount, setPendingSyncCount] = useState<number>(() => getPendingCount())
@@ -227,11 +241,11 @@ export const Header = ({
             </button>
 
             {/* Current Page Title */}
-            <div className="flex items-center gap-2.5 min-w-0 truncate">
+            <div className="flex items-center gap-2 min-w-0 truncate">
               <div className="w-8 h-8 rounded-xl bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 flex items-center justify-center text-amber-900 dark:text-[#E2DFD2] shrink-0 shadow-xs">
                 <Icon className="w-4 h-4 stroke-[2.2]" />
               </div>
-              <div className="min-w-0 truncate">
+              <div className="min-w-0 max-w-[110px] xs:max-w-[160px] sm:max-w-none truncate">
                 <h1 className="text-xs sm:text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 truncate leading-tight">
                   {currentMeta.title}
                 </h1>
@@ -331,11 +345,36 @@ export const Header = ({
               <span className="hidden lg:inline">Unduh APK</span>
             </a>
 
+            {/* Fullscreen & Lock Landscape Button (Ideal for Tablet POS) */}
+            <button
+              type="button"
+              onClick={handleFullscreenClick}
+              className={`flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95 ${
+                isFullscreen
+                  ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200'
+                  : 'bg-stone-100 hover:bg-stone-200/70 dark:bg-stone-900 dark:hover:bg-stone-850 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300'
+              }`}
+              title={
+                isFullscreen
+                  ? 'Keluar Layar Penuh'
+                  : 'Layar Penuh (Kunci Landscape Tablet)'
+              }
+            >
+              {isFullscreen ? (
+                <Minimize2 className="w-3.5 h-3.5 text-amber-800 dark:text-amber-300" />
+              ) : (
+                <Maximize2 className="w-3.5 h-3.5 text-stone-700 dark:text-[#E2DFD2]" />
+              )}
+              <span className="hidden sm:inline">
+                {isFullscreen ? 'Normal' : 'Layar Penuh'}
+              </span>
+            </button>
+
             {/* Realtime Clock & Date */}
-            <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800/80 font-mono text-xs shadow-xs">
-              <div className="flex items-center gap-1.5 text-stone-900 dark:text-stone-200 font-bold tabular-nums">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 px-2 sm:px-3 py-1.5 rounded-xl bg-white/90 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800/80 font-mono text-xs shadow-xs">
+              <div className="flex items-center gap-1 text-stone-900 dark:text-stone-200 font-bold tabular-nums">
                 <span>{currentTime}</span>
-                <span className="text-[10px] text-stone-500 dark:text-stone-400 font-sans">WIB</span>
+                <span className="text-[10px] text-stone-500 dark:text-stone-400 font-sans hidden xxs:inline">WIB</span>
               </div>
               <span className="text-stone-300 dark:text-stone-700 hidden sm:inline">•</span>
               <span className="text-stone-600 dark:text-stone-400 font-sans text-[11px] hidden sm:inline">{currentDate}</span>
@@ -354,7 +393,7 @@ export const Header = ({
               <button
                 type="button"
                 onClick={onLogout}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100/90 text-rose-700 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 dark:text-rose-300 border border-rose-200/90 dark:border-rose-900/70 text-xs font-mono font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+                className="flex items-center gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100/90 text-rose-700 dark:bg-rose-950/50 dark:hover:bg-rose-900/70 dark:text-rose-300 border border-rose-200/90 dark:border-rose-900/70 text-xs font-mono font-bold transition-all cursor-pointer shadow-xs active:scale-95"
                 title="Keluar / Kunci Terminal"
               >
                 <LogOut className="w-3.5 h-3.5 stroke-[2.2]" />

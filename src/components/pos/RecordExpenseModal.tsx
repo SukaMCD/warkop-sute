@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   X,
   ArrowUpRight,
@@ -20,6 +20,7 @@ interface RecordExpenseModalProps {
   cashierId?: string
   shiftExpenses?: ShiftExpense[]
   onExpenseRecorded: (expense: ShiftExpense) => void
+  initialDescription?: string
 }
 
 const EXPENSE_PRESETS = [
@@ -49,7 +50,8 @@ export const RecordExpenseModal = ({
   shiftId,
   cashierId,
   shiftExpenses = [],
-  onExpenseRecorded
+  onExpenseRecorded,
+  initialDescription
 }: RecordExpenseModalProps) => {
   const [activeTab, setActiveTab] = useState<'expense' | 'income'>('expense')
   const [amount, setAmount] = useState<number | ''>('')
@@ -57,6 +59,19 @@ export const RecordExpenseModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [showHistory, setShowHistory] = useState(false)
+
+  useEffect(() => {
+    if (isOpen) {
+      if (initialDescription) {
+        setDescription(initialDescription)
+        setActiveTab('expense')
+      }
+    } else {
+      setAmount('')
+      setDescription('')
+      setErrorMessage('')
+    }
+  }, [isOpen, initialDescription])
 
   if (!isOpen) return null
 

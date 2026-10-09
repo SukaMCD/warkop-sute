@@ -354,9 +354,10 @@ export const ProductsCatalogView = ({
 
       </div>
 
-      {/* Product List Table */}
-      <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-5 shadow-xs overflow-visible">
-        <div className="overflow-x-auto">
+      {/* Product List Table Container */}
+      <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl p-3 sm:p-5 shadow-xs overflow-visible">
+        {/* Desktop / Tablet Table View */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full min-w-190 text-left text-xs table-auto">
             <thead>
               <tr className="border-b border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 font-mono text-[11px] uppercase tracking-wider bg-stone-50/60 dark:bg-stone-950/40">
@@ -548,6 +549,111 @@ export const ProductsCatalogView = ({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View (< 640px) */}
+        <div className="block sm:hidden divide-y divide-stone-200 dark:divide-stone-800/80">
+          {filteredProducts.length === 0 ? (
+            <div className="py-10 text-center text-stone-400 dark:text-stone-500 font-mono text-xs">
+              {searchQuery.trim()
+                ? `Tidak ada menu dengan kata kunci "${searchQuery}"`
+                : `Belum ada menu di kategori ${categoryNameMap[selectedCategory] || selectedCategory}`}
+            </div>
+          ) : (
+            filteredProducts.map((p) => {
+              const profit = p.price - p.cost_price
+              const margin = p.price > 0 ? Math.round((profit / p.price) * 100) : 0
+
+              return (
+                <div key={p.id} className="py-3.5 first:pt-1 last:pb-1 space-y-2.5">
+                  {/* Top: Name, Category & Availability */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className="font-bold text-stone-900 dark:text-stone-100 text-sm leading-snug">
+                          {p.name}
+                        </h4>
+                        {Boolean(p.is_favorite) && (
+                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono uppercase bg-amber-50 dark:bg-stone-950 border border-amber-200 dark:border-stone-800 text-amber-900 dark:text-[#E2DFD2] font-bold">
+                            Favorit
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                        {p.category_name}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleAvailability(p)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold uppercase transition-all shrink-0 cursor-pointer ${
+                        p.is_available
+                          ? 'bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400'
+                          : 'bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400'
+                      }`}
+                    >
+                      {p.is_available ? 'Tersedia' : 'Habis'}
+                    </button>
+                  </div>
+
+                  {/* Financial & Margin Chips */}
+                  <div className="grid grid-cols-3 gap-2 p-2 rounded-xl bg-stone-50 dark:bg-stone-950/60 border border-stone-200/80 dark:border-stone-800/80 text-xs font-mono">
+                    <div>
+                      <span className="text-[10px] text-stone-400 dark:text-stone-500 block">Harga Jual</span>
+                      <span className="font-bold text-stone-900 dark:text-[#E2DFD2] tabular-nums">
+                        {formatRupiah(p.price)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-stone-400 dark:text-stone-500 block">Modal HPP</span>
+                      <span className="font-semibold text-stone-600 dark:text-stone-400 tabular-nums">
+                        {p.cost_price ? formatRupiah(p.cost_price) : '-'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-stone-400 dark:text-stone-500 block">Margin</span>
+                      <span className="font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                        {margin > 0 ? `+${margin}%` : '-'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom: Stock Info & Actions */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    <div className="text-[11px] font-mono text-stone-500">
+                      {p.stock !== undefined && p.stock !== null ? (
+                        <span className={p.stock <= 5 ? 'text-amber-700 dark:text-amber-400 font-bold' : ''}>
+                          Stok: {p.stock} porsi
+                        </span>
+                      ) : (
+                        <span className="text-stone-400 dark:text-stone-500">Stok Unlimited</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(p)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 text-xs font-medium transition-colors"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeletingProduct(p)}
+                        className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Hapus Menu"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
         </div>
       </div>
 

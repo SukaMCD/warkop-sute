@@ -29,6 +29,7 @@ import { SearchableSelect } from '../ui/SearchableSelect'
 import { InfoTooltip } from '../ui/InfoTooltip'
 import { apiFetch } from '../../utils/api'
 import { OverheadExpenseModal } from './OverheadExpenseModal'
+import { MonthlyTrendChart } from './MonthlyTrendChart'
 
 interface MonthlyReportViewProps {
   currentUser?: User | null
@@ -71,9 +72,13 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [activeSubTab, setActiveSubTab] = useState<'daily' | 'products' | 'cashflow'>('daily')
-  const [showOnlyActiveDays, setShowOnlyActiveDays] = useState<boolean>(false)
   const [isOverheadModalOpen, setIsOverheadModalOpen] = useState<boolean>(false)
   const [deletingOverheadId, setDeletingOverheadId] = useState<string | null>(null)
+
+  // Calculate days in currently selected month dynamically (e.g. 28/29 for Feb, 30 for Apr/Jun/Sep/Nov, 31 for others)
+  const daysInSelectedMonth = useMemo(() => {
+    return new Date(selectedYear, selectedMonth, 0).getDate()
+  }, [selectedYear, selectedMonth])
 
   // Generate Year Options (e.g. currentYear - 2 to currentYear + 1)
   const yearOptions = useMemo(() => {
@@ -501,7 +506,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                   : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
               }`}
             >
-              Tabel Harian (1-31)
+              Tabel Harian
             </button>
             <button
               type="button"
@@ -634,46 +639,27 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
 
       {/* 3. Main Content Views */}
       {activeSubTab === 'daily' && (
-        <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden shadow-xs">
-          <div className="p-4 border-b border-stone-200 dark:border-stone-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
+        <div className="space-y-6">
+          {/* Monthly Trend Line Chart (Garis: Hijau Naik, Merah Turun) */}
+          {reportData && reportData.dailyBreakdown && reportData.dailyBreakdown.length > 0 && (
+            <MonthlyTrendChart
+              data={reportData.dailyBreakdown}
+              monthName={reportData.monthName}
+            />
+          )}
+
+          <div className="bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-2xl overflow-hidden shadow-xs">
+            <div className="p-4 border-b border-stone-200 dark:border-stone-800/80">
               <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                 <span>Rincian Penjualan Harian</span>
                 <span className="text-xs text-stone-500 dark:text-stone-400 font-normal font-mono">
-                  ({showOnlyActiveDays ? `${activeDaysCount} hari aktif` : `Hari ke-1 s/d ${reportData?.dailyBreakdown.length || 31}`})
+                  (Hari ke-1 s/d {reportData?.dailyBreakdown.length || daysInSelectedMonth})
                 </span>
               </h3>
-              <p className="text-[11px] text-stone-500 dark:text-stone-400">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
                 Pencatatan akumulasi penjualan, kas masuk, pengeluaran kasir, dan hasil bersih tiap tanggal
               </p>
             </div>
-
-            {/* Filter Toggle: All Days vs Active Days Only */}
-            <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-950 p-1 rounded-xl border border-stone-200 dark:border-stone-800 text-xs self-start sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setShowOnlyActiveDays(false)}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  !showOnlyActiveDays
-                    ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-semibold shadow-xs'
-                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
-                }`}
-              >
-                Semua Hari (1-31)
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowOnlyActiveDays(true)}
-                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                  showOnlyActiveDays
-                    ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 font-semibold shadow-xs'
-                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
-                }`}
-              >
-                Hanya Hari Aktif ({activeDaysCount})
-              </button>
-            </div>
-          </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -703,10 +689,7 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
                     </td>
                   </tr>
                 ) : (
-                  (showOnlyActiveDays
-                    ? reportData.dailyBreakdown.filter(d => d.transactions > 0 || d.expenses > 0)
-                    : reportData.dailyBreakdown
-                  ).map(item => {
+                  reportData.dailyBreakdown.map(item => {
                     const isToday =
                       isCurrentMonthActive &&
                       item.day === now.getDate()
@@ -817,7 +800,8 @@ export const MonthlyReportView = ({ currentUser: _currentUser }: MonthlyReportVi
             </table>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {/* View 2: Top Selling Menu Bulan Ini */}
       {activeSubTab === 'products' && (

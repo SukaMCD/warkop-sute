@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import {
   MonitorPlay,
   LayoutDashboard,
@@ -9,16 +8,17 @@ import {
   LogOut,
   Maximize2,
   Minimize2,
-  ChevronRight,
   Printer,
   CalendarRange,
   Package,
   Sun,
-  Moon
+  Moon,
+  X
 } from 'lucide-react'
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useFullscreen } from '../../utils/fullscreen'
 
 interface SidebarProps {
   activeTab: TabType
@@ -41,22 +41,10 @@ export const Sidebar = ({
   setIsMobileOpen
 }: SidebarProps) => {
   const { theme, toggleTheme } = useTheme()
-  const [isFullscreen, setIsFullscreen] = useState(false)
-
-  useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
-    }
-    document.addEventListener('fullscreenchange', handleFsChange)
-    return () => document.removeEventListener('fullscreenchange', handleFsChange)
-  }, [])
+  const { isFullscreen, toggleFullscreen } = useFullscreen()
 
   const handleToggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {})
-    } else {
-      document.exitFullscreen().catch(() => {})
-    }
+    toggleFullscreen()
   }
 
   const isOwner = currentUser?.role === 'owner'
@@ -142,40 +130,54 @@ export const Sidebar = ({
     setIsMobileOpen(false)
   }
 
-  const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#FAF8F5] dark:bg-stone-950 border-r border-stone-200 dark:border-stone-800/90 text-stone-900 dark:text-stone-100 select-none transition-colors">
-      
-      {/* 1. Header: Brand Logo & Collapse Toggle */}
-      <div className={`flex items-center h-16 px-4 border-b border-stone-200 dark:border-stone-800/80 transition-all ${
-        isCollapsed ? 'justify-center' : 'justify-between'
-      }`}>
-        <div className="flex items-center gap-3 overflow-hidden">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-stone-300 dark:border-stone-700/80 bg-stone-100 dark:bg-stone-900 flex items-center justify-center shadow-xs shrink-0">
-            <img
-              src="/logo.png"
-              alt="Warkop Sudut Temu"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {!isCollapsed && (
-            <div className="truncate">
-              <span className="font-bold tracking-tight text-stone-900 dark:text-stone-100 text-sm block leading-tight">
-                Sudut Temu
-              </span>
-              <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 block tracking-wider uppercase">
-                {isOwner ? 'Owner Dashboard' : 'Kasir Terminal'}
-              </span>
+  const renderSidebarContent = (isDrawer = false) => {
+    const collapsed = isDrawer ? false : isCollapsed
+
+    return (
+      <div className="flex flex-col h-full bg-[#FAF8F5] dark:bg-stone-950 border-r border-stone-200 dark:border-stone-800/90 text-stone-900 dark:text-stone-100 select-none transition-colors">
+        
+        {/* 1. Header: Brand Logo & Collapse Toggle */}
+        <div className={`flex items-center h-16 px-4 border-b border-stone-200 dark:border-stone-800/80 transition-all ${
+          collapsed ? 'justify-center' : 'justify-between'
+        }`}>
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-9 h-9 rounded-xl overflow-hidden border border-stone-300 dark:border-stone-700/80 bg-stone-100 dark:bg-stone-900 flex items-center justify-center shadow-xs shrink-0">
+              <img
+                src="/logo.png"
+                alt="Warkop Sudut Temu"
+                className="w-full h-full object-cover"
+              />
             </div>
+            {!collapsed && (
+              <div className="truncate">
+                <span className="font-bold tracking-tight text-stone-900 dark:text-stone-100 text-sm block leading-tight">
+                  Sudut Temu
+                </span>
+                <span className="text-[10px] font-mono text-stone-500 dark:text-stone-400 block tracking-wider uppercase">
+                  {isOwner ? 'Owner Dashboard' : 'Kasir Terminal'}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {isDrawer && (
+            <button
+              type="button"
+              onClick={() => setIsMobileOpen(false)}
+              className="p-1.5 rounded-xl text-stone-400 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200/70 dark:hover:bg-stone-850 transition-colors cursor-pointer"
+              title="Tutup Menu"
+            >
+              <X className="w-5 h-5 stroke-[2]" />
+            </button>
           )}
         </div>
-      </div>
 
       {/* 2. Navigation Items */}
       <div className="flex-1 overflow-y-auto py-4 px-2 space-y-4">
         
         {/* Operasional Group */}
         <div>
-          {!isCollapsed && (
+          {!collapsed && (
             <div className="px-3 pb-1.5 text-[10px] font-mono uppercase tracking-wider text-stone-500 dark:text-stone-400 font-semibold">
               Operasional
             </div>
@@ -191,22 +193,19 @@ export const Sidebar = ({
                     key={item.id}
                     type="button"
                     onClick={() => handleNavClick(item.id)}
-                    title={isCollapsed ? item.label : undefined}
+                    title={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 dark:focus-visible:ring-[#E2DFD2] ${
                       isActive
                         ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
                         : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-stone-900/80'
-                    } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                    } ${collapsed ? 'justify-center px-2' : ''}`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 transition-transform ${
                       isActive ? 'stroke-[2.5]' : 'group-hover:scale-105'
                     }`} />
-                    {!isCollapsed && (
+                    {!collapsed && (
                       <span className="truncate flex-1 text-left">{item.label}</span>
-                    )}
-                    {!isCollapsed && isActive && (
-                      <ChevronRight className="w-3.5 h-3.5 text-stone-50 dark:text-stone-950 shrink-0 opacity-60" />
                     )}
                   </button>
                 )
@@ -217,7 +216,7 @@ export const Sidebar = ({
         {/* Manajemen Group (Owner) */}
         {isOwner && (
           <div>
-            {!isCollapsed && (
+            {!collapsed && (
               <div className="px-3 pb-1.5 pt-2 text-[10px] font-mono uppercase tracking-wider text-stone-500 dark:text-stone-400 font-semibold border-t border-stone-200 dark:border-stone-800/60">
                 Manajemen
               </div>
@@ -233,22 +232,19 @@ export const Sidebar = ({
                       key={item.id}
                       type="button"
                       onClick={() => handleNavClick(item.id)}
-                      title={isCollapsed ? item.label : undefined}
+                      title={collapsed ? item.label : undefined}
                       aria-current={isActive ? 'page' : undefined}
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 dark:focus-visible:ring-[#E2DFD2] ${
                         isActive
                           ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-bold shadow-xs'
                           : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-200/60 dark:hover:bg-stone-900/80'
-                      } ${isCollapsed ? 'justify-center px-2' : ''}`}
+                      } ${collapsed ? 'justify-center px-2' : ''}`}
                     >
                       <Icon className={`w-4 h-4 shrink-0 transition-transform ${
                         isActive ? 'stroke-[2.5]' : 'group-hover:scale-105'
                       }`} />
-                      {!isCollapsed && (
+                      {!collapsed && (
                         <span className="truncate flex-1 text-left">{item.label}</span>
-                      )}
-                      {!isCollapsed && isActive && (
-                        <ChevronRight className="w-3.5 h-3.5 text-stone-50 dark:text-stone-950 shrink-0 opacity-60" />
                       )}
                     </button>
                   )
@@ -265,10 +261,10 @@ export const Sidebar = ({
         {/* User Card */}
         {currentUser && (
           <div className={`p-2.5 rounded-xl bg-white dark:bg-stone-900/70 border border-stone-200 dark:border-stone-800 shadow-xs flex items-center ${
-            isCollapsed ? 'justify-center py-2' : 'justify-between'
+            collapsed ? 'justify-center py-2' : 'justify-between'
           }`}>
             <div className="min-w-0 truncate">
-              {!isCollapsed ? (
+              {!collapsed ? (
                 <>
                   <p className="text-xs font-semibold text-stone-900 dark:text-stone-100 truncate leading-tight">
                     {currentUser.name}
@@ -284,7 +280,7 @@ export const Sidebar = ({
               )}
             </div>
 
-            {!isCollapsed && (
+            {!collapsed && (
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
@@ -297,7 +293,7 @@ export const Sidebar = ({
                 <button
                   type="button"
                   onClick={handleToggleFullscreen}
-                  title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
+                  title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh (Kunci Landscape Tablet)'}
                   className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                 >
                   {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -308,7 +304,7 @@ export const Sidebar = ({
         )}
 
         {/* Dedicated Prominent Logout Button (Expanded) */}
-        {!isCollapsed && onLogout && (
+        {!collapsed && onLogout && (
           <button
             type="button"
             onClick={onLogout}
@@ -321,7 +317,7 @@ export const Sidebar = ({
         )}
 
         {/* Collapsed actions */}
-        {isCollapsed && (
+        {collapsed && (
           <div className="flex flex-col items-center gap-1.5 pt-1">
             <button
               type="button"
@@ -356,6 +352,7 @@ export const Sidebar = ({
 
     </div>
   )
+}
 
   return (
     <>
@@ -366,7 +363,7 @@ export const Sidebar = ({
         }`}
       >
         <div className="sticky top-0 h-screen">
-          {sidebarContent}
+          {renderSidebarContent(false)}
         </div>
       </aside>
 
@@ -374,11 +371,11 @@ export const Sidebar = ({
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-xs animate-in fade-in duration-150"
+            className="fixed inset-0 bg-stone-950/80 backdrop-blur-xs animate-in fade-in duration-150"
             onClick={() => setIsMobileOpen(false)}
           />
-          <div className="relative w-64 h-full z-10 animate-in slide-in-from-left duration-200">
-            {sidebarContent}
+          <div className="relative w-72 max-w-[85vw] h-full z-10 animate-in slide-in-from-left duration-200 shadow-2xl">
+            {renderSidebarContent(true)}
           </div>
         </div>
       )}

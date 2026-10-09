@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import type { Product, Order, User, Shift, ReceiptConfig, ShiftExpense } from '../../types'
+import type { Product, Order, User, Shift, ReceiptConfig, ShiftExpense, RawMaterial } from '../../types'
 import {
   Search,
   Plus,
@@ -25,12 +25,15 @@ import {
   ArrowUpDown,
   Tag,
   Split,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle,
+  Boxes
 } from 'lucide-react'
 import { calculateShiftDuration } from '../../utils/shiftHelpers'
 import { apiFetch } from '../../utils/api'
 import { saveOrderToQueue } from '../../utils/offlineQueue'
 import { RecordExpenseModal } from './RecordExpenseModal'
+import { LowStockAlertModal } from './LowStockAlertModal'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { NumericInput } from '../ui/NumericInput'
 
@@ -66,6 +69,7 @@ export const POSView = ({
 
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([])
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false)
   const [orderType, setOrderType] = useState<'dine_in' | 'takeaway'>('dine_in')
   const [tableNumber, setTableNumber] = useState<string>('')
   const [customerName, setCustomerName] = useState<string>('')
@@ -97,6 +101,46 @@ export const POSView = ({
 
   // Shift Expense Modal
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false)
+  const [initialExpenseDescription, setInitialExpenseDescription] = useState<string>('')
+
+  // Low Stock Alert Modal & Materials
+  const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>([])
+  const [isLowStockModalOpen, setIsLowStockModalOpen] = useState(false)
+
+  const fetchRawMaterials = async () => {
+    try {
+      const res = await apiFetch(`/api/inventory?role=${currentUser.role}`)
+      if (res.ok) {
+        const json: any = await res.json()
+        if (json.success && Array.isArray(json.data)) {
+          setRawMaterials(json.data)
+        }
+      }
+    } catch (err) {
+      console.warn('[POSView] Failed to fetch raw materials:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchRawMaterials()
+  }, [currentUser.role])
+
+  const outOfStockCount = useMemo(() => {
+    return rawMaterials.filter(m => (m.current_stock || 0) <= 0).length
+  }, [rawMaterials])
+
+  const lowStockCount = useMemo(() => {
+    return rawMaterials.filter(
+      m => (m.current_stock || 0) > 0 && (m.current_stock || 0) <= (m.min_stock_alert || 0)
+    ).length
+  }, [rawMaterials])
+
+  const totalStockAlerts = outOfStockCount + lowStockCount
+
+  const handleQuickBuyMaterial = (materialDesc: string) => {
+    setInitialExpenseDescription(materialDesc)
+    setIsExpenseModalOpen(true)
+  }
 
   // Note Modal for Item
   const [editingNoteIndex, setEditingNoteIndex] = useState<number | null>(null)
@@ -105,7 +149,7 @@ export const POSView = ({
   // Global Keyboard shortcut: '/' untuk langsung fokus cari menu
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isPaymentModalOpen || isDiscountModalOpen || isExpenseModalOpen || editingNoteIndex !== null) return
+      if (isPaymentModalOpen || isDiscountModalOpen || isExpenseModalOpen || isLowStockModalOpen || editingNoteIndex !== null) return
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
 
@@ -116,7 +160,7 @@ export const POSView = ({
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isPaymentModalOpen, isDiscountModalOpen, isExpenseModalOpen, editingNoteIndex])
+  }, [isPaymentModalOpen, isDiscountModalOpen, isExpenseModalOpen, isLowStockModalOpen, editingNoteIndex])
 
   // Authentic Categories list from Database
   const categories = [
@@ -461,6 +505,7 @@ export const POSView = ({
       setIsPaymentModalOpen(false)
       setShowReceiptModal(true)
       handleResetCart()
+      fetchRawMaterials()
     } finally {
       setIsSubmitting(false)
     }
@@ -545,6 +590,47 @@ export const POSView = ({
                 )}
               </div>
 
+              {/* Alert Stok Bahan Baku Button */}
+              <button
+                type="button"
+                onClick={() => setIsLowStockModalOpen(true)}
+                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl border text-[11px] font-mono font-semibold transition-all cursor-pointer shadow-xs active:scale-95 ${
+                  outOfStockCount > 0
+                    ? 'bg-rose-50 border-rose-300 text-rose-800 dark:bg-rose-950/60 dark:border-rose-900/80 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40'
+                    : lowStockCount > 0
+                    ? 'bg-amber-50 border-amber-300 text-amber-800 dark:bg-amber-950/60 dark:border-amber-900/80 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40'
+                    : 'bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+                }`}
+                title={
+                  totalStockAlerts > 0
+                    ? `${totalStockAlerts} bahan baku dalam status menipis/habis. Klik untuk lihat & catat belanja.`
+                    : 'Semua bahan baku aman. Klik untuk melihat persediaan.'
+                }
+              >
+                {outOfStockCount > 0 ? (
+                  <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 stroke-[2.2] animate-pulse" />
+                ) : lowStockCount > 0 ? (
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 stroke-[2.2]" />
+                ) : (
+                  <Boxes className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
+                )}
+                <span className="hidden sm:inline">
+                  {outOfStockCount > 0 ? 'Stok Kritis' : lowStockCount > 0 ? 'Stok Menipis' : 'Stok Bahan'}
+                </span>
+                <span className="sm:hidden">
+                  {totalStockAlerts > 0 ? 'Stok' : 'Bahan'}
+                </span>
+                {totalStockAlerts > 0 && (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                    outOfStockCount > 0
+                      ? 'bg-rose-600 text-white dark:bg-rose-500 dark:text-stone-950'
+                      : 'bg-amber-600 text-white dark:bg-amber-500 dark:text-stone-950'
+                  }`}>
+                    {totalStockAlerts}
+                  </span>
+                )}
+              </button>
+
               {currentShift.status === 'open' && (
                 <button
                   type="button"
@@ -612,7 +698,7 @@ export const POSView = ({
         </div>
 
         {/* Product Cards Grid */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className={`flex-1 overflow-y-auto p-4 ${cart.length > 0 ? 'pb-24 md:pb-4' : 'pb-4'}`}>
           {filteredProducts.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center text-center space-y-2 p-6">
               <p className="text-sm font-semibold text-stone-800 dark:text-stone-300">
@@ -710,11 +796,35 @@ export const POSView = ({
           )}
         </div>
 
+        {/* Floating Bottom Cart Bar for Mobile screens */}
+        {cart.length > 0 && (
+          <div className="md:hidden fixed bottom-3 left-3 right-3 z-30 animate-in slide-in-from-bottom duration-200">
+            <button
+              type="button"
+              onClick={() => setIsMobileCartOpen(true)}
+              className="w-full bg-stone-900 hover:bg-stone-850 dark:bg-[#E2DFD2] dark:hover:bg-[#dcd9cc] text-white dark:text-stone-950 p-3.5 rounded-2xl shadow-xl flex items-center justify-between border border-stone-800 dark:border-stone-300 cursor-pointer active:scale-[0.98] transition-all"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 dark:bg-stone-900/15 flex items-center justify-center font-mono font-bold text-xs text-amber-400 dark:text-stone-950">
+                  {totalItemsCount}
+                </div>
+                <div className="text-left">
+                  <span className="text-[10px] block text-stone-400 dark:text-stone-700 leading-none">Total Tagihan</span>
+                  <span className="font-mono text-sm font-bold leading-tight tabular-nums">{formatIDR(totalAmount)}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 font-bold text-xs text-amber-400 dark:text-stone-950">
+                <span>Lihat Pesanan</span>
+                <Receipt className="w-4 h-4" />
+              </div>
+            </button>
+          </div>
+        )}
+
       </div>
 
-      {/* RIGHT SECTION: Cart & Billing */}
-      <div className="w-full md:w-87.5 lg:w-97.5 xl:w-105 bg-[#FAF8F5] dark:bg-stone-900/95 border-t md:border-t-0 md:border-l border-stone-200 dark:border-stone-800 flex flex-col h-100 md:h-full shrink-0 shadow-lg dark:shadow-xl">
-        
+      {/* RIGHT SECTION: Cart & Billing (Desktop / Tablet) */}
+      <div className="hidden md:flex md:w-87.5 lg:w-97.5 xl:w-105 bg-[#FAF8F5] dark:bg-stone-900/95 border-l border-stone-200 dark:border-stone-800 flex-col h-full shrink-0 shadow-lg dark:shadow-xl">
         {/* Cart Header */}
         <div className="p-4 border-b border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-900/80 space-y-3 shrink-0">
           <div className="flex items-center justify-between">
@@ -836,7 +946,7 @@ export const POSView = ({
                     <button
                       type="button"
                       onClick={() => handleOpenNoteModal(index)}
-                      className="text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200 underline ml-2"
+                      className="text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200 underline ml-2 cursor-pointer"
                     >
                       Ubah
                     </button>
@@ -851,7 +961,7 @@ export const POSView = ({
                     className="text-[10px] text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#E2DFD2] font-medium flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     <FileText className="w-3 h-3" />
-                    <span>{item.notes ? 'Edit Catatan' : '+ Catatan (pedas, manis)'}</span>
+                    <span>{item.notes ? 'Edit Catatan' : '+ Catatan'}</span>
                   </button>
 
                   <div className="flex items-center gap-2">
@@ -950,14 +1060,275 @@ export const POSView = ({
             type="button"
             onClick={handleOpenPayment}
             disabled={cart.length === 0}
-            className="w-full h-12 rounded-xl bg-stone-900 hover:bg-stone-800 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] disabled:bg-stone-200 disabled:text-stone-400 dark:disabled:bg-stone-800 dark:disabled:text-stone-600 disabled:cursor-not-allowed text-stone-50 dark:text-stone-950 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98]"
+            className="w-full h-12 rounded-xl bg-stone-900 hover:bg-stone-850 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] disabled:bg-stone-200 disabled:text-stone-400 dark:disabled:bg-stone-800 dark:disabled:text-stone-600 disabled:cursor-not-allowed text-stone-50 dark:text-stone-950 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98]"
           >
             <Banknote className="w-4 h-4" />
             <span>Proses Pembayaran ({formatIDR(totalAmount)})</span>
           </button>
         </div>
-
       </div>
+
+      {/* MOBILE CART BOTTOM SHEET DRAWER */}
+      {isMobileCartOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+            onClick={() => setIsMobileCartOpen(false)}
+          />
+          <div className="relative z-10 w-full max-h-[90vh] h-[86vh] bg-[#FAF8F5] dark:bg-stone-900 rounded-t-3xl shadow-2xl border-t border-stone-200 dark:border-stone-800 flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+            {/* Sheet Handle */}
+            <div className="w-12 h-1 bg-stone-300 dark:bg-stone-700 rounded-full mx-auto my-2 shrink-0" />
+            
+            {/* Sheet Header */}
+            <div className="px-4 py-2.5 border-b border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-900/80 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-amber-800 dark:text-[#E2DFD2]" />
+                <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 tracking-tight">
+                  Keranjang Pesanan
+                </h3>
+                <span className="font-mono text-xs px-2 py-0.5 rounded-full bg-stone-200 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+                  {totalItemsCount} item
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {cart.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetCart}
+                    className="text-[11px] font-mono text-stone-500 hover:text-rose-500 dark:text-stone-400 dark:hover:text-rose-400 transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsMobileCartOpen(false)}
+                  className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200/50 dark:hover:text-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                  title="Tutup Keranjang"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Mobile Order Type & Form */}
+            <div className="p-3 border-b border-stone-200 dark:border-stone-800 bg-[#FAF8F5] dark:bg-stone-900/60 space-y-2 shrink-0">
+              <div className="grid grid-cols-2 gap-2 p-1 bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setOrderType('dine_in')}
+                  className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    orderType === 'dine_in'
+                      ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
+                  }`}
+                >
+                  Makan di Tempat
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOrderType('takeaway')}
+                  className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    orderType === 'takeaway'
+                      ? 'bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
+                  }`}
+                >
+                  Bungkus (Takeaway)
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder={orderType === 'dine_in' ? 'Nomor Meja' : 'No. Antrean'}
+                    value={tableNumber}
+                    onChange={(e) => setTableNumber(e.target.value)}
+                    className="w-full bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-stone-700 dark:focus:border-[#E2DFD2]"
+                  />
+                  <input
+                    ref={customerNameInputRef}
+                    type="text"
+                    placeholder="Nama Pemesan *"
+                    value={customerName}
+                    onChange={(e) => {
+                      setCustomerName(e.target.value)
+                      if (nameError && e.target.value.trim()) {
+                        setNameError(false)
+                      }
+                    }}
+                    className={`w-full bg-white dark:bg-stone-950 border rounded-xl px-3 py-2 text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none ${
+                      nameError
+                        ? 'border-rose-500/90 ring-1 ring-rose-500/30 bg-rose-50 dark:bg-rose-950/20'
+                        : 'border-stone-200 focus:border-stone-700 dark:border-stone-800 dark:focus:border-[#E2DFD2]'
+                    }`}
+                  />
+                </div>
+                {nameError && (
+                  <p className="text-[11px] text-rose-500 font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>Nama pemesan wajib diisi</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Cart Items List */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {cart.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
+                  <Receipt className="w-8 h-8 stroke-[1.25] text-stone-300 dark:text-stone-700 mb-1" />
+                  <p className="text-xs font-semibold text-stone-600 dark:text-stone-400">Keranjang masih kosong</p>
+                </div>
+              ) : (
+                cart.map((item, index) => (
+                  <div
+                    key={item.product.id}
+                    className="p-3 rounded-xl bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800/80 flex flex-col gap-2 shadow-xs"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-stone-900 dark:text-stone-200 leading-tight">
+                          {item.product.name}
+                        </p>
+                        <p className="text-[11px] font-mono text-stone-500 dark:text-stone-400 mt-0.5">
+                          {formatIDR(item.product.price)} / porsi
+                        </p>
+                      </div>
+                      <span className="font-mono text-xs font-bold text-stone-900 dark:text-stone-100">
+                        {formatIDR(item.product.price * item.quantity)}
+                      </span>
+                    </div>
+
+                    {item.notes && (
+                      <div className="px-2 py-1 rounded bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 text-[10px] text-amber-900 dark:text-[#E2DFD2] font-mono flex items-center justify-between">
+                        <span>{item.notes}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenNoteModal(index)}
+                          className="text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200 underline ml-2 cursor-pointer"
+                        >
+                          Ubah
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-1 border-t border-stone-100 dark:border-stone-900">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenNoteModal(index)}
+                        className="text-[10px] text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#E2DFD2] font-medium flex items-center gap-1 cursor-pointer"
+                      >
+                        <FileText className="w-3 h-3" />
+                        <span>{item.notes ? 'Edit Catatan' : '+ Catatan'}</span>
+                      </button>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(index)}
+                          className="p-1 text-stone-400 hover:text-rose-500 dark:text-stone-600 dark:hover:text-rose-400 transition-colors cursor-pointer mr-1"
+                          title="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+
+                        <div className="flex items-center bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-lg overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateQuantity(index, -1)}
+                            className="w-7 h-7 flex items-center justify-center text-stone-600 hover:text-stone-950 dark:text-stone-400 active:scale-95 cursor-pointer"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-7 text-center font-mono text-xs font-bold text-stone-900 dark:text-stone-100 select-none">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateQuantity(index, 1)}
+                            className="w-7 h-7 flex items-center justify-center text-stone-600 hover:text-stone-950 dark:text-stone-400 active:scale-95 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Mobile Bottom Summary & Checkout */}
+            <div className="p-3 border-t border-stone-200 dark:border-stone-800 bg-[#F5F2EB]/95 dark:bg-stone-900/95 space-y-2 shrink-0">
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center justify-between text-stone-600 dark:text-stone-400 text-[11px]">
+                  <span>Subtotal ({totalItemsCount} item)</span>
+                  <span className="font-mono text-stone-800 dark:text-stone-200">{formatIDR(subtotalAmount)}</span>
+                </div>
+
+                {discountAmount > 0 ? (
+                  <div className="flex items-center justify-between text-rose-600 dark:text-rose-400 font-medium text-[11px]">
+                    <div className="flex items-center gap-1">
+                      <span>Diskon {discountReason ? `(${discountReason})` : ''}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDiscountValue(0)
+                          setDiscountReason('')
+                        }}
+                        className="text-stone-400 hover:text-rose-600 cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <span className="font-mono">-{formatIDR(discountAmount)}</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempDiscountType(discountType)
+                      setTempDiscountValue(discountValue)
+                      setTempDiscountReason(discountReason)
+                      setIsDiscountModalOpen(true)
+                    }}
+                    disabled={cart.length === 0}
+                    className="text-[11px] font-mono text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-[#E2DFD2] flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                  >
+                    <Tag className="w-3 h-3" />
+                    <span>+ Diskon / Promo</span>
+                  </button>
+                )}
+
+                <div className="flex items-center justify-between text-sm font-semibold text-stone-900 dark:text-stone-100 pt-1 border-t border-stone-200 dark:border-stone-800">
+                  <span>Total Tagihan</span>
+                  <span className="font-mono text-base font-bold text-stone-950 dark:text-[#E2DFD2]">
+                    {formatIDR(totalAmount)}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  handleOpenPayment()
+                  if (customerName.trim()) {
+                    setIsMobileCartOpen(false)
+                  }
+                }}
+                disabled={cart.length === 0}
+                className="w-full h-12 rounded-xl bg-stone-900 hover:bg-stone-850 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] disabled:bg-stone-200 disabled:text-stone-400 dark:disabled:bg-stone-800 dark:disabled:text-stone-600 disabled:cursor-not-allowed text-stone-50 dark:text-stone-950 font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-[0.98]"
+              >
+                <Banknote className="w-4 h-4" />
+                <span>Proses Pembayaran ({formatIDR(totalAmount)})</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FULLSCREEN CHECKOUT VIEW */}
       {isPaymentModalOpen && (
@@ -1016,10 +1387,10 @@ export const POSView = ({
           </div>
 
           {/* Fullscreen Body (2 Large Columns) */}
-          <div className="flex-1 grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 overflow-hidden">
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-12 lg:grid-cols-12 overflow-y-auto md:overflow-hidden">
             
             {/* LEFT COLUMN: Payment Mode (QRIS or Cash) */}
-            <div className="md:col-span-7 lg:col-span-7 xl:col-span-7 px-6 py-3.5 sm:px-8 sm:py-4 flex flex-col justify-center border-b md:border-b-0 md:border-r border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/60 dark:bg-stone-900/30 overflow-y-auto md:overflow-y-hidden">
+            <div className="md:col-span-7 lg:col-span-7 xl:col-span-7 px-4 py-3 sm:px-8 sm:py-4 flex flex-col justify-start md:justify-center border-b md:border-b-0 md:border-r border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/60 dark:bg-stone-900/30 overflow-visible md:overflow-y-auto">
               <div className="max-w-xl mx-auto w-full space-y-3 sm:space-y-3.5 my-auto">
                 
                 {/* Method Switcher Tabs */}
@@ -1775,11 +2146,11 @@ export const POSView = ({
           </div>
 
           {/* Sticky Bottom Action Bar */}
-          <footer className="border-t border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex items-center justify-end gap-3 shrink-0">
+          <footer className="border-t border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-950/90 backdrop-blur-xs px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shrink-0">
             <button
               type="button"
               onClick={handlePrintReceipt}
-              className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 dark:bg-stone-900 dark:border-stone-800 hover:border-stone-300 dark:hover:border-[#E2DFD2] dark:text-stone-200 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+              className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 dark:bg-stone-900 dark:border-stone-800 hover:border-stone-300 dark:hover:border-[#E2DFD2] dark:text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
             >
               <Printer className="w-4 h-4 text-stone-700 dark:text-[#E2DFD2]" />
               <span>Cetak Struk Kasir</span>
@@ -1787,7 +2158,7 @@ export const POSView = ({
             <button
               type="button"
               onClick={handlePrintKitchen}
-              className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 dark:bg-stone-900 dark:border-stone-800 hover:border-amber-600/40 dark:hover:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+              className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 dark:bg-stone-900 dark:border-stone-800 hover:border-amber-600/40 dark:hover:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
             >
               <UtensilsCrossed className="w-4 h-4 text-amber-800 dark:text-[#E2DFD2]" />
               <span>Cetak Tiket Dapur</span>
@@ -1795,7 +2166,7 @@ export const POSView = ({
             <button
               type="button"
               onClick={() => setShowReceiptModal(false)}
-              className="py-2.5 px-5 rounded-xl bg-stone-900 hover:bg-stone-850 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+              className="py-2.5 px-5 rounded-xl bg-stone-900 hover:bg-stone-850 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
               <span>Pesanan Baru</span>
             </button>
@@ -1983,15 +2354,29 @@ export const POSView = ({
       {/* Modal Catat Kas Masuk / Keluar Shift */}
       <RecordExpenseModal
         isOpen={isExpenseModalOpen}
-        onClose={() => setIsExpenseModalOpen(false)}
+        onClose={() => {
+          setIsExpenseModalOpen(false)
+          setInitialExpenseDescription('')
+        }}
         shiftId={currentShift.id}
         cashierId={currentUser.id}
         shiftExpenses={currentShift.expenses}
+        initialDescription={initialExpenseDescription}
         onExpenseRecorded={(newExpense) => {
           if (onExpenseAdded) {
             onExpenseAdded(newExpense)
           }
+          fetchRawMaterials()
         }}
+      />
+
+      {/* Modal Peringatan & Daftar Belanja Stok Menipis */}
+      <LowStockAlertModal
+        isOpen={isLowStockModalOpen}
+        onClose={() => setIsLowStockModalOpen(false)}
+        materials={rawMaterials}
+        cashierName={currentUser.name}
+        onQuickBuyMaterial={handleQuickBuyMaterial}
       />
 
     </div>
