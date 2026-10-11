@@ -22,6 +22,7 @@ import { DEFAULT_RECEIPT_CONFIG, loadReceiptConfig } from './utils/receiptConfig
 import { type TabType, TAB_TO_PATH, getTabFromPath } from './utils/navigation'
 import { apiFetch } from './utils/api'
 import { OverheadExpenseModal } from './components/dashboard/OverheadExpenseModal'
+import { initAutoLockLandscape } from './utils/fullscreen'
 import {
   mockProducts
 } from './data/mockData'
@@ -109,6 +110,11 @@ export function App() {
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [currentUser?.role])
+
+  // Automatically lock screen to landscape orientation (especially in mobile apps / tablet POS)
+  useEffect(() => {
+    initAutoLockLandscape()
+  }, [])
 
   // Sync initial URL pathname with active tab
   useEffect(() => {

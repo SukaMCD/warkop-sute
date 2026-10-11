@@ -18,7 +18,7 @@ import {
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
 import { useTheme } from '../../contexts/ThemeContext'
-import { useFullscreen } from '../../utils/fullscreen'
+import { useFullscreen, useIsMobileApp } from '../../utils/fullscreen'
 
 interface SidebarProps {
   activeTab: TabType
@@ -42,6 +42,7 @@ export const Sidebar = ({
 }: SidebarProps) => {
   const { theme, toggleTheme } = useTheme()
   const { isFullscreen, toggleFullscreen } = useFullscreen()
+  const isMobileApp = useIsMobileApp()
 
   const handleToggleFullscreen = () => {
     toggleFullscreen()
@@ -290,14 +291,16 @@ export const Sidebar = ({
                 >
                   {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-[#E2DFD2]" /> : <Moon className="w-3.5 h-3.5 text-stone-700" />}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleToggleFullscreen}
-                  title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh (Kunci Landscape Tablet)'}
-                  className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-                >
-                  {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-                </button>
+                {!isMobileApp && (
+                  <button
+                    type="button"
+                    onClick={handleToggleFullscreen}
+                    title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh (Kunci Landscape Tablet)'}
+                    className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                  >
+                    {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -327,14 +330,16 @@ export const Sidebar = ({
             >
               {theme === 'dark' ? <Sun className="w-4 h-4 text-[#E2DFD2]" /> : <Moon className="w-4 h-4 text-stone-700" />}
             </button>
-            <button
-              type="button"
-              onClick={handleToggleFullscreen}
-              title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
-              className="w-full py-2 flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
-            >
-              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            </button>
+            {!isMobileApp && (
+              <button
+                type="button"
+                onClick={handleToggleFullscreen}
+                title={isFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh'}
+                className="w-full py-2 flex items-center justify-center rounded-lg text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 hover:bg-stone-200 dark:hover:bg-stone-900 transition-colors"
+              >
+                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
+            )}
             {onLogout && (
               <button
                 type="button"

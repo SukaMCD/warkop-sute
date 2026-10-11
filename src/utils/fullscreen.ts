@@ -1,6 +1,37 @@
-// Screen Fullscreen and Landscape Orientation Lock Manager for Warkop Sudut Temu POS
+// Screen Fullscreen, Orientation Lock & Mobile App Detection Manager for Warkop Sudut Temu POS
 
 import { useState, useEffect } from 'react'
+import { Capacitor } from '@capacitor/core'
+import { ScreenOrientation } from '@capacitor/screen-orientation'
+
+/**
+ * Check if running inside mobile apps (Capacitor Android/iOS APK, Android WebView, or standalone PWA)
+ */
+export const isNativeMobileApp = (): boolean => {
+  if (typeof window === 'undefined') return false
+  try {
+    if (Capacitor.isNativePlatform()) return true
+  } catch {}
+  if ((window as any).Capacitor?.isNativePlatform?.()) return true
+  if (typeof (window as any).androidBridge !== 'undefined') return true
+  if (window.matchMedia('(display-mode: standalone)').matches) return true
+  if ((window.navigator as any).standalone === true) return true
+  if (typeof document !== 'undefined' && document.referrer.includes('android-app://')) return true
+  return false
+}
+
+/**
+ * React hook to detect if running in mobile app
+ */
+export const useIsMobileApp = (): boolean => {
+  const [isMobile, setIsMobile] = useState<boolean>(() => isNativeMobileApp())
+
+  useEffect(() => {
+    setIsMobile(isNativeMobileApp())
+  }, [])
+
+  return isMobile
+}
 
 /**
  * Check if the document is currently in fullscreen mode (cross-browser)
@@ -20,6 +51,17 @@ export const getIsFullscreen = (): boolean => {
  * Lock screen orientation to landscape (tablet/smartphone POS layout)
  */
 export const lockLandscapeOrientation = async (): Promise<boolean> => {
+  // 1. Try Capacitor native screen orientation plugin first (works without requiring HTML5 fullscreen)
+  try {
+    if (isNativeMobileApp() || Capacitor.isNativePlatform()) {
+      await ScreenOrientation.lock({ orientation: 'landscape' })
+      return true
+    }
+  } catch (err) {
+    console.info('[Screen] Capacitor ScreenOrientation lock error:', err)
+  }
+
+  // 2. Try HTML5 Screen Orientation API
   if (typeof screen === 'undefined') return false
   try {
     const orientation = screen.orientation as any
@@ -35,16 +77,49 @@ export const lockLandscapeOrientation = async (): Promise<boolean> => {
       return (screen as any).lockOrientation('landscape')
     }
   } catch (err) {
-    // Orientation lock may fail if platform has no accelerometer or on desktop
-    console.info('[Screen] Orientation lock to landscape not supported or disallowed on this device:', err)
+    // Orientation lock may fail if platform has no accelerometer or on desktop browser
+    console.info('[Screen] HTML5 Orientation lock to landscape not supported or disallowed on this device:', err)
   }
   return false
+}
+
+/**
+ * Auto-lock screen to landscape on startup and user interaction
+ */
+export const initAutoLockLandscape = () => {
+  if (typeof window === 'undefined') return
+
+  const attemptLock = () => {
+    lockLandscapeOrientation().catch(() => {})
+  }
+
+  // Immediate attempt
+  attemptLock()
+
+  // Attempt on first user touches/clicks (for browsers that require user gesture)
+  window.addEventListener('touchstart', attemptLock, { once: true, passive: true })
+  window.addEventListener('click', attemptLock, { once: true })
+
+  // Re-attempt when app regains focus or visibility
+  window.addEventListener('focus', attemptLock)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      attemptLock()
+    }
+  })
 }
 
 /**
  * Unlock screen orientation to default behavior
  */
 export const unlockOrientation = () => {
+  // Try Capacitor unlock
+  try {
+    if (isNativeMobileApp() || Capacitor.isNativePlatform()) {
+      ScreenOrientation.unlock().catch(() => {})
+    }
+  } catch {}
+
   if (typeof screen === 'undefined') return
   try {
     const orientation = screen.orientation as any

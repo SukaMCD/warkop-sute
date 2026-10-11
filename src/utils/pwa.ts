@@ -1,6 +1,6 @@
 // PWA Manager and Service Worker Registration Helper for Warkop Sudut Temu POS
 
-import { lockLandscapeOrientation } from './fullscreen'
+import { initAutoLockLandscape } from './fullscreen'
 
 type PwaInstallCallback = (canInstall: boolean) => void
 type PwaUpdateCallback = () => void
@@ -60,13 +60,8 @@ export const applyPwaUpdate = () => {
 export const initPwa = () => {
   if (typeof window === 'undefined') return
 
-  // Lock screen orientation to landscape if supported (PWA/Standalone/Webview)
-  const tryLockLandscape = () => {
-    lockLandscapeOrientation()
-  }
-
-  tryLockLandscape()
-  window.addEventListener('click', tryLockLandscape, { once: true })
+  // Lock screen orientation to landscape if supported (PWA/Standalone/Webview/Capacitor)
+  initAutoLockLandscape()
 
   // 1. Listen for install prompt from browser
   window.addEventListener('beforeinstallprompt', (e) => {

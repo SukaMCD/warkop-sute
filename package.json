@@ -11,10 +11,12 @@
     "worker:deploy": "npm run build && wrangler deploy",
     "d1:init": "wrangler d1 execute sute --local --file=src/server/db/schema.sql && wrangler d1 execute sute --local --file=src/server/db/seed_transactions.sql",
     "d1:init:remote": "wrangler d1 execute sute --remote --file=src/server/db/schema.sql && wrangler d1 execute sute --remote --file=src/server/db/seed_transactions.sql",
+    "assets:android": "python scripts/generate_android_assets.py",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/screen-orientation": "^8.0.2",
     "clsx": "^2.1.1",
     "hono": "^4.13.12",
     "lucide-react": "^1.51.0",
