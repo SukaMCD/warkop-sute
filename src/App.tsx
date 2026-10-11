@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Header } from './components/layout/Header'
 import { Sidebar } from './components/layout/Sidebar'
 import { LoginPage } from './components/auth/LoginPage'
@@ -349,27 +349,33 @@ export function App() {
     }
   }, [currentUser, isLocked])
 
-  // Fetch from D1 API
-  const fetchD1Data = async () => {
-    try {
-      // 1. Fetch current active shift from D1
-      try {
-        const shiftRes = await apiFetch('/api/shifts/current')
-        if (shiftRes.ok) {
-          const shiftJson: any = await shiftRes.json()
-          if (shiftJson.success) {
-            if (shiftJson.data) {
-              setCurrentShift(shiftJson.data)
-            } else {
-              setCurrentShift(prev => ({ ...prev, status: 'closed' }))
-            }
-          }
-        }
-      } catch {
-        // use local fallback
-      }
+  // Timestamp tracking for throttle and idle detection
+  const lastActivityRef = useRef<number>(Date.now())
+  const lastFetchRef = useRef<number>(0)
 
-      // 2. Fetch dashboard stats
+  // 1. Fetch static data (only once on startup or when explicitly triggered)
+  const fetchProductsData = async () => {
+    try {
+      const prodRes = await apiFetch('/api/products')
+      if (prodRes.ok) {
+        const prodJson: any = await prodRes.json()
+        if (prodJson.success && prodJson.data?.length > 0) {
+          setProducts(prodJson.data)
+        }
+      }
+    } catch {}
+  }
+
+  const fetchReceiptConfigData = async () => {
+    try {
+      const cfg = await loadReceiptConfig()
+      if (cfg) setReceiptConfig(cfg)
+    } catch {}
+  }
+
+  // 2. Fetch dynamic stats (lightweight; includes live sales, best sellers, active shift)
+  const fetchDynamicStats = async () => {
+    try {
       const statsRes = await apiFetch('/api/dashboard/stats')
       if (statsRes.ok) {
         const statsJson: any = await statsRes.json()
@@ -392,17 +398,12 @@ export function App() {
           }
         }
       }
+    } catch {}
+  }
 
-      // 2. Fetch products
-      const prodRes = await apiFetch('/api/products')
-      if (prodRes.ok) {
-        const prodJson: any = await prodRes.json()
-        if (prodJson.success && prodJson.data?.length > 0) {
-          setProducts(prodJson.data)
-        }
-      }
-
-      // 3. Fetch orders
+  // 3. Fetch orders (only on startup or when actively viewing orders / on checkout)
+  const fetchOrdersData = async () => {
+    try {
       const ordersRes = await apiFetch('/api/orders')
       if (ordersRes.ok) {
         const ordersJson: any = await ordersRes.json()
@@ -410,41 +411,68 @@ export function App() {
           setOrders(ordersJson.data)
         }
       }
-
-      // 4. Fetch receipt configuration
-      try {
-        const cfg = await loadReceiptConfig()
-        if (cfg) {
-          setReceiptConfig(cfg)
-        }
-      } catch {}
-    } catch {
-      // Fallback seamlessly to mock data
-    }
+    } catch {}
   }
 
+  // Unified fetch for explicit user actions (checkout, start shift, close shift, sync)
+  const fetchD1Data = async (includeProducts = false) => {
+    lastFetchRef.current = Date.now()
+    await Promise.all([
+      fetchDynamicStats(),
+      fetchOrdersData(),
+      includeProducts ? fetchProductsData() : Promise.resolve()
+    ])
+  }
+
+  // Track user activity to detect idle state
   useEffect(() => {
+    const handleUserActivity = () => {
+      lastActivityRef.current = Date.now()
+    }
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll']
+    events.forEach(e => window.addEventListener(e, handleUserActivity, { passive: true }))
+
+    return () => {
+      events.forEach(e => window.removeEventListener(e, handleUserActivity))
+    }
+  }, [])
+
+  // Initial load & smart idle-aware sync
+  useEffect(() => {
+    // Initial fetch once on load
+    void fetchProductsData()
+    void fetchReceiptConfigData()
     void fetchD1Data()
 
-    // Sync otomatis saat kasir/owner kembali ke tab atau layar aktif
+    // Sync saat user kembali fokus ke tab (dithrottle: minimal berselang 30 detik)
     const handleSync = () => {
       if (document.visibilityState === 'visible') {
-        void fetchD1Data()
-        loadReceiptConfig().then(cfg => {
-          if (cfg) setReceiptConfig(cfg)
-        })
+        const now = Date.now()
+        if (now - lastFetchRef.current > 30000) {
+          lastFetchRef.current = now
+          void fetchDynamicStats()
+        }
       }
     }
 
     window.addEventListener('focus', handleSync)
     document.addEventListener('visibilitychange', handleSync)
 
-    // Realtime polling otomatis setiap 8 detik agar dashboard & kasir selalu live tanpa manual refresh
+    // SMART POLLING:
+    // Jika user IDLE (> 60 detik tidak menyentuh layar/keyboard), POLLING BERHENTI TOTAL (0 rows read).
+    // Jika user AKTIF, polling hanya setiap 60 detik dan hanya mengambil stats ringan (bukan re-fetch produk/struk/orders).
     const pollInterval = window.setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        void fetchD1Data()
+      if (document.visibilityState !== 'visible') return
+      
+      const isUserIdle = Date.now() - lastActivityRef.current > 60000
+      if (isUserIdle) {
+        // User sedang idle: hentikan request ke D1 sama sekali
+        return
       }
-    }, 8000)
+
+      lastFetchRef.current = Date.now()
+      void fetchDynamicStats()
+    }, 60000)
 
     return () => {
       window.removeEventListener('focus', handleSync)
@@ -453,10 +481,13 @@ export function App() {
     }
   }, [])
 
-  // Auto-refresh data saat user berpindah menu navigasi
+  // Auto-refresh saat berpindah menu navigasi
   useEffect(() => {
     if (currentUser && !isLocked) {
-      void fetchD1Data()
+      if (effectiveTab === 'orders' || effectiveTab === 'dashboard') {
+        void fetchOrdersData()
+      }
+      void fetchDynamicStats()
     }
   }, [effectiveTab])
 

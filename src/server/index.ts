@@ -315,14 +315,21 @@ app.get('/api/orders', async (c) => {
     const stmt = params.length > 0 ? c.env.DB.prepare(sql).bind(...params) : c.env.DB.prepare(sql)
     const { results: orders } = await stmt.all()
 
-    const { results: allItems } = await c.env.DB.prepare(`
-      SELECT * FROM order_items
-    `).all()
+    if (!orders || orders.length === 0) {
+      return c.json({ success: true, data: [] })
+    }
+
+    // Only fetch items belonging to the selected orders using index
+    const orderIds = orders.map((ord: any) => ord.id)
+    const placeholders = orderIds.map(() => '?').join(',')
+    const { results: matchedItems } = await c.env.DB.prepare(`
+      SELECT * FROM order_items WHERE order_id IN (${placeholders})
+    `).bind(...orderIds).all()
 
     // Map items into orders
     const ordersWithItems = orders.map((ord: any) => ({
       ...ord,
-      items: allItems.filter((item: any) => item.order_id === ord.id)
+      items: (matchedItems || []).filter((item: any) => item.order_id === ord.id)
     }))
 
     return c.json({ success: true, data: ordersWithItems })
@@ -1189,7 +1196,7 @@ app.get('/api/dashboard/stats', async (c) => {
       JOIN products p ON oi.product_id = p.id
       JOIN categories c ON p.category_id = c.id
       JOIN orders o ON oi.order_id = o.id
-      WHERE o.status = 'completed'
+      WHERE o.status = 'completed' AND o.created_at >= date('now', 'localtime', '-30 days')
       GROUP BY oi.product_id
       ORDER BY sales_count DESC
       LIMIT 5
@@ -1204,7 +1211,7 @@ app.get('/api/dashboard/stats', async (c) => {
         COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total_amount ELSE 0 END), 0) as cash_amount,
         COALESCE(SUM(CASE WHEN payment_method = 'qris' THEN total_amount ELSE 0 END), 0) as qris_amount
       FROM orders
-      WHERE status = 'completed'
+      WHERE status = 'completed' AND created_at >= date('now', 'localtime', '-14 days')
       GROUP BY date(created_at)
       ORDER BY date ASC
       LIMIT 14
