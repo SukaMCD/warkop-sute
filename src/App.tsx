@@ -349,8 +349,7 @@ export function App() {
     }
   }, [currentUser, isLocked])
 
-  // Timestamp tracking for throttle and idle detection
-  const lastActivityRef = useRef<number>(Date.now())
+  // Throttle timestamp tracking
   const lastFetchRef = useRef<number>(0)
 
   // 1. Fetch static data (only once on startup or when explicitly triggered)
@@ -414,7 +413,9 @@ export function App() {
     } catch {}
   }
 
-  // Unified fetch for explicit user actions (checkout, start shift, close shift, sync)
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false)
+
+  // Unified fetch for explicit user actions (checkout, start shift, close shift, sync, tab change)
   const fetchD1Data = async (includeProducts = false) => {
     lastFetchRef.current = Date.now()
     await Promise.all([
@@ -424,31 +425,27 @@ export function App() {
     ])
   }
 
-  // Track user activity to detect idle state
-  useEffect(() => {
-    const handleUserActivity = () => {
-      lastActivityRef.current = Date.now()
+  const handleManualRefresh = async () => {
+    setIsManualRefreshing(true)
+    try {
+      await fetchD1Data(true)
+    } finally {
+      setTimeout(() => setIsManualRefreshing(false), 500)
     }
-    const events = ['mousedown', 'keydown', 'touchstart', 'scroll']
-    events.forEach(e => window.addEventListener(e, handleUserActivity, { passive: true }))
+  }
 
-    return () => {
-      events.forEach(e => window.removeEventListener(e, handleUserActivity))
-    }
-  }, [])
-
-  // Initial load & smart idle-aware sync
+  // Initial load only - TIDAK ADA BACKGROUND POLLING SAMA SEKALI
+  // Saat idle = 0 query ke database.
   useEffect(() => {
-    // Initial fetch once on load
     void fetchProductsData()
     void fetchReceiptConfigData()
     void fetchD1Data()
 
-    // Sync saat user kembali fokus ke tab (dithrottle: minimal berselang 30 detik)
+    // Sync HANYA saat user kembali membuka tab yang sebelumnya diminimize (minimal jeda 60 detik)
     const handleSync = () => {
       if (document.visibilityState === 'visible') {
         const now = Date.now()
-        if (now - lastFetchRef.current > 30000) {
+        if (now - lastFetchRef.current > 60000) {
           lastFetchRef.current = now
           void fetchDynamicStats()
         }
@@ -458,26 +455,9 @@ export function App() {
     window.addEventListener('focus', handleSync)
     document.addEventListener('visibilitychange', handleSync)
 
-    // SMART POLLING:
-    // Jika user IDLE (> 60 detik tidak menyentuh layar/keyboard), POLLING BERHENTI TOTAL (0 rows read).
-    // Jika user AKTIF, polling hanya setiap 60 detik dan hanya mengambil stats ringan (bukan re-fetch produk/struk/orders).
-    const pollInterval = window.setInterval(() => {
-      if (document.visibilityState !== 'visible') return
-      
-      const isUserIdle = Date.now() - lastActivityRef.current > 60000
-      if (isUserIdle) {
-        // User sedang idle: hentikan request ke D1 sama sekali
-        return
-      }
-
-      lastFetchRef.current = Date.now()
-      void fetchDynamicStats()
-    }, 60000)
-
     return () => {
       window.removeEventListener('focus', handleSync)
       document.removeEventListener('visibilitychange', handleSync)
-      window.clearInterval(pollInterval)
     }
   }, [])
 
@@ -529,6 +509,8 @@ export function App() {
               setIsSidebarCollapsed(true)
             }
           }}
+          onManualRefresh={handleManualRefresh}
+          isRefreshing={isManualRefreshing}
         />
 
         {/* Content Body */}

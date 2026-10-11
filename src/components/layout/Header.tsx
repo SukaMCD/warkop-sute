@@ -39,6 +39,8 @@ interface HeaderProps {
   onOrdersSynced?: () => void
   onOpenOverheadExpense?: () => void
   onEnterFullscreen?: () => void
+  onManualRefresh?: () => void
+  isRefreshing?: boolean
 }
 
 export const Header = ({
@@ -50,7 +52,9 @@ export const Header = ({
   isSidebarCollapsed,
   onOrdersSynced,
   onOpenOverheadExpense,
-  onEnterFullscreen
+  onEnterFullscreen,
+  onManualRefresh,
+  isRefreshing = false
 }: HeaderProps) => {
 
   const { isFullscreen, toggleFullscreen } = useFullscreen()
@@ -285,6 +289,17 @@ export const Header = ({
                 <WifiOff className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Offline</span>
               </div>
+            ) : onManualRefresh ? (
+              <button
+                type="button"
+                onClick={onManualRefresh}
+                disabled={isRefreshing}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 dark:bg-stone-900/60 dark:hover:bg-stone-850 border border-stone-200/70 dark:border-stone-800 text-stone-600 dark:text-stone-300 text-xs font-mono transition-all cursor-pointer active:scale-95 shadow-xs"
+                title="Klik untuk segarkan data dari server"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="text-[11px] hidden sm:inline">{isRefreshing ? 'Memuat...' : 'Online'}</span>
+              </button>
             ) : (
               <div
                 className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-stone-100/70 dark:bg-stone-900/40 text-stone-500 dark:text-stone-400 text-xs font-mono"
