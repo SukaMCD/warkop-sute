@@ -1,4 +1,5 @@
 import type { Order, ReceiptConfig } from '../types'
+import { Capacitor, registerPlugin } from '@capacitor/core'
 
 // Extended Navigator interface for Web Bluetooth
 declare global {
@@ -12,6 +13,9 @@ declare global {
     }
   }
 }
+
+// Native Capacitor Bluetooth Plugin Bridge
+const NativePrinter = registerPlugin<any>('NativeBluetoothPrinter')
 
 // Known GATT service UUIDs for BLE thermal printers
 const PRINTER_SERVICES = [
@@ -28,12 +32,24 @@ const PRINTER_SERVICES = [
 ]
 
 const STORAGE_KEY_BT_NAME = 'sute_bt_printer_name'
+const STORAGE_KEY_BT_ADDR = 'sute_bt_printer_address'
 
 let activeDevice: any = null
 let activeCharacteristic: any = null
+let nativeConnectedName: string = ''
+let nativeConnectedAddress: string = ''
 let connectionListeners: Array<(connected: boolean, deviceName: string) => void> = []
 
+export const isNativePlatform = (): boolean => {
+  try {
+    return Capacitor.isNativePlatform()
+  } catch {
+    return false
+  }
+}
+
 export const isWebBluetoothSupported = (): boolean => {
+  if (isNativePlatform()) return true
   return typeof navigator !== 'undefined' && 'bluetooth' in navigator && !!navigator.bluetooth
 }
 
@@ -45,13 +61,25 @@ export const getSavedPrinterName = (): string => {
   }
 }
 
+export const getSavedPrinterAddress = (): string => {
+  try {
+    return localStorage.getItem(STORAGE_KEY_BT_ADDR) || ''
+  } catch {
+    return ''
+  }
+}
+
 export const isBluetoothConnected = (): boolean => {
+  if (isNativePlatform()) {
+    return !!(nativeConnectedName && nativeConnectedAddress)
+  }
   return !!(activeDevice && activeDevice.gatt && activeDevice.gatt.connected && activeCharacteristic)
 }
 
 export const addBluetoothListener = (callback: (connected: boolean, deviceName: string) => void) => {
   connectionListeners.push(callback)
-  callback(isBluetoothConnected(), activeDevice?.name || getSavedPrinterName())
+  const currentName = isNativePlatform() ? (nativeConnectedName || getSavedPrinterName()) : (activeDevice?.name || getSavedPrinterName())
+  callback(isBluetoothConnected(), currentName)
   return () => {
     connectionListeners = connectionListeners.filter(cb => cb !== callback)
   }
@@ -59,7 +87,7 @@ export const addBluetoothListener = (callback: (connected: boolean, deviceName: 
 
 const notifyListeners = () => {
   const connected = isBluetoothConnected()
-  const name = activeDevice?.name || getSavedPrinterName()
+  const name = isNativePlatform() ? (nativeConnectedName || getSavedPrinterName()) : (activeDevice?.name || getSavedPrinterName())
   connectionListeners.forEach(cb => {
     try {
       cb(connected, name)
@@ -68,13 +96,73 @@ const notifyListeners = () => {
 }
 
 /**
- * Connect to Bluetooth Thermal Printer using Web Bluetooth API
+ * Get list of paired Bluetooth devices (Khusus Native APK Android)
  */
-export async function connectBluetoothPrinter(): Promise<{
+export async function getNativePairedDevices(): Promise<Array<{ name: string; address: string }>> {
+  if (!isNativePlatform()) return []
+  try {
+    const res = await NativePrinter.getPairedDevices()
+    return res?.devices || []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Connect to Bluetooth Thermal Printer (Native APK Android or Web Bluetooth)
+ */
+export async function connectBluetoothPrinter(targetAddress?: string): Promise<{
   success: boolean
   deviceName?: string
   error?: string
+  needsSelection?: boolean
+  devices?: Array<{ name: string; address: string }>
 }> {
+  if (isNativePlatform()) {
+    try {
+      let addrToConnect = targetAddress || getSavedPrinterAddress()
+      if (!addrToConnect) {
+        const paired = await getNativePairedDevices()
+        if (paired.length === 0) {
+          return {
+            success: false,
+            error: 'Belum ada printer Bluetooth yang di-pair di HP. Sambungkan printer di menu Bluetooth Android terlebih dahulu.'
+          }
+        }
+        if (paired.length === 1) {
+          addrToConnect = paired[0].address
+        } else {
+          const match = paired.find(p => /pos|printer|iware|rpp|thermal|mpt/i.test(p.name))
+          if (match) {
+            addrToConnect = match.address
+          } else {
+            return {
+              success: false,
+              needsSelection: true,
+              devices: paired,
+              error: 'Pilih printer yang ingin dihubungkan.'
+            }
+          }
+        }
+      }
+
+      const res = await NativePrinter.connect({ address: addrToConnect })
+      if (res && res.success) {
+        nativeConnectedName = res.name || 'Printer Thermal'
+        nativeConnectedAddress = addrToConnect
+        try {
+          localStorage.setItem(STORAGE_KEY_BT_NAME, nativeConnectedName)
+          localStorage.setItem(STORAGE_KEY_BT_ADDR, nativeConnectedAddress)
+        } catch {}
+        notifyListeners()
+        return { success: true, deviceName: nativeConnectedName }
+      }
+      return { success: false, error: 'Gagal menyambungkan ke printer.' }
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Gagal koneksi Bluetooth Android.' }
+    }
+  }
+
   if (!isWebBluetoothSupported()) {
     return {
       success: false,
@@ -147,6 +235,19 @@ export async function connectBluetoothPrinter(): Promise<{
  * Disconnect current Bluetooth printer
  */
 export async function disconnectBluetoothPrinter(): Promise<void> {
+  if (isNativePlatform()) {
+    try {
+      await NativePrinter.disconnect()
+    } catch {}
+    nativeConnectedName = ''
+    nativeConnectedAddress = ''
+    try {
+      localStorage.removeItem(STORAGE_KEY_BT_ADDR)
+    } catch {}
+    notifyListeners()
+    return
+  }
+
   if (activeDevice && activeDevice.gatt && activeDevice.gatt.connected) {
     try {
       activeDevice.gatt.disconnect()
@@ -161,9 +262,39 @@ export async function disconnectBluetoothPrinter(): Promise<void> {
 }
 
 /**
- * Send binary ESC/POS data to connected Bluetooth Printer in safe chunks
+ * Send binary ESC/POS data to connected Bluetooth Printer
  */
 export async function printDirectBluetooth(bytes: Uint8Array): Promise<{ success: boolean; error?: string }> {
+  if (isNativePlatform()) {
+    if (!isBluetoothConnected()) {
+      const savedAddr = getSavedPrinterAddress()
+      if (savedAddr) {
+        await connectBluetoothPrinter(savedAddr)
+      } else {
+        const auto = await connectBluetoothPrinter()
+        if (!auto.success) {
+          return { success: false, error: auto.error || 'Printer Bluetooth belum terhubung.' }
+        }
+      }
+    }
+
+    try {
+      let binary = ''
+      const len = bytes.byteLength
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i])
+      }
+      const base64 = btoa(binary)
+      const res = await NativePrinter.print({ data: base64 })
+      if (res && res.success) {
+        return { success: true }
+      }
+      return { success: false, error: 'Gagal mencetak struk lewat Bluetooth Android.' }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Gagal mengirim data cetak ke printer.' }
+    }
+  }
+
   if (!isBluetoothConnected()) {
     // Try reconnecting if device object is still available
     if (activeDevice && activeDevice.gatt) {

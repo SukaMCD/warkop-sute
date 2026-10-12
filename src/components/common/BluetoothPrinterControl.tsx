@@ -40,6 +40,7 @@ export const BluetoothPrinterControl: React.FC<BluetoothPrinterControlProps> = (
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
   const [isTesting, setIsTesting] = useState<boolean>(false)
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
+  const [pairedDevices, setPairedDevices] = useState<Array<{ name: string; address: string }>>([])
 
   useEffect(() => {
     setSupported(isWebBluetoothSupported())
@@ -50,15 +51,22 @@ export const BluetoothPrinterControl: React.FC<BluetoothPrinterControlProps> = (
     return () => unsubscribe()
   }, [])
 
-  const handleConnect = async () => {
+  const handleConnect = async (targetAddress?: string) => {
     setIsConnecting(true)
     setStatusMessage(null)
+    setPairedDevices([])
     try {
-      const res = await connectBluetoothPrinter()
+      const res = await connectBluetoothPrinter(targetAddress)
       if (res.success) {
         setStatusMessage({
           type: 'success',
           text: `Berhasil terhubung ke ${res.deviceName || 'Printer Thermal'}!`
+        })
+      } else if (res.needsSelection && res.devices) {
+        setPairedDevices(res.devices)
+        setStatusMessage({
+          type: 'info',
+          text: 'Pilih printer yang ingin dihubungkan di bawah ini:'
         })
       } else if (res.error) {
         setStatusMessage({
@@ -145,7 +153,7 @@ export const BluetoothPrinterControl: React.FC<BluetoothPrinterControlProps> = (
         ) : (
           <button
             type="button"
-            onClick={handleConnect}
+            onClick={() => handleConnect()}
             disabled={isConnecting}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 transition-all cursor-pointer disabled:opacity-50"
           >
@@ -261,9 +269,34 @@ export const BluetoothPrinterControl: React.FC<BluetoothPrinterControlProps> = (
         </div>
       ) : (
         <div className="space-y-3">
+          {pairedDevices.length > 0 && (
+            <div className="p-3 bg-stone-50 dark:bg-stone-850 rounded-xl border border-stone-200 dark:border-stone-800 space-y-2">
+              <p className="text-xs font-bold text-stone-900 dark:text-stone-100">
+                Pilih Printer Bluetooth yang Terdaftar di HP:
+              </p>
+              <div className="space-y-1.5">
+                {pairedDevices.map((d, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleConnect(d.address)}
+                    disabled={isConnecting}
+                    className="w-full flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-700 text-left transition-colors cursor-pointer"
+                  >
+                    <div>
+                      <p className="text-xs font-bold text-stone-900 dark:text-stone-100">{d.name}</p>
+                      <p className="text-[10px] text-stone-500 font-mono">{d.address}</p>
+                    </div>
+                    <span className="text-[11px] font-bold text-amber-700 dark:text-[#E2DFD2]">Hubungkan →</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <button
             type="button"
-            onClick={handleConnect}
+            onClick={() => handleConnect()}
             disabled={isConnecting || !supported}
             className="w-full py-3 px-4 rounded-xl bg-stone-900 hover:bg-stone-850 text-white dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >

@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { User } from '../../types'
-import { Delete, ArrowRight, ShieldAlert, Loader2, RotateCcw, Clock, MapPin, ShieldCheck, UserCheck, Smartphone } from 'lucide-react'
+import { Delete, ArrowRight, ShieldAlert, Loader2, RotateCcw, Clock, MapPin, ShieldCheck, UserCheck } from 'lucide-react'
 import { setToken } from '../../utils/api'
 import { SearchableSelect } from '../ui/SearchableSelect'
-import { useIsMobileApp } from '../../utils/fullscreen'
 
 interface LoginPageProps {
   onLoginSuccess: (user: User) => void
@@ -24,7 +23,6 @@ const DEFAULT_USERS: DbUser[] = [
 ]
 
 export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
-  const isMobileApp = useIsMobileApp()
   const [pin, setPin] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -290,17 +288,6 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             <MapPin className="w-4 h-4 text-stone-400 dark:text-stone-500 shrink-0" />
             <span className="truncate">Ciawi Gebang No 2, Kuningan</span>
           </div>
-          {!isMobileApp && (
-            <a
-              href="/warkop-pos.apk"
-              download="warkop-pos.apk"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 dark:bg-stone-900 dark:hover:bg-stone-850 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 font-mono text-[11px] shrink-0 transition-colors no-underline shadow-2xs"
-              title="Download file APK Android Warkop Sudut Temu"
-            >
-              <Smartphone className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
-              <span>Unduh APK</span>
-            </a>
-          )}
         </div>
 
       </div>

@@ -15,9 +15,7 @@ import {
   WifiOff,
   RefreshCw,
   Check,
-  Download,
   Sparkles,
-  Smartphone,
   LogOut,
   Plus,
   Maximize2,
@@ -26,7 +24,7 @@ import {
 import type { User } from '../../types'
 import type { TabType } from '../../utils/navigation'
 import { subscribeToQueue, syncPendingOrders, getPendingCount } from '../../utils/offlineQueue'
-import { subscribePwaInstall, subscribePwaUpdate, promptPwaInstall, applyPwaUpdate } from '../../utils/pwa'
+import { subscribePwaUpdate, applyPwaUpdate } from '../../utils/pwa'
 import { useFullscreen, useIsMobileApp } from '../../utils/fullscreen'
 
 interface HeaderProps {
@@ -71,15 +69,12 @@ export const Header = ({
   const [pendingSyncCount, setPendingSyncCount] = useState<number>(() => getPendingCount())
   const [isSyncing, setIsSyncing] = useState<boolean>(false)
   const [justSynced, setJustSynced] = useState<boolean>(false)
-  const [canInstallPwa, setCanInstallPwa] = useState<boolean>(false)
   const [hasPwaUpdate, setHasPwaUpdate] = useState<boolean>(false)
 
-  // Listen to PWA installability and update events
+  // Listen to PWA update events
   useEffect(() => {
-    const unsubInstall = subscribePwaInstall(setCanInstallPwa)
     const unsubUpdate = subscribePwaUpdate(() => setHasPwaUpdate(true))
     return () => {
-      unsubInstall()
       unsubUpdate()
     }
   }, [])
@@ -324,19 +319,6 @@ export const Header = ({
               </button>
             )}
 
-            {/* PWA Install Button */}
-            {canInstallPwa && (
-              <button
-                type="button"
-                onClick={promptPwaInstall}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/70 dark:bg-stone-900 dark:hover:bg-stone-850 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95"
-                title="Pasang aplikasi POS Warkop Sudut Temu ke layar utama perangkat"
-              >
-                <Download className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
-                <span className="hidden md:inline">Install POS</span>
-              </button>
-            )}
-
             {/* Catat Beban Overhead (Owner Only) */}
             {currentUser?.role === 'owner' && onOpenOverheadExpense && (
               <button
@@ -350,22 +332,11 @@ export const Header = ({
               </button>
             )}
 
-            {/* Android APK Download & Fullscreen Controls (Hidden in Mobile App / APK) */}
+            {/* Fullscreen Controls (Hidden in Mobile App / APK) */}
             {!isMobileApp && (
-              <>
-                <a
-                  href="/warkop-pos.apk"
-                  download="warkop-pos.apk"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200/70 dark:bg-stone-900 dark:hover:bg-stone-850 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95 no-underline"
-                  title="Unduh paket aplikasi Android (.APK) untuk smartphone atau tablet"
-                >
-                  <Smartphone className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
-                  <span className="hidden lg:inline">Unduh APK</span>
-                </a>
-
-                <button
-                  type="button"
-                  onClick={handleFullscreenClick}
+              <button
+                type="button"
+                onClick={handleFullscreenClick}
                   className={`flex items-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-semibold cursor-pointer shadow-xs transition-all active:scale-95 ${
                     isFullscreen
                       ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200'
@@ -386,7 +357,6 @@ export const Header = ({
                     {isFullscreen ? 'Normal' : 'Layar Penuh'}
                   </span>
                 </button>
-              </>
             )}
 
             {/* Realtime Clock & Date */}
