@@ -15,7 +15,13 @@ import { formatShiftSchedule } from '../../utils/shiftHelpers'
 import { NumericInput } from '../ui/NumericInput'
 import { apiFetch } from '../../utils/api'
 import { BluetoothPrinterControl } from '../common/BluetoothPrinterControl'
-import { isBluetoothConnected, printDirectBluetooth, buildShiftRecapEscPos } from '../../utils/bluetoothPrinter'
+import {
+  isBluetoothConnected,
+  isNativePlatform,
+  openBluetoothPrinterModal,
+  printDirectBluetooth,
+  buildShiftRecapEscPos
+} from '../../utils/bluetoothPrinter'
 
 interface CloseShiftModalProps {
   shift: Shift
@@ -93,23 +99,35 @@ export const CloseShiftModal = ({
   }
 
   const handlePrint = async () => {
-    if (closedData && isBluetoothConnected()) {
-      const schedule = formatShiftSchedule(closedData.start_time, closedData.end_time)
-      const expenses = closedData.total_expenses !== undefined ? closedData.total_expenses : (shift.total_expenses || 0)
-      const incomes = closedData.total_incomes !== undefined ? closedData.total_incomes : (shift.total_incomes || 0)
-      const expected = closedData.initial_cash + closedData.total_cash_sales + incomes - expenses
-      const diff = (closedData.actual_cash_counted || 0) - expected
-      try {
-        const bytes = buildShiftRecapEscPos(closedData, schedule, expected, diff)
-        const res = await printDirectBluetooth(bytes)
-        if (!res.success) {
+    if (closedData) {
+      if (isBluetoothConnected()) {
+        const schedule = formatShiftSchedule(closedData.start_time, closedData.end_time)
+        const expenses = closedData.total_expenses !== undefined ? closedData.total_expenses : (shift.total_expenses || 0)
+        const incomes = closedData.total_incomes !== undefined ? closedData.total_incomes : (shift.total_incomes || 0)
+        const expected = closedData.initial_cash + closedData.total_cash_sales + incomes - expenses
+        const diff = (closedData.actual_cash_counted || 0) - expected
+        try {
+          const bytes = buildShiftRecapEscPos(closedData, schedule, expected, diff)
+          const res = await printDirectBluetooth(bytes)
+          if (!res.success) {
+            alert('Gagal mencetak rekap: ' + (res.error || 'Periksa koneksi printer.'))
+            if (!isNativePlatform()) {
+              window.print()
+            }
+          }
+        } catch (err: any) {
+          alert('Terjadi kesalahan saat mencetak: ' + (err?.message || 'Error printer'))
+          if (!isNativePlatform()) {
+            window.print()
+          }
+        }
+      } else {
+        if (isNativePlatform()) {
+          openBluetoothPrinterModal()
+        } else {
           window.print()
         }
-      } catch {
-        window.print()
       }
-    } else {
-      window.print()
     }
   }
 

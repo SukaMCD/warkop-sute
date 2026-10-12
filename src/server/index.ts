@@ -282,15 +282,21 @@ app.get('/api/orders', async (c) => {
   const paymentMethod = c.req.query('payment_method')
   const dateFilter = c.req.query('date')
   const status = c.req.query('status')
+  const shiftId = c.req.query('shift_id')
 
   if (c.env?.DB) {
     let sql = `
-      SELECT o.*, u.name as cashier_name
+      SELECT o.*, COALESCE(u.name, 'Kasir') as cashier_name
       FROM orders o
-      JOIN users u ON o.cashier_id = u.id
+      LEFT JOIN users u ON o.cashier_id = u.id
       WHERE 1=1
     `
     const params: any[] = []
+
+    if (shiftId) {
+      sql += ' AND o.shift_id = ?'
+      params.push(shiftId)
+    }
 
     if (paymentMethod && paymentMethod !== 'all') {
       sql += ' AND o.payment_method = ?'
@@ -310,7 +316,10 @@ app.get('/api/orders', async (c) => {
       sql += " AND date(o.created_at) >= date('now', 'localtime', '-6 days')"
     }
 
-    sql += ' ORDER BY o.created_at DESC LIMIT 100'
+    // Hindari pesanan dengan tanggal masa depan yang menghalangi urutan transaksi riil
+    sql += " AND o.created_at <= datetime('now', 'localtime', '+1 day')"
+
+    sql += ' ORDER BY o.created_at DESC LIMIT 500'
 
     const stmt = params.length > 0 ? c.env.DB.prepare(sql).bind(...params) : c.env.DB.prepare(sql)
     const { results: orders } = await stmt.all()

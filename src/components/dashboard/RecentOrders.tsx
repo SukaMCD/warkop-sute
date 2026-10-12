@@ -16,13 +16,21 @@ import {
   UtensilsCrossed,
   FileSpreadsheet,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  RefreshCw
 } from 'lucide-react'
 import type { ReceiptConfig } from '../../types'
 import * as XLSX from 'xlsx'
 import { apiFetch } from '../../utils/api'
 import { BluetoothPrinterControl } from '../common/BluetoothPrinterControl'
-import { isBluetoothConnected, printDirectBluetooth, buildReceiptEscPos, buildKitchenEscPos } from '../../utils/bluetoothPrinter'
+import {
+  isBluetoothConnected,
+  isNativePlatform,
+  openBluetoothPrinterModal,
+  printDirectBluetooth,
+  buildReceiptEscPos,
+  buildKitchenEscPos
+} from '../../utils/bluetoothPrinter'
 import { DEFAULT_RECEIPT_CONFIG } from '../../utils/receiptConfig'
 
 interface SegmentedOption<T extends string> {
@@ -136,6 +144,8 @@ interface RecentOrdersProps {
   onOrderCancelled?: (orderId: string) => void
   isDashboardWidget?: boolean
   onViewAll?: () => void
+  onRefresh?: () => void
+  isRefreshing?: boolean
 }
 
 export const RecentOrders = ({
@@ -143,7 +153,9 @@ export const RecentOrders = ({
   receiptConfig,
   onOrderCancelled,
   isDashboardWidget = false,
-  onViewAll
+  onViewAll,
+  onRefresh,
+  isRefreshing = false
 }: RecentOrdersProps) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -181,11 +193,23 @@ export const RecentOrders = ({
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
-    const nowMs = Date.now()
-    const oneDay = 86400000
-    const todayStr = new Date(nowMs).toISOString().slice(0, 10)
-    const yesterdayStr = new Date(nowMs - oneDay).toISOString().slice(0, 10)
-    const sevenDaysAgoStr = new Date(nowMs - 6 * oneDay).toISOString().slice(0, 10)
+    const now = new Date()
+    const getLocalYMD = (d: Date) => {
+      const year = d.getFullYear()
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${year}-${month}-${day}`
+    }
+    const todayLocal = getLocalYMD(now)
+    const todayIso = now.toISOString().slice(0, 10)
+    
+    const yesterday = new Date(now.getTime() - 86400000)
+    const yesterdayLocal = getLocalYMD(yesterday)
+    const yesterdayIso = yesterday.toISOString().slice(0, 10)
+
+    const sevenDaysAgo = new Date(now.getTime() - 6 * 86400000)
+    const sevenDaysAgoLocal = getLocalYMD(sevenDaysAgo)
+    const sevenDaysAgoIso = sevenDaysAgo.toISOString().slice(0, 10)
 
     return orders.filter((order) => {
       // Search
@@ -209,10 +233,14 @@ export const RecentOrders = ({
 
       // Date
       if (dateFilter !== 'all') {
-        const orderDate = order.created_at.split('T')[0].split(' ')[0]
-        if (dateFilter === 'today' && orderDate !== todayStr) return false
-        if (dateFilter === 'yesterday' && orderDate !== yesterdayStr) return false
-        if (dateFilter === '7days' && orderDate < sevenDaysAgoStr) return false
+        const orderDate = (order.created_at || '').slice(0, 10)
+        if (dateFilter === 'today') {
+          if (orderDate !== todayLocal && orderDate !== todayIso) return false
+        } else if (dateFilter === 'yesterday') {
+          if (orderDate !== yesterdayLocal && orderDate !== yesterdayIso) return false
+        } else if (dateFilter === '7days') {
+          if (orderDate < sevenDaysAgoLocal && orderDate < sevenDaysAgoIso) return false
+        }
       }
 
       return true
@@ -422,35 +450,59 @@ export const RecentOrders = ({
   // Print Handlers
   const handlePrintReceipt = async () => {
     setPrintType('receipt')
-    if (selectedOrder && isBluetoothConnected()) {
-      try {
-        const bytes = buildReceiptEscPos(selectedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG)
-        const res = await printDirectBluetooth(bytes)
-        if (!res.success) {
+    if (selectedOrder) {
+      if (isBluetoothConnected()) {
+        try {
+          const bytes = buildReceiptEscPos(selectedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG)
+          const res = await printDirectBluetooth(bytes)
+          if (!res.success) {
+            alert('Gagal mencetak struk: ' + (res.error || 'Periksa koneksi printer Bluetooth atau pasang kertas printer.'))
+            if (!isNativePlatform()) {
+              setTimeout(() => window.print(), 50)
+            }
+          }
+        } catch (err: any) {
+          alert('Terjadi kesalahan saat mencetak: ' + (err?.message || 'Error printer'))
+          if (!isNativePlatform()) {
+            setTimeout(() => window.print(), 50)
+          }
+        }
+      } else {
+        if (isNativePlatform()) {
+          openBluetoothPrinterModal()
+        } else {
           setTimeout(() => window.print(), 50)
         }
-      } catch {
-        setTimeout(() => window.print(), 50)
       }
-    } else {
-      setTimeout(() => window.print(), 50)
     }
   }
 
   const handlePrintKitchen = async () => {
     setPrintType('kitchen')
-    if (selectedOrder && isBluetoothConnected()) {
-      try {
-        const bytes = buildKitchenEscPos(selectedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG)
-        const res = await printDirectBluetooth(bytes)
-        if (!res.success) {
+    if (selectedOrder) {
+      if (isBluetoothConnected()) {
+        try {
+          const bytes = buildKitchenEscPos(selectedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG)
+          const res = await printDirectBluetooth(bytes)
+          if (!res.success) {
+            alert('Gagal mencetak tiket dapur: ' + (res.error || 'Periksa printer.'))
+            if (!isNativePlatform()) {
+              setTimeout(() => window.print(), 50)
+            }
+          }
+        } catch (err: any) {
+          alert('Terjadi kesalahan saat mencetak: ' + (err?.message || 'Error printer'))
+          if (!isNativePlatform()) {
+            setTimeout(() => window.print(), 50)
+          }
+        }
+      } else {
+        if (isNativePlatform()) {
+          openBluetoothPrinterModal()
+        } else {
           setTimeout(() => window.print(), 50)
         }
-      } catch {
-        setTimeout(() => window.print(), 50)
       }
-    } else {
-      setTimeout(() => window.print(), 50)
     }
   }
 
@@ -520,6 +572,19 @@ export const RecentOrders = ({
             <Download className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
             <span>CSV</span>
           </button>
+
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={isRefreshing}
+              className="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-850 dark:hover:bg-stone-800 border border-stone-200 dark:border-stone-800 text-stone-700 dark:text-stone-300 text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Segarkan riwayat transaksi dari server"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-stone-500 dark:text-stone-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>Segarkan</span>
+            </button>
+          )}
 
           <span className="text-xs text-stone-600 dark:text-stone-400 font-mono px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800">
             {filteredOrders.length} transaksi

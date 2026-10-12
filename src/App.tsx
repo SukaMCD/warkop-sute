@@ -406,7 +406,7 @@ export function App() {
       const ordersRes = await apiFetch('/api/orders')
       if (ordersRes.ok) {
         const ordersJson: any = await ordersRes.json()
-        if (ordersJson.success && ordersJson.data?.length > 0) {
+        if (ordersJson.success && Array.isArray(ordersJson.data)) {
           setOrders(ordersJson.data)
         }
       }
@@ -554,6 +554,8 @@ export function App() {
                         onOrderCancelled={handleOrderCancelled}
                         isDashboardWidget={true}
                         onViewAll={() => setActiveTab('orders')}
+                        onRefresh={fetchOrdersData}
+                        isRefreshing={isManualRefreshing}
                       />
                     </div>
 
@@ -582,6 +584,8 @@ export function App() {
                     orders={orders}
                     receiptConfig={receiptConfig}
                     onOrderCancelled={handleOrderCancelled}
+                    onRefresh={fetchOrdersData}
+                    isRefreshing={isManualRefreshing}
                   />
                 </div>
               )}

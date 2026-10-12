@@ -76,10 +76,42 @@ export const isBluetoothConnected = (): boolean => {
   return !!(activeDevice && activeDevice.gatt && activeDevice.gatt.connected && activeCharacteristic)
 }
 
+export const openBluetoothPrinterModal = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('open-bluetooth-printer-modal'))
+  }
+}
+
+export const syncNativeBluetoothStatus = async (): Promise<boolean> => {
+  if (!isNativePlatform()) return isBluetoothConnected()
+  try {
+    const res = await NativePrinter.isConnected()
+    if (res && res.connected) {
+      nativeConnectedName = res.name || getSavedPrinterName() || 'Printer Thermal'
+      nativeConnectedAddress = res.address || getSavedPrinterAddress()
+      notifyListeners()
+      return true
+    } else {
+      nativeConnectedName = ''
+      nativeConnectedAddress = ''
+      notifyListeners()
+      return false
+    }
+  } catch {
+    return false
+  }
+}
+
 export const addBluetoothListener = (callback: (connected: boolean, deviceName: string) => void) => {
   connectionListeners.push(callback)
   const currentName = isNativePlatform() ? (nativeConnectedName || getSavedPrinterName()) : (activeDevice?.name || getSavedPrinterName())
   callback(isBluetoothConnected(), currentName)
+  
+  // Trigger async sync in native background
+  if (isNativePlatform()) {
+    syncNativeBluetoothStatus()
+  }
+
   return () => {
     connectionListeners = connectionListeners.filter(cb => cb !== callback)
   }
@@ -103,8 +135,9 @@ export async function getNativePairedDevices(): Promise<Array<{ name: string; ad
   try {
     const res = await NativePrinter.getPairedDevices()
     return res?.devices || []
-  } catch {
-    return []
+  } catch (err: any) {
+    console.warn('[Bluetooth] getNativePairedDevices error:', err)
+    throw err
   }
 }
 
@@ -122,17 +155,28 @@ export async function connectBluetoothPrinter(targetAddress?: string): Promise<{
     try {
       let addrToConnect = targetAddress || getSavedPrinterAddress()
       if (!addrToConnect) {
-        const paired = await getNativePairedDevices()
+        let paired: Array<{ name: string; address: string }> = []
+        try {
+          paired = await getNativePairedDevices()
+        } catch (fetchErr: any) {
+          return {
+            success: false,
+            error: fetchErr?.message || 'Gagal mengambil daftar Bluetooth HP. Pastikan Bluetooth aktif dan izin diberikan.'
+          }
+        }
+
         if (paired.length === 0) {
           return {
             success: false,
-            error: 'Belum ada printer Bluetooth yang di-pair di HP. Sambungkan printer di menu Bluetooth Android terlebih dahulu.'
+            needsSelection: true,
+            devices: [],
+            error: 'Belum ada printer Bluetooth yang dipasangkan (paired) di HP. Silakan buka Pengaturan Bluetooth HP Anda, cari & pasangkan printer Iware C-58BT (PIN: 0000 atau 1234).'
           }
         }
         if (paired.length === 1) {
           addrToConnect = paired[0].address
         } else {
-          const match = paired.find(p => /pos|printer|iware|rpp|thermal|mpt/i.test(p.name))
+          const match = paired.find(p => /pos|printer|iware|rpp|thermal|mpt|bluetooth/i.test(p.name))
           if (match) {
             addrToConnect = match.address
           } else {
@@ -159,7 +203,7 @@ export async function connectBluetoothPrinter(targetAddress?: string): Promise<{
       }
       return { success: false, error: 'Gagal menyambungkan ke printer.' }
     } catch (e: any) {
-      return { success: false, error: e.message || 'Gagal koneksi Bluetooth Android.' }
+      return { success: false, error: e?.message || 'Gagal koneksi Bluetooth Android.' }
     }
   }
 

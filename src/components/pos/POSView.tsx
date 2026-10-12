@@ -37,7 +37,14 @@ import { LowStockAlertModal } from './LowStockAlertModal'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { NumericInput } from '../ui/NumericInput'
 import { BluetoothPrinterControl } from '../common/BluetoothPrinterControl'
-import { isBluetoothConnected, printDirectBluetooth, buildReceiptEscPos, buildKitchenEscPos } from '../../utils/bluetoothPrinter'
+import {
+  isBluetoothConnected,
+  isNativePlatform,
+  openBluetoothPrinterModal,
+  printDirectBluetooth,
+  buildReceiptEscPos,
+  buildKitchenEscPos
+} from '../../utils/bluetoothPrinter'
 import { DEFAULT_RECEIPT_CONFIG } from '../../utils/receiptConfig'
 
 export interface CartItem {
@@ -519,42 +526,66 @@ export const POSView = ({
   // Print thermal receipt handler (Direct Bluetooth if connected, fallback to browser print)
   const handlePrintReceipt = async () => {
     setPrintMode('receipt')
-    if (completedOrder && isBluetoothConnected()) {
-      setIsPrintingBt(true)
-      try {
-        const bytes = buildReceiptEscPos(completedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG, currentUser.name)
-        const res = await printDirectBluetooth(bytes)
-        if (!res.success) {
+    if (completedOrder) {
+      if (isBluetoothConnected()) {
+        setIsPrintingBt(true)
+        try {
+          const bytes = buildReceiptEscPos(completedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG, currentUser.name)
+          const res = await printDirectBluetooth(bytes)
+          if (!res.success) {
+            alert('Gagal mencetak struk: ' + (res.error || 'Periksa koneksi printer Bluetooth atau pasang kertas printer.'))
+            if (!isNativePlatform()) {
+              setTimeout(() => window.print(), 50)
+            }
+          }
+        } catch (err: any) {
+          alert('Terjadi kesalahan saat mencetak: ' + (err?.message || 'Error printer'))
+          if (!isNativePlatform()) {
+            setTimeout(() => window.print(), 50)
+          }
+        } finally {
+          setIsPrintingBt(false)
+        }
+      } else {
+        if (isNativePlatform()) {
+          openBluetoothPrinterModal()
+        } else {
           setTimeout(() => window.print(), 50)
         }
-      } catch {
-        setTimeout(() => window.print(), 50)
-      } finally {
-        setIsPrintingBt(false)
       }
-    } else {
-      setTimeout(() => window.print(), 50)
     }
   }
 
   // Print thermal kitchen order ticket
   const handlePrintKitchen = async () => {
     setPrintMode('kitchen')
-    if (completedOrder && isBluetoothConnected()) {
-      setIsPrintingBt(true)
-      try {
-        const bytes = buildKitchenEscPos(completedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG, currentUser.name)
-        const res = await printDirectBluetooth(bytes)
-        if (!res.success) {
+    if (completedOrder) {
+      if (isBluetoothConnected()) {
+        setIsPrintingBt(true)
+        try {
+          const bytes = buildKitchenEscPos(completedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG, currentUser.name)
+          const res = await printDirectBluetooth(bytes)
+          if (!res.success) {
+            alert('Gagal mencetak tiket dapur: ' + (res.error || 'Periksa koneksi printer.'))
+            if (!isNativePlatform()) {
+              setTimeout(() => window.print(), 50)
+            }
+          }
+        } catch (err: any) {
+          alert('Terjadi kesalahan saat mencetak: ' + (err?.message || 'Error printer'))
+          if (!isNativePlatform()) {
+            setTimeout(() => window.print(), 50)
+          }
+        } finally {
+          setIsPrintingBt(false)
+        }
+      } else {
+        if (isNativePlatform()) {
+          openBluetoothPrinterModal()
+        } else {
           setTimeout(() => window.print(), 50)
         }
-      } catch {
-        setTimeout(() => window.print(), 50)
-      } finally {
-        setIsPrintingBt(false)
       }
-    } else {
-      setTimeout(() => window.print(), 50)
     }
   }
 
