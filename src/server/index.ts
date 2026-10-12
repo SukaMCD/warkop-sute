@@ -321,27 +321,40 @@ app.get('/api/orders', async (c) => {
 
     sql += ' ORDER BY o.created_at DESC LIMIT 500'
 
-    const stmt = params.length > 0 ? c.env.DB.prepare(sql).bind(...params) : c.env.DB.prepare(sql)
-    const { results: orders } = await stmt.all()
+    try {
+      const stmt = params.length > 0 ? c.env.DB.prepare(sql).bind(...params) : c.env.DB.prepare(sql)
+      const { results: orders } = await stmt.all()
 
-    if (!orders || orders.length === 0) {
-      return c.json({ success: true, data: [] })
+      if (!orders || orders.length === 0) {
+        return c.json({ success: true, data: [] })
+      }
+
+      // Fetch items in chunks of 50 to safely avoid Cloudflare D1 SQL parameter limits
+      const orderIds = orders.map((ord: any) => ord.id)
+      const matchedItems: any[] = []
+      const CHUNK_SIZE = 50
+      for (let i = 0; i < orderIds.length; i += CHUNK_SIZE) {
+        const chunk = orderIds.slice(i, i + CHUNK_SIZE)
+        const placeholders = chunk.map(() => '?').join(',')
+        const { results } = await c.env.DB.prepare(`
+          SELECT * FROM order_items WHERE order_id IN (${placeholders})
+        `).bind(...chunk).all()
+        if (results && results.length > 0) {
+          matchedItems.push(...results)
+        }
+      }
+
+      // Map items into orders
+      const ordersWithItems = orders.map((ord: any) => ({
+        ...ord,
+        items: matchedItems.filter((item: any) => item.order_id === ord.id)
+      }))
+
+      return c.json({ success: true, data: ordersWithItems })
+    } catch (err: any) {
+      console.error('Error in GET /api/orders:', err)
+      return c.json({ success: false, message: err?.message || 'Gagal memuat riwayat transaksi' }, 500)
     }
-
-    // Only fetch items belonging to the selected orders using index
-    const orderIds = orders.map((ord: any) => ord.id)
-    const placeholders = orderIds.map(() => '?').join(',')
-    const { results: matchedItems } = await c.env.DB.prepare(`
-      SELECT * FROM order_items WHERE order_id IN (${placeholders})
-    `).bind(...orderIds).all()
-
-    // Map items into orders
-    const ordersWithItems = orders.map((ord: any) => ({
-      ...ord,
-      items: (matchedItems || []).filter((item: any) => item.order_id === ord.id)
-    }))
-
-    return c.json({ success: true, data: ordersWithItems })
   }
   return c.json({ success: true, data: [] })
 })
