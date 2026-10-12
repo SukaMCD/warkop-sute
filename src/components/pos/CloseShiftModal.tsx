@@ -14,6 +14,8 @@ import { formatRupiah } from '../../utils/formatters'
 import { formatShiftSchedule } from '../../utils/shiftHelpers'
 import { NumericInput } from '../ui/NumericInput'
 import { apiFetch } from '../../utils/api'
+import { BluetoothPrinterControl } from '../common/BluetoothPrinterControl'
+import { isBluetoothConnected, printDirectBluetooth, buildShiftRecapEscPos } from '../../utils/bluetoothPrinter'
 
 interface CloseShiftModalProps {
   shift: Shift
@@ -90,8 +92,25 @@ export const CloseShiftModal = ({
     }
   }
 
-  const handlePrint = () => {
-    window.print()
+  const handlePrint = async () => {
+    if (closedData && isBluetoothConnected()) {
+      const schedule = formatShiftSchedule(closedData.start_time, closedData.end_time)
+      const expenses = closedData.total_expenses !== undefined ? closedData.total_expenses : (shift.total_expenses || 0)
+      const incomes = closedData.total_incomes !== undefined ? closedData.total_incomes : (shift.total_incomes || 0)
+      const expected = closedData.initial_cash + closedData.total_cash_sales + incomes - expenses
+      const diff = (closedData.actual_cash_counted || 0) - expected
+      try {
+        const bytes = buildShiftRecapEscPos(closedData, schedule, expected, diff)
+        const res = await printDirectBluetooth(bytes)
+        if (!res.success) {
+          window.print()
+        }
+      } catch {
+        window.print()
+      }
+    } else {
+      window.print()
+    }
   }
 
   const handleFinishAndRedirect = () => {
@@ -131,6 +150,7 @@ export const CloseShiftModal = ({
           </div>
 
           <div className="flex items-center gap-3">
+            <BluetoothPrinterControl compact />
             <button
               type="button"
               onClick={handlePrint}

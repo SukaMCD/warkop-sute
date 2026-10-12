@@ -36,6 +36,9 @@ import { RecordExpenseModal } from './RecordExpenseModal'
 import { LowStockAlertModal } from './LowStockAlertModal'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { NumericInput } from '../ui/NumericInput'
+import { BluetoothPrinterControl } from '../common/BluetoothPrinterControl'
+import { isBluetoothConnected, printDirectBluetooth, buildReceiptEscPos, buildKitchenEscPos } from '../../utils/bluetoothPrinter'
+import { DEFAULT_RECEIPT_CONFIG } from '../../utils/receiptConfig'
 
 export interface CartItem {
   product: Product
@@ -511,16 +514,48 @@ export const POSView = ({
     }
   }
 
-  // Print thermal receipt handler
-  const handlePrintReceipt = () => {
+  const [isPrintingBt, setIsPrintingBt] = useState(false)
+
+  // Print thermal receipt handler (Direct Bluetooth if connected, fallback to browser print)
+  const handlePrintReceipt = async () => {
     setPrintMode('receipt')
-    setTimeout(() => window.print(), 50)
+    if (completedOrder && isBluetoothConnected()) {
+      setIsPrintingBt(true)
+      try {
+        const bytes = buildReceiptEscPos(completedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG, currentUser.name)
+        const res = await printDirectBluetooth(bytes)
+        if (!res.success) {
+          setTimeout(() => window.print(), 50)
+        }
+      } catch {
+        setTimeout(() => window.print(), 50)
+      } finally {
+        setIsPrintingBt(false)
+      }
+    } else {
+      setTimeout(() => window.print(), 50)
+    }
   }
 
   // Print thermal kitchen order ticket
-  const handlePrintKitchen = () => {
+  const handlePrintKitchen = async () => {
     setPrintMode('kitchen')
-    setTimeout(() => window.print(), 50)
+    if (completedOrder && isBluetoothConnected()) {
+      setIsPrintingBt(true)
+      try {
+        const bytes = buildKitchenEscPos(completedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG, currentUser.name)
+        const res = await printDirectBluetooth(bytes)
+        if (!res.success) {
+          setTimeout(() => window.print(), 50)
+        }
+      } catch {
+        setTimeout(() => window.print(), 50)
+      } finally {
+        setIsPrintingBt(false)
+      }
+    } else {
+      setTimeout(() => window.print(), 50)
+    }
   }
 
   // Formatter
@@ -2145,31 +2180,45 @@ export const POSView = ({
             </div>
           </div>
 
-          {/* Sticky Bottom Action Bar */}
-          <footer className="border-t border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-950/90 backdrop-blur-xs px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={handlePrintReceipt}
-              className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 dark:bg-stone-900 dark:border-stone-800 hover:border-stone-300 dark:hover:border-[#E2DFD2] dark:text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-            >
-              <Printer className="w-4 h-4 text-stone-700 dark:text-[#E2DFD2]" />
-              <span>Cetak Struk Kasir</span>
-            </button>
-            <button
-              type="button"
-              onClick={handlePrintKitchen}
-              className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 dark:bg-stone-900 dark:border-stone-800 hover:border-amber-600/40 dark:hover:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-            >
-              <UtensilsCrossed className="w-4 h-4 text-amber-800 dark:text-[#E2DFD2]" />
-              <span>Cetak Tiket Dapur</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowReceiptModal(false)}
-              className="py-2.5 px-5 rounded-xl bg-stone-900 hover:bg-stone-850 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-            >
-              <span>Pesanan Baru</span>
-            </button>
+          {/* Sticky Bottom Action Bar with Direct Bluetooth Control */}
+          <footer className="border-t border-stone-200 dark:border-stone-800 bg-[#FAF8F5]/90 dark:bg-stone-950/90 backdrop-blur-xs px-4 sm:px-6 py-3 sm:py-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shrink-0">
+            {/* Left: Bluetooth Quick Connect */}
+            <div className="flex items-center">
+              <BluetoothPrinterControl compact config={receiptConfig} />
+            </div>
+
+            {/* Right: Print & New Order Actions */}
+            <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={handlePrintReceipt}
+                disabled={isPrintingBt}
+                className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 text-stone-700 dark:bg-stone-900 dark:border-stone-800 hover:border-stone-300 dark:hover:border-[#E2DFD2] dark:text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
+              >
+                {isPrintingBt ? (
+                  <span className="w-4 h-4 border-2 border-stone-600 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Printer className="w-4 h-4 text-stone-700 dark:text-[#E2DFD2]" />
+                )}
+                <span>Cetak Struk Kasir</span>
+              </button>
+              <button
+                type="button"
+                onClick={handlePrintKitchen}
+                disabled={isPrintingBt}
+                className="py-2.5 px-4 rounded-xl bg-white hover:bg-stone-100 border border-stone-200 dark:bg-stone-900 dark:border-stone-800 hover:border-amber-600/40 dark:hover:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
+              >
+                <UtensilsCrossed className="w-4 h-4 text-amber-800 dark:text-[#E2DFD2]" />
+                <span>Cetak Tiket Dapur</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowReceiptModal(false)}
+                className="py-2.5 px-5 rounded-xl bg-stone-900 hover:bg-stone-850 text-stone-50 dark:bg-[#E2DFD2] dark:hover:bg-[#edebe2] dark:text-stone-950 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                <span>Pesanan Baru</span>
+              </button>
+            </div>
           </footer>
 
         </div>

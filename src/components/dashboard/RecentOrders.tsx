@@ -21,6 +21,9 @@ import {
 import type { ReceiptConfig } from '../../types'
 import * as XLSX from 'xlsx'
 import { apiFetch } from '../../utils/api'
+import { BluetoothPrinterControl } from '../common/BluetoothPrinterControl'
+import { isBluetoothConnected, printDirectBluetooth, buildReceiptEscPos, buildKitchenEscPos } from '../../utils/bluetoothPrinter'
+import { DEFAULT_RECEIPT_CONFIG } from '../../utils/receiptConfig'
 
 interface SegmentedOption<T extends string> {
   value: T
@@ -417,14 +420,38 @@ export const RecentOrders = ({
   }
 
   // Print Handlers
-  const handlePrintReceipt = () => {
+  const handlePrintReceipt = async () => {
     setPrintType('receipt')
-    setTimeout(() => window.print(), 50)
+    if (selectedOrder && isBluetoothConnected()) {
+      try {
+        const bytes = buildReceiptEscPos(selectedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG)
+        const res = await printDirectBluetooth(bytes)
+        if (!res.success) {
+          setTimeout(() => window.print(), 50)
+        }
+      } catch {
+        setTimeout(() => window.print(), 50)
+      }
+    } else {
+      setTimeout(() => window.print(), 50)
+    }
   }
 
-  const handlePrintKitchen = () => {
+  const handlePrintKitchen = async () => {
     setPrintType('kitchen')
-    setTimeout(() => window.print(), 50)
+    if (selectedOrder && isBluetoothConnected()) {
+      try {
+        const bytes = buildKitchenEscPos(selectedOrder, receiptConfig || DEFAULT_RECEIPT_CONFIG)
+        const res = await printDirectBluetooth(bytes)
+        if (!res.success) {
+          setTimeout(() => window.print(), 50)
+        }
+      } catch {
+        setTimeout(() => window.print(), 50)
+      }
+    } else {
+      setTimeout(() => window.print(), 50)
+    }
   }
 
   // Cancel / Void Order
@@ -1125,31 +1152,37 @@ export const RecentOrders = ({
             </div>
           </div>
 
-          {/* Sticky Bottom Footer Buttons */}
-          <footer className="border-t border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex flex-col sm:flex-row items-center justify-end gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={handlePrintReceipt}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-stone-400 dark:hover:border-[#E2DFD2] text-stone-800 dark:text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <Printer className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2]" />
-              <span>Cetak Struk Kasir</span>
-            </button>
-            <button
-              type="button"
-              onClick={handlePrintKitchen}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100/70 dark:bg-stone-900 border border-amber-200 dark:border-stone-800 hover:border-amber-300 dark:hover:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <UtensilsCrossed className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2]" />
-              <span>Cetak Tiket Dapur</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedOrder(null)}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-stone-800 dark:hover:bg-stone-750 dark:text-stone-200 text-xs font-semibold transition-all cursor-pointer border border-stone-800 dark:border-stone-700 shadow-xs"
-            >
-              Tutup
-            </button>
+          {/* Sticky Bottom Footer Buttons with Bluetooth quick control */}
+          <footer className="border-t border-stone-200 dark:border-stone-800 bg-white/90 dark:bg-stone-950/90 backdrop-blur-xs px-6 py-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center">
+              <BluetoothPrinterControl compact config={receiptConfig} />
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={handlePrintReceipt}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 dark:bg-stone-900 border border-stone-200 dark:border-stone-800 hover:border-stone-400 dark:hover:border-[#E2DFD2] text-stone-800 dark:text-stone-200 text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2]" />
+                <span>Cetak Struk Kasir</span>
+              </button>
+              <button
+                type="button"
+                onClick={handlePrintKitchen}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100/70 dark:bg-stone-900 border border-amber-200 dark:border-stone-800 hover:border-amber-300 dark:hover:border-[#E2DFD2]/60 text-amber-900 dark:text-[#E2DFD2] text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <UtensilsCrossed className="w-3.5 h-3.5 text-amber-800 dark:text-[#E2DFD2]" />
+                <span>Cetak Tiket Dapur</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(null)}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-stone-800 dark:hover:bg-stone-750 dark:text-stone-200 text-xs font-semibold transition-all cursor-pointer border border-stone-800 dark:border-stone-700 shadow-xs"
+              >
+                Tutup
+              </button>
+            </div>
           </footer>
         </div>
       )}

@@ -13,11 +13,14 @@ import {
   Phone,
   MapPin,
   AtSign,
-  MessageSquare
+  MessageSquare,
+  Bluetooth
 } from 'lucide-react'
 import type { ReceiptConfig, User } from '../../types'
 import { DEFAULT_RECEIPT_CONFIG, saveReceiptConfig } from '../../utils/receiptConfig'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { BluetoothPrinterControl } from '../common/BluetoothPrinterControl'
+import { isBluetoothConnected, printDirectBluetooth, buildTestReceiptEscPos } from '../../utils/bluetoothPrinter'
 
 interface ReceiptSettingsViewProps {
   currentUser?: User | null
@@ -33,7 +36,7 @@ export const ReceiptSettingsView = ({
   const [formData, setFormData] = useState<ReceiptConfig>({ ...config })
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
-  const [activeSubTab, setActiveSubTab] = useState<'store' | 'display' | 'footer'>('store')
+  const [activeSubTab, setActiveSubTab] = useState<'store' | 'display' | 'footer' | 'bluetooth'>('bluetooth')
   const [showResetConfirm, setShowResetConfirm] = useState(false)
 
   // Sample data for preview
@@ -89,9 +92,16 @@ export const ReceiptSettingsView = ({
     setShowResetConfirm(false)
   }
 
-  const handleTestPrint = () => {
-    // Open print dialog directly
-    window.print()
+  const handleTestPrint = async () => {
+    if (isBluetoothConnected()) {
+      const bytes = buildTestReceiptEscPos(formData)
+      const res = await printDirectBluetooth(bytes)
+      if (!res.success) {
+        window.print()
+      }
+    } else {
+      window.print()
+    }
   }
 
   return (
@@ -205,7 +215,25 @@ export const ReceiptSettingsView = ({
               <Wifi className="w-3.5 h-3.5" />
               <span>WiFi & Catatan Kaki</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('bluetooth')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeSubTab === 'bluetooth'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-[#E2DFD2] shadow-xs font-bold'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200'
+              }`}
+            >
+              <Bluetooth className="w-3.5 h-3.5 text-amber-700 dark:text-[#E2DFD2]" />
+              <span>Printer Bluetooth</span>
+            </button>
           </div>
+
+          {/* TAB 0: PRINTER BLUETOOTH */}
+          {activeSubTab === 'bluetooth' && (
+            <BluetoothPrinterControl config={formData} />
+          )}
 
           {/* TAB 1: IDENTITAS TOKO & HEADER */}
           {activeSubTab === 'store' && (
