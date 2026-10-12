@@ -68,6 +68,11 @@ export async function apiFetch(input: RequestInfo | URL, init: RequestInit = {})
   // Handle unauthorized responses (session expired or invalid token)
   if (response.status === 401) {
     console.warn('[API] 401 Unauthorized encountered from:', input)
+    clearToken()
+    try {
+      localStorage.setItem('sute_is_locked', 'true')
+      window.dispatchEvent(new CustomEvent('sute:unauthorized'))
+    } catch {}
   }
 
   return response

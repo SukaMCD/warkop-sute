@@ -283,11 +283,21 @@ export function App() {
         ...prev,
         total_cash_sales: (prev.total_cash_sales || 0) + newOrder.total_amount
       }))
-    } else {
+    } else if (newOrder.payment_method === 'qris') {
       setQrisAmount(prev => prev + newOrder.total_amount)
       setCurrentShift(prev => ({
         ...prev,
         total_qris_sales: (prev.total_qris_sales || 0) + newOrder.total_amount
+      }))
+    } else if (newOrder.payment_method === 'split') {
+      const cashPart = Math.min(newOrder.total_amount, Number(newOrder.cash_tendered) || 0)
+      const qrisPart = Math.max(0, newOrder.total_amount - cashPart)
+      setCashAmount(prev => prev + cashPart)
+      setQrisAmount(prev => prev + qrisPart)
+      setCurrentShift(prev => ({
+        ...prev,
+        total_cash_sales: (prev.total_cash_sales || 0) + cashPart,
+        total_qris_sales: (prev.total_qris_sales || 0) + qrisPart
       }))
     }
     // Sinkronisasi data D1 (weekly sales, best sellers, stats) secara live
@@ -461,8 +471,14 @@ export function App() {
     }
   }, [])
 
-  // Auto-refresh saat berpindah menu navigasi
+  const isInitialTabMount = useRef(true)
+
+  // Auto-refresh saat berpindah menu navigasi (dilewati saat inisialisasi awal karena sudah di-fetch oleh init effect)
   useEffect(() => {
+    if (isInitialTabMount.current) {
+      isInitialTabMount.current = false
+      return
+    }
     if (currentUser && !isLocked) {
       if (effectiveTab === 'orders' || effectiveTab === 'dashboard') {
         void fetchOrdersData()
@@ -470,6 +486,17 @@ export function App() {
       void fetchDynamicStats()
     }
   }, [effectiveTab])
+
+  // Tangani otomatis jika token kedaluwarsa atau invalid (401)
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      handleLockScreen()
+    }
+    window.addEventListener('sute:unauthorized', handleUnauthorized)
+    return () => {
+      window.removeEventListener('sute:unauthorized', handleUnauthorized)
+    }
+  }, [])
 
   // If not logged in or screen is locked, display PIN Lockscreen / Login Page
   if (!currentUser || isLocked) {

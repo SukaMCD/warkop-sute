@@ -21,13 +21,34 @@ type Variables = {
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>()
 
 app.use('*', secureHeaders())
-app.use('*', cors())
+app.use('*', cors({
+  origin: (origin) => {
+    if (!origin) return '*'
+    if (
+      origin === 'https://sute.web.id' ||
+      origin.endsWith('.sute.web.id') ||
+      origin.endsWith('.pages.dev') ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      origin === 'capacitor://localhost'
+    ) {
+      return origin
+    }
+    return 'https://sute.web.id'
+  },
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}))
 
 const DEFAULT_JWT_SECRET = 'rahasia-warkop-sudut-temu-2026'
 
 // JWT Auth Middleware
 async function authMiddleware(c: any, next: any) {
   const authHeader = c.req.header('Authorization')
+  if (!c.env?.JWT_SECRET && c.env?.ENVIRONMENT === 'production') {
+    console.warn('[SECURITY] Perhatian: JWT_SECRET belum diset di Cloudflare Environment Variables. Menggunakan secret default.')
+  }
   const secret = c.env?.JWT_SECRET || DEFAULT_JWT_SECRET
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7)
@@ -153,8 +174,8 @@ app.get('/api/products', async (c) => {
   })
 })
 
-// Toggle product availability in D1
-app.patch('/api/products/:id/toggle', async (c) => {
+// Toggle product availability in D1 (Owner Only)
+app.patch('/api/products/:id/toggle', authMiddleware, requireOwner, async (c) => {
   const id = c.req.param('id')
   if (c.env?.DB) {
     await c.env.DB.prepare(`
@@ -226,7 +247,7 @@ app.delete('/api/products/:id', authMiddleware, requireOwner, async (c) => {
 })
 
 // GET /api/products/:id/recipes - Get ingredients required for a product
-app.get('/api/products/:id/recipes', async (c) => {
+app.get('/api/products/:id/recipes', authMiddleware, async (c) => {
   const productId = c.req.param('id')
   if (c.env?.DB) {
     await ensureInventoryTables(c.env.DB)
@@ -278,7 +299,7 @@ app.put('/api/products/:id/recipes', authMiddleware, requireOwner, async (c) => 
 })
 
 // Orders & Order Items
-app.get('/api/orders', async (c) => {
+app.get('/api/orders', authMiddleware, async (c) => {
   const paymentMethod = c.req.query('payment_method')
   const dateFilter = c.req.query('date')
   const status = c.req.query('status')
@@ -716,7 +737,7 @@ app.delete('/api/users/:id', authMiddleware, requireOwner, async (c) => {
 })
 
 // Shifts
-app.get('/api/shifts', async (c) => {
+app.get('/api/shifts', authMiddleware, async (c) => {
   if (c.env?.DB) {
     const { results: shifts } = await c.env.DB.prepare(`
       SELECT s.*, u.name as cashier_name,
@@ -732,7 +753,7 @@ app.get('/api/shifts', async (c) => {
 })
 
 // Current Active Shift
-app.get('/api/shifts/current', async (c) => {
+app.get('/api/shifts/current', authMiddleware, async (c) => {
   if (c.env?.DB) {
     const shift: any = await c.env.DB.prepare(`
       SELECT s.*, u.name as cashier_name,
@@ -765,7 +786,7 @@ app.get('/api/shifts/current', async (c) => {
 })
 
 // Get expenses for a shift
-app.get('/api/shifts/:id/expenses', async (c) => {
+app.get('/api/shifts/:id/expenses', authMiddleware, async (c) => {
   const shiftId = c.req.param('id')
   if (c.env?.DB) {
     const { results } = await c.env.DB.prepare(`
@@ -1077,12 +1098,13 @@ app.post('/api/shifts/start', authMiddleware, async (c) => {
       return c.json({ success: true, data: mockShift })
     }
 
-    // Pastikan shift open sebelumnya untuk kasir ditutup terlebih dahulu
+    // Pastikan shift open sebelumnya untuk kasir ini ditutup terlebih dahulu
+    const targetCashierId = cashier_id || 'usr_kasir1'
     await c.env.DB.prepare(`
       UPDATE shifts 
       SET status = 'closed', end_time = datetime('now', 'localtime')
-      WHERE status = 'open'
-    `).run()
+      WHERE status = 'open' AND cashier_id = ?
+    `).bind(targetCashierId).run()
 
     const newId = `shift_${Date.now()}`
     await c.env.DB.prepare(`
@@ -1163,15 +1185,21 @@ app.post('/api/shifts/:id/close', authMiddleware, async (c) => {
 })
 
 // Dashboard Stats Overview
-app.get('/api/dashboard/stats', async (c) => {
+app.get('/api/dashboard/stats', authMiddleware, async (c) => {
   if (c.env?.DB) {
-    // 1. Order stats today
+    // 1. Order stats today (akurat menghitung transaksi cash, qris, maupun split payment)
     const stats: any = await c.env.DB.prepare(`
       SELECT 
         COALESCE(SUM(total_amount), 0) as total_revenue,
         COUNT(id) as total_transactions,
-        COALESCE(SUM(CASE WHEN payment_method = 'cash' THEN total_amount ELSE 0 END), 0) as total_cash,
-        COALESCE(SUM(CASE WHEN payment_method = 'qris' THEN total_amount ELSE 0 END), 0) as total_qris
+        COALESCE(SUM(CASE 
+          WHEN payment_method = 'cash' THEN total_amount 
+          WHEN payment_method = 'split' THEN min(total_amount, coalesce(cash_tendered, 0))
+          ELSE 0 END), 0) as total_cash,
+        COALESCE(SUM(CASE 
+          WHEN payment_method = 'qris' THEN total_amount 
+          WHEN payment_method = 'split' THEN max(0, total_amount - min(total_amount, coalesce(cash_tendered, 0)))
+          ELSE 0 END), 0) as total_qris
       FROM orders
       WHERE status = 'completed' AND date(created_at) = date('now', 'localtime')
     `).first()
@@ -1275,8 +1303,8 @@ app.get('/api/dashboard/stats', async (c) => {
   return c.json({ success: false, message: 'D1 database not connected' }, 500)
 })
 
-// Monthly Financial & Sales Report Endpoint
-app.get('/api/reports/monthly', async (c) => {
+// Monthly Financial & Sales Report Endpoint (Owner Only)
+app.get('/api/reports/monthly', authMiddleware, requireOwner, async (c) => {
   const now = new Date()
   const yearQuery = Number(c.req.query('year')) || now.getFullYear()
   const monthQuery = Number(c.req.query('month')) || (now.getMonth() + 1)
@@ -1698,9 +1726,9 @@ async function ensureInventoryTables(db: any) {
 }
 
 // GET /api/inventory - List all raw materials (mask cost for cashier)
-app.get('/api/inventory', async (c) => {
-  const role = c.req.header('x-user-role') || c.req.query('role') || 'cashier'
-  const isOwner = role === 'owner'
+app.get('/api/inventory', authMiddleware, async (c) => {
+  const user = c.get('user')
+  const isOwner = user?.role === 'owner'
 
   if (c.env?.DB) {
     await ensureInventoryTables(c.env.DB)
@@ -1893,7 +1921,7 @@ app.post('/api/inventory/movement', authMiddleware, async (c) => {
 })
 
 // GET /api/inventory/movements - List recent stock movements
-app.get('/api/inventory/movements', async (c) => {
+app.get('/api/inventory/movements', authMiddleware, async (c) => {
   if (c.env?.DB) {
     await ensureInventoryTables(c.env.DB)
     const { results } = await c.env.DB.prepare(`
