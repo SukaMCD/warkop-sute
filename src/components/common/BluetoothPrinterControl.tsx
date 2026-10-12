@@ -624,7 +624,7 @@ export const BluetoothPrinterControl: React.FC<BluetoothPrinterControlProps> = (
               </div>
               <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-stone-600 dark:text-stone-400 pl-1">
                 <li>Nyalakan printer kasir thermal dan pastikan Bluetooth HP/Laptop aktif.</li>
-                <li>Klik tombol di atas $\rightarrow$ pilih printer Bluetooth yang terdaftar.</li>
+                <li>Klik tombol di atas → pilih printer Bluetooth yang terdaftar.</li>
                 <li>Pilih nama printer kasir Anda (misal: <em>POS-58, Iware C-58BT, RPP02N, dll.</em>) lalu klik <strong>Hubungkan</strong>.</li>
                 <li>Setelah terhubung, setiap transaksi kasir akan langsung mencetak struk seketika!</li>
               </ol>
