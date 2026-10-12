@@ -808,50 +808,50 @@ export const POSView = ({
                     type="button"
                     disabled={isOutOfStock}
                     onClick={() => handleAddToCart(product)}
-                    className={`group relative text-left p-3.5 rounded-xl border transition-all flex flex-col justify-between min-h-26.25 select-none ${
+                    className={`group relative text-left p-3.5 sm:p-4 rounded-xl border transition-all flex flex-col justify-between min-h-[114px] sm:min-h-[122px] select-none ${
                       isOutOfStock
                         ? 'opacity-40 bg-stone-100 dark:bg-stone-950 border-stone-200 dark:border-stone-850 cursor-not-allowed'
                         : cartQuantity > 0
-                        ? 'bg-amber-500/8 dark:bg-stone-900/90 border-amber-600/50 dark:border-[#E2DFD2]/70 shadow-md ring-1 ring-amber-600/25 dark:ring-[#E2DFD2]/25 cursor-pointer'
-                        : 'bg-white dark:bg-stone-900/40 border-stone-200 dark:border-stone-800/80 hover:bg-stone-50/80 dark:hover:bg-stone-900 hover:border-stone-300 dark:hover:border-stone-700 shadow-[0_1px_3px_rgba(0,0,0,0.03)] dark:shadow-none cursor-pointer'
+                        ? 'bg-amber-500/10 dark:bg-stone-900/90 border-amber-600/60 dark:border-[#E2DFD2]/70 shadow-md ring-2 ring-amber-600/30 dark:ring-[#E2DFD2]/25 cursor-pointer'
+                        : 'bg-white dark:bg-stone-900/60 border-stone-200 dark:border-stone-800 hover:bg-stone-50/90 dark:hover:bg-stone-900 hover:border-stone-400 dark:hover:border-stone-700 shadow-xs cursor-pointer'
                     }`}
                   >
                     <div>
                       {/* Top Badges */}
-                      <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-amber-800 dark:text-[#E2DFD2]/80 truncate">
+                      <div className="flex items-center justify-between gap-1 mb-1.5">
+                        <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-amber-900 dark:text-[#E2DFD2] truncate">
                           {categoryNameMap[product.category_id] || product.category_id}
                         </span>
 
                         {isOutOfStock ? (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase bg-rose-100 border border-rose-200 text-rose-700 dark:bg-rose-950 dark:border-rose-900 dark:text-rose-400">
+                          <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-mono font-black uppercase bg-rose-100 border border-rose-300 text-rose-800 dark:bg-rose-950 dark:border-rose-900 dark:text-rose-400">
                             Habis
                           </span>
                         ) : isLowStock ? (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold uppercase bg-amber-100 border border-amber-200 text-amber-700 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-400">
+                          <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-mono font-black uppercase bg-amber-100 border border-amber-300 text-amber-800 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-400">
                             Sisa {product.stock}
                           </span>
                         ) : null}
                       </div>
 
                       {/* Product Name */}
-                      <h4 className="text-xs font-semibold text-stone-900 dark:text-stone-100 leading-snug line-clamp-2">
+                      <h4 className="text-[13px] sm:text-sm font-extrabold text-stone-950 dark:text-white leading-snug line-clamp-2 tracking-tight">
                         {product.name}
                       </h4>
                     </div>
 
-                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-100 dark:border-stone-800/60">
-                      <span className="font-mono text-xs font-bold text-stone-900 dark:text-[#E2DFD2]">
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-100 dark:border-stone-800/80">
+                      <span className="font-mono text-xs sm:text-sm font-black text-stone-950 dark:text-[#E2DFD2]">
                         {formatIDR(product.price)}
                       </span>
 
                       {cartQuantity > 0 ? (
-                        <span className="px-2 py-0.5 rounded-md bg-stone-900 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-mono text-[11px] font-bold">
+                        <span className="px-2 py-0.5 rounded-md bg-stone-950 text-stone-50 dark:bg-[#E2DFD2] dark:text-stone-950 font-mono text-[11px] sm:text-xs font-black">
                           {cartQuantity}x
                         </span>
                       ) : (
-                        <span className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 group-hover:border-stone-300 dark:group-hover:border-[#E2DFD2]/50 flex items-center justify-center text-stone-500 group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-[#E2DFD2] transition-colors">
-                          <Plus className="w-3.5 h-3.5" />
+                        <span className="w-6 h-6 rounded-lg bg-stone-100 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 group-hover:border-stone-400 dark:group-hover:border-[#E2DFD2]/60 flex items-center justify-center text-stone-600 group-hover:text-stone-950 dark:text-stone-300 dark:group-hover:text-[#E2DFD2] transition-colors">
+                          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                         </span>
                       )}
                     </div>
@@ -993,10 +993,10 @@ export const POSView = ({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-stone-900 dark:text-stone-200 leading-tight">
+                    <p className="text-xs sm:text-sm font-bold text-stone-950 dark:text-stone-100 leading-tight">
                       {item.product.name}
                     </p>
-                    <p className="text-[11px] font-mono text-stone-500 dark:text-stone-400 mt-0.5">
+                    <p className="text-[11px] font-mono text-stone-600 dark:text-stone-400 mt-0.5 font-medium">
                       {formatIDR(item.product.price)} / porsi
                     </p>
                   </div>
@@ -1256,10 +1256,10 @@ export const POSView = ({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-stone-900 dark:text-stone-200 leading-tight">
+                        <p className="text-xs sm:text-sm font-bold text-stone-950 dark:text-stone-100 leading-tight">
                           {item.product.name}
                         </p>
-                        <p className="text-[11px] font-mono text-stone-500 dark:text-stone-400 mt-0.5">
+                        <p className="text-[11px] font-mono text-stone-600 dark:text-stone-400 mt-0.5 font-medium">
                           {formatIDR(item.product.price)} / porsi
                         </p>
                       </div>

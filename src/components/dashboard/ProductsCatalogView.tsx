@@ -570,7 +570,7 @@ export const ProductsCatalogView = ({
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <h4 className="font-bold text-stone-900 dark:text-stone-100 text-sm leading-snug">
+                        <h4 className="font-extrabold text-stone-950 dark:text-white text-sm sm:text-base leading-snug">
                           {p.name}
                         </h4>
                         {Boolean(p.is_favorite) && (
