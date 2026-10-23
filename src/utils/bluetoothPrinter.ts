@@ -453,6 +453,50 @@ export class EscPosBuilder {
     return this
   }
 
+  wrappedLines(text: string, maxCols: number): string[] {
+    if (!text) return []
+    const words = text.split(/\s+/)
+    const lines: string[] = []
+    let currentLine = ''
+
+    for (const word of words) {
+      if (!word) continue
+      if (!currentLine) {
+        if (word.length <= maxCols) {
+          currentLine = word
+        } else {
+          for (let i = 0; i < word.length; i += maxCols) {
+            lines.push(word.slice(i, i + maxCols))
+          }
+        }
+      } else if (currentLine.length + 1 + word.length <= maxCols) {
+        currentLine += ' ' + word
+      } else {
+        lines.push(currentLine)
+        if (word.length <= maxCols) {
+          currentLine = word
+        } else {
+          for (let i = 0; i < word.length; i += maxCols) {
+            lines.push(word.slice(i, i + maxCols))
+          }
+          currentLine = ''
+        }
+      }
+    }
+    if (currentLine) {
+      lines.push(currentLine)
+    }
+    return lines
+  }
+
+  printWrapped(text: string, maxCols: number): this {
+    const lines = this.wrappedLines(text, maxCols)
+    for (const l of lines) {
+      this.line(l)
+    }
+    return this
+  }
+
   line(str: string = ''): this {
     if (str) this.text(str)
     this.buffer.push(0x0a) // LF
@@ -513,24 +557,49 @@ export function buildReceiptEscPos(
   // 1. HEADER (Store Info)
   builder.align('center')
   if (config.showStoreName !== false) {
-    builder.bold(true).size(2, 2)
-    builder.line(config.storeName || 'WARKOP SUDUT TEMU')
+    const storeName = config.storeName || 'WARKOP SUDUT TEMU'
+    // Ukuran font pintar untuk nama toko:
+    // Di printer 58mm (max 32 karakter per baris), mode double-width (size 2,2) hanya memuat 16 karakter.
+    // "WARKOP SUDUT TEMU" = 17 karakter, sehingga huruf 'U' terlempar ke baris baru jika dipaksa double-width.
+    // Gunakan size(1, 2) (Double Height / tinggi 2x, tebal) agar pas 1 baris utuh dan tetap berukuran besar.
+    if (maxCols <= 32) {
+      if (storeName.length <= 16) {
+        builder.bold(true).size(2, 2)
+      } else {
+        builder.bold(true).size(1, 2)
+      }
+    } else {
+      if (storeName.length <= 24) {
+        builder.bold(true).size(2, 2)
+      } else {
+        builder.bold(true).size(1, 2)
+      }
+    }
+    builder.line(storeName)
     builder.bold(false).size(1, 1)
   }
 
   if (config.showTagline && config.tagline) {
-    builder.line(config.tagline)
+    builder.printWrapped(config.tagline, maxCols)
   }
 
   if (config.showAddress !== false && config.address) {
-    builder.line(config.address)
+    builder.printWrapped(config.address, maxCols)
   }
 
-  const contactParts: string[] = []
-  if (config.showPhone !== false && config.phone) contactParts.push('Telp: ' + config.phone)
-  if (config.showSocialMedia && config.socialMedia) contactParts.push('IG: ' + config.socialMedia)
-  if (contactParts.length > 0) {
-    builder.line(contactParts.join(' | '))
+  const hasPhone = config.showPhone !== false && !!config.phone
+  const hasSocmed = config.showSocialMedia && !!config.socialMedia
+  if (hasPhone && hasSocmed) {
+    const combined = `Telp: ${config.phone} | IG: ${config.socialMedia}`
+    if (combined.length <= maxCols) {
+      builder.line(combined)
+    } else {
+      builder.line(`Telp: ${config.phone}`)
+      builder.line(`IG: ${config.socialMedia}`)
+    }
+  } else {
+    if (hasPhone) builder.line(`Telp: ${config.phone}`)
+    if (hasSocmed) builder.line(`IG: ${config.socialMedia}`)
   }
 
   builder.divider('-', maxCols)
@@ -539,9 +608,12 @@ export function buildReceiptEscPos(
   builder.align('left')
   builder.row('No: ' + order.order_number, new Date(order.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB', maxCols)
 
-  const activeCashier = cashierName || order.cashier_name || 'Kasir'
+  const activeCashier = (cashierName || order.cashier_name || 'Kasir').trim()
+  const cashierLabel = activeCashier.toLowerCase().startsWith('kasir')
+    ? activeCashier
+    : 'Kasir: ' + activeCashier
   const orderTypeStr = order.order_type === 'dine_in' ? 'Di Tempat' : 'Bungkus'
-  builder.row('Kasir: ' + activeCashier, orderTypeStr, maxCols)
+  builder.row(cashierLabel, orderTypeStr, maxCols)
 
   if (config.showCustomerName && order.customer_name && order.customer_name !== 'Pelanggan') {
     builder.row('Pelanggan:', order.customer_name, maxCols)
@@ -611,11 +683,12 @@ export function buildReceiptEscPos(
   }
 
   if (config.showFooterMessage !== false) {
-    builder.bold(true).line(config.footerMessage || 'Terima Kasih Atas Kunjungannya!')
+    builder.bold(true)
+    builder.printWrapped(config.footerMessage || 'Terima Kasih Atas Kunjungannya!', maxCols)
     builder.bold(false)
-    if (config.footerSubmessage) builder.line(config.footerSubmessage)
+    if (config.footerSubmessage) builder.printWrapped(config.footerSubmessage, maxCols)
     if (config.showCustomNotice && config.customNotice) {
-      builder.line('* ' + config.customNotice)
+      builder.printWrapped('* ' + config.customNotice, maxCols)
     }
   }
 
@@ -633,10 +706,14 @@ export function buildKitchenEscPos(
 
   // Header Tiket Dapur
   builder.align('center')
-  builder.bold(true).size(2, 2)
+  if (maxCols <= 32) {
+    builder.bold(true).size(1, 2)
+  } else {
+    builder.bold(true).size(2, 2)
+  }
   builder.line('TIKET DAPUR / BAR')
   builder.size(1, 1)
-  builder.line('WARKOP SUDUT TEMU')
+  builder.line(config.storeName || 'WARKOP SUDUT TEMU')
   builder.divider('=', maxCols)
 
   // Order Info
@@ -698,8 +775,13 @@ export function buildShiftRecapEscPos(
   const builder = new EscPosBuilder()
 
   builder.align('center')
-  builder.bold(true).size(2, 2)
-  builder.line('WARKOP SUDUT TEMU')
+  const storeTitle = config?.storeName || 'WARKOP SUDUT TEMU'
+  if (maxCols <= 32 && storeTitle.length > 16) {
+    builder.bold(true).size(1, 2)
+  } else {
+    builder.bold(true).size(2, 2)
+  }
+  builder.line(storeTitle)
   builder.size(1, 1)
   builder.line('Kopi - Mi - Tempat Bersua')
   builder.bold(true).line('REKAP TUTUP SHIFT KASIR')
@@ -760,8 +842,13 @@ export function buildTestReceiptEscPos(config?: ReceiptConfig): Uint8Array {
   const builder = new EscPosBuilder()
 
   builder.align('center')
-  builder.bold(true).size(2, 2)
-  builder.line(config?.storeName || 'WARKOP SUDUT TEMU')
+  const storeTitle = config?.storeName || 'WARKOP SUDUT TEMU'
+  if (maxCols <= 32 && storeTitle.length > 16) {
+    builder.bold(true).size(1, 2)
+  } else {
+    builder.bold(true).size(2, 2)
+  }
+  builder.line(storeTitle)
   builder.size(1, 1)
   builder.line('TES KONEKSI PRINTER THERMAL')
   builder.divider('=', maxCols)
