@@ -353,6 +353,35 @@ export const Sidebar = ({
           </div>
         )}
 
+        {/* Developer Credit */}
+        {!collapsed ? (
+          <div className="pt-2 text-center border-t border-stone-200/60 dark:border-stone-800/60 mt-1">
+            <p className="text-[10px] text-stone-500 dark:text-stone-400 font-mono tracking-tight">
+              Developed by{' '}
+              <a
+                href="https://sukamcd.tech"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-amber-800 hover:text-amber-900 dark:text-[#E2DFD2] dark:hover:underline transition-colors"
+              >
+                sukamcd.tech
+              </a>
+            </p>
+          </div>
+        ) : (
+          <div className="pt-1 text-center">
+            <a
+              href="https://sukamcd.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Developed by sukamcd.tech"
+              className="text-[9px] font-mono text-stone-400 hover:text-amber-800 dark:text-stone-500 dark:hover:text-[#E2DFD2] transition-colors block"
+            >
+              smcd
+            </a>
+          </div>
+        )}
+
       </div>
 
     </div>

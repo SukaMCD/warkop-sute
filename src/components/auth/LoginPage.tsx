@@ -288,6 +288,17 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             <MapPin className="w-4 h-4 text-stone-400 dark:text-stone-500 shrink-0" />
             <span className="truncate">Ciawi Gebang No 2, Kuningan</span>
           </div>
+          <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400 shrink-0">
+            Developed by{' '}
+            <a
+              href="https://sukamcd.tech"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-amber-800 hover:text-amber-900 dark:text-[#E2DFD2] dark:hover:underline transition-colors"
+            >
+              sukamcd.tech
+            </a>
+          </span>
         </div>
 
       </div>
@@ -436,6 +447,21 @@ export const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
               </>
             )}
           </button>
+
+          {/* Credit Footer for Keypad Column */}
+          <div className="text-center pt-1 lg:hidden">
+            <p className="text-[11px] text-stone-500 dark:text-stone-400 font-mono">
+              Developed by{' '}
+              <a
+                href="https://sukamcd.tech"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-amber-800 hover:text-amber-900 dark:text-[#E2DFD2] dark:hover:underline transition-colors"
+              >
+                sukamcd.tech
+              </a>
+            </p>
+          </div>
 
         </div>
 
