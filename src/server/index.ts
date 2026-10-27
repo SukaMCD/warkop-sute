@@ -28,6 +28,7 @@ app.use('*', cors({
       origin === 'https://sute.web.id' ||
       origin.endsWith('.sute.web.id') ||
       origin.endsWith('.pages.dev') ||
+      origin.endsWith('.workers.dev') ||
       origin.includes('localhost') ||
       origin.includes('127.0.0.1') ||
       origin === 'capacitor://localhost'

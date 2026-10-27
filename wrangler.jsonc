@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "warkop-sute",
-  "account_id": "cea2cd02060a70151f8c3690f1163cd9",
+  "account_id": "2a1109c334b17a0a8065f4137fd66347",
   "main": "src/server/index.ts",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -15,7 +15,7 @@
     {
       "binding": "DB",
       "database_name": "sute",
-      "database_id": "26a26f63-216a-4bb5-94d0-1797fd882524"
+      "database_id": "892234d2-49cd-42a0-a080-78ccd0ef9743"
     }
   ],
   "vars": {
